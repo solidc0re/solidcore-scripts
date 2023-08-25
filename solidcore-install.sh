@@ -14,7 +14,7 @@
 
 # === INITIAL CHECKS ===
 
-# = SUDO CHECK =
+# Sudo check
 
 # Check if the script is being run with sudo privileges
 if [ "$EUID" -ne 0 ]; then
@@ -22,7 +22,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# = VARIANT CHECK =
+# Variant check
 
 # Check immutable variant
 # Define an array of immutable Fedora variants
@@ -49,89 +49,6 @@ else
     echo "No supported immutable Fedora variant detected."
     exit 1
 fi
-
-
-# === AUTOMATIC UPDATES ===
-
-# = RPM-OSTREE = 
-
-# Update the rpm-ostree timer to trigger updates 15 minutes after boot and every 3 hours
-echo "Changing rpm-ostreed-automatic.timer to update 15 minutes after boot and every 3 hours..."
-
-timer_dir="/etc/systemd/system/rpm-ostreed-automatic.timer.d"
-override_file="$timer_dir/override.conf"
-
-# Check if the override.conf file exists
-if [ -f "$override_file" ]; then
-    # Remove the original file
-    rm "$override_file"
-    echo "Original file removed: $override_file"
-fi
-
-mkdir -p "$timer_dir"
-
-cat > /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf <<EOL
-[Unit]
-Description=Run rpm-ostree updates every 3 hours and 10 minutes after boot
-
-[Timer]
-Persistent=True
-OnBootSec=10min
-OnCalendar=*-*-* *:0/3
-
-[Install]
-WantedBy=timers.target
-EOL
-
-# Update AutomaticUpdatePolicy to automatically stage updates
-sed -i 's/^AutomaticUpdatePolicy=.*/AutomaticUpdatePolicy=stage/' /etc/rpm-ostreed.conf
-
-# Reload systemd configuration after modifying the timer
-systemctl daemon-reload
-
-# Enable and start the rpm-ostreed-automatic.timer service
-systemctl enable rpm-ostreed-automatic.timer
-systemctl start rpm-ostreed-automatic.timer
-
-echo "Automatic updates using rpm-ostree are enabled with a frequency of 10 minutes after boot and every 3 hours."
-
-# = FLATPAK =
-
-# Create the service file for Flatpak update
-cat > /etc/systemd/system/flatpak-update.service <<EOL
-[Unit]
-Description=Automatically update Flatpak applications
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/flatpak uninstall --unused -y --noninteractive && \
-          /usr/bin/flatpak update -y --noninteractive && \
-          /usr/bin/flatpak repair
-EOL
-
-# Create the timer file for Flatpak update
-cat > /etc/systemd/system/flatpak-update.timer <<EOL
-[Unit]
-Description=Run Flatpak updates every 3 hours and 10 minutes and 20 minutes after boot
-
-[Timer]
-Persistent=True
-OnBootSec=20min
-OnCalendar=*-*-* *:10/3
-
-
-[Install]
-WantedBy=timers.target
-EOL
-
-# Reload systemd configuration after creating the files
-systemctl daemon-reload
-
-# Enable and start the Flatpak update timer
-systemctl enable flatpak-update.timer
-systemctl start flatpak-update.timer
-
-echo "Automatic updates for Flatpak using systemd timer have been enabled."
 
 # === SYSCTL PARAMETERS ===
 
@@ -420,25 +337,26 @@ echo "Core dumps disabled."
 update-crypto-policies --set FUTURE
 echo "Strongest cryptographic policies applied."
 
+# This section regarding password requirements needs a complete re-write. It won't work in its current form. Commenting out.
+# Suggest backing up /etc/pam.d/password-auth and then adding the delay and min requirements. hashing rounds is too great, keep default for now. remove the null passwords being OK.
 # Create a custom authselect profile called "solidcore"
-authselect create-profile solidcore
+#authselect create-profile solidcore
 
 # Define the custom rules for the profile
-custom_rules=(
-    "auth        required       pam_faildelay.so delay=5000000"
-    "password    sufficient     pam_unix.so yescrypt shadow use_authtok rounds=32768"
-    "password    requisite      pam_pwquality.so retry=3 minlen=12 mindigit=1 minspecial=1"
-
-)
+#custom_rules=(
+#    "auth        required       pam_faildelay.so delay=5000000"
+#    "password    sufficient     pam_unix.so yescrypt shadow use_authtok rounds=32768"
+#    "password    requisite      pam_pwquality.so retry=3 minlen=12 mindigit=1 minspecial=1"
+#)
 
 # Loop through the custom rules and add them to the profile
-for rule in "${custom_rules[@]}"; do
-    echo "$rule" | tee -a /etc/security/authconfig/solidcore/password-auth
-done
+#for rule in "${custom_rules[@]}"; do
+#    echo "$rule" | tee -a /etc/security/authconfig/solidcore/password-auth
+#done
 
 # Apply the custom profile
-authselect select solidcore
-echo "Custom authselect profile 'solidcore' created and applied."
+#authselect select solidcore
+#echo "Custom authselect profile 'solidcore' created and applied."
 
 
 # === LOCK ROOT ===
@@ -469,10 +387,93 @@ done
 echo "No insecure repos found in yum repository directory."
 
 
+# === AUTOMATIC UPDATES ===
+
+# RPM-OSTREE 
+
+# Update the rpm-ostree timer to trigger updates 15 minutes after boot and every 3 hours
+echo "Changing rpm-ostreed-automatic.timer to update 15 minutes after boot and every 3 hours..."
+
+timer_dir="/etc/systemd/system/rpm-ostreed-automatic.timer.d"
+override_file="$timer_dir/override.conf"
+
+# Check if the override.conf file exists
+if [ -f "$override_file" ]; then
+    # Remove the original file
+    rm "$override_file"
+    echo "Original file removed: $override_file"
+fi
+
+mkdir -p "$timer_dir"
+
+cat > /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf <<EOL
+[Unit]
+Description=Run rpm-ostree updates every 3 hours and 10 minutes after boot
+
+[Timer]
+Persistent=True
+OnBootSec=10min
+OnCalendar=*-*-* *:0/3
+
+[Install]
+WantedBy=timers.target
+EOL
+
+# Update AutomaticUpdatePolicy to automatically stage updates
+sed -i 's/^AutomaticUpdatePolicy=.*/AutomaticUpdatePolicy=stage/' /etc/rpm-ostreed.conf
+
+# Reload systemd configuration after modifying the timer
+systemctl daemon-reload
+
+# Enable and start the rpm-ostreed-automatic.timer service
+systemctl enable rpm-ostreed-automatic.timer
+systemctl start rpm-ostreed-automatic.timer
+
+echo "Automatic updates using rpm-ostree are enabled with a frequency of 10 minutes after boot and every 3 hours."
+
+# FLATPAK
+
+# Create the service file for Flatpak update
+cat > /etc/systemd/system/flatpak-update.service <<EOL
+[Unit]
+Description=Automatically update Flatpak applications
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/flatpak uninstall --unused -y --noninteractive && \
+          /usr/bin/flatpak update -y --noninteractive && \
+          /usr/bin/flatpak repair
+EOL
+
+# Create the timer file for Flatpak update
+cat > /etc/systemd/system/flatpak-update.timer <<EOL
+[Unit]
+Description=Run Flatpak updates every 3 hours and 10 minutes and 20 minutes after boot
+
+[Timer]
+Persistent=True
+OnBootSec=20min
+OnCalendar=*-*-* *:10/3
+
+
+[Install]
+WantedBy=timers.target
+EOL
+
+# Reload systemd configuration after creating the files
+systemctl daemon-reload
+
+# Enable and start the Flatpak update timer
+systemctl enable flatpak-update.timer
+systemctl start flatpak-update.timer
+
+echo "Automatic updates for Flatpak using systemd timer have been enabled."
+
+
 # === MISC ===
 
-# Generate new machine id
-systemd-machine-id-setup
+# Generate new machine id - do this in first boot script, and change to WHONIX machine id
+#systemd-machine-id-setup
 
 # Mute microphone by default
 amixer set Capture nocap
@@ -522,7 +523,7 @@ chmod 600 "$service_unit_file"
 
 # Enable and start the service
 systemctl enable solidcore-first-boot.service
- ystemctl start solidcore-first-boot.service
+systemctl start solidcore-first-boot.service
 
 
 # === REBOOT ===
