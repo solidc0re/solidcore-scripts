@@ -30,6 +30,21 @@ if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
     echo "Hostname is now $new_hostname."
 fi
 
+
+# === MACHINE ID ===
+
+#Whonix Machine ID
+new_machine_id="b08dfa6083e7567a1921a715000001fb"
+
+# Change machine ID in /etc/machine-id
+echo "$new_machine_id" | sudo tee /etc/machine-id > /dev/null
+
+# Change machine ID in /var/lib/dbus/machine-id
+echo "$new_machine_id" | sudo tee /var/lib/dbus/machine-id > /dev/null
+
+echo "Machine IDs updated to Whonix's generic Machine ID."
+
+
 # === GRUB ===
 
 # Ask the user if they want to set a GRUB password
