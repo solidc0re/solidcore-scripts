@@ -55,7 +55,7 @@ fi
 # Array of sysctl commands and their new settings
 declare -A sysctl_settings=(
     # KERNEL
-    ["kernel.kptkernel.kptr_restrict"]="2" # Mitigate kernel pointer leaks
+    ["kernel.kptr_restrict"]="2" # Mitigate kernel pointer leaks
     ["kernel.dmesg_restrict"]="1" # Restrict kernel log
     ["kernel.printk"]="3 3 3 3" # Stop printing kernel log on boot
     ["kernel.unprivileged_bpf_disabled"]="1" # Restrict eBPF
@@ -102,7 +102,6 @@ mkdir -p /etc/solidcore
 # Output default settings to the new script
 echo "#!/bin/bash" > /etc/solidcore/defaults.sh
 for key in "${!sysctl_settings[@]}"; do
-    echo "Setting $key to default value: ${sysctl_settings[$key]}"
     echo "sysctl -w $key=${sysctl_settings[$key]}" >> /etc/solidcore/defaults.sh
 done
 chmod +x /etc/solidcore/defaults.sh
@@ -127,12 +126,9 @@ for source_file in "${files_to_backup[@]}"; do
         filename=$(basename "$source_file")
         # Construct the backup filename
         backup_file="${source_file}_sc.bak"
-        
         # Copy the source file to the backup file
         cp "$source_file" "$backup_file"
         echo "Backup created: $backup_file"
-    else
-        echo "Source file '$source_file' does not exist."
     fi
 done
 
@@ -451,6 +447,16 @@ echo "Automatic updates using rpm-ostree are enabled with a frequency of 10 minu
 
 # FLATPAK
 
+# Enable Flathub
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak remote-modify --no-filter --enable flathub
+
+# Change remotes of existing flathub apps
+flatpak install --reinstall flathub $(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 )
+
+# Remove Fedora flatpak repo
+flatpak remote-delete fedora
+
 # Create the service file for Flatpak update
 cat > /etc/systemd/system/flatpak-update.service <<EOL
 [Unit]
@@ -513,31 +519,30 @@ if [ -e "solidcore-firstboot.sh" ]; then
     # Move the file to /etc/solidcore/
     mv "solidcore-firstboot.sh" "/etc/solidcore/"
     echo "solidcore-firstboot.sh moved to /etc/solidcore/"
+    # Create a systemd service unit
+    service_unit_file="/etc/systemd/system/solidcore-first-boot.service"
+        cat > "$service_unit_file" <<EOF
+        [Unit]
+        Description=Solidcore Script to Run on First Boot
+    
+        [Service]
+        Type=oneshot
+        ExecStart=sudo /etc/solidcore/solidcore-firstboot.sh
+    
+        [Install]
+        WantedBy=multi-user.target
+        EOF
+    
+    # Make the service unit file readable only by root
+    chmod 600 "$service_unit_file"
+
+    # Enable and start the service
+    systemctl enable solidcore-first-boot.service
+    systemctl start solidcore-first-boot.service
 else
     echo "solidcore-firstboot.sh does not exist in the current directory."
     exit 1
 fi
-
-# Create a systemd service unit
-service_unit_file="/etc/systemd/system/solidcore-first-boot.service"
-cat > "$service_unit_file" <<EOF
-[Unit]
-Description=Solidcore Script to Run on First Boot
-
-[Service]
-Type=oneshot
-ExecStart=sudo /etc/solidcore/solidcore-firstboot.sh
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Make the service unit file readable only by root
-chmod 600 "$service_unit_file"
-
-# Enable and start the service
-systemctl enable solidcore-first-boot.service
-systemctl start solidcore-first-boot.service
 
 
 # === REBOOT ===
