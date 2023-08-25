@@ -251,6 +251,7 @@ echo "Kernel modules blacklisted."
 # High risk and unused services/sockets
 services=(
     avahi-daemon # Recommended by CIS
+    geoclue.service # Location service
     httpd # Recommended by CIS
     nfs-server # Recommended by CIS
     rpcbind # Recommended by CIS
