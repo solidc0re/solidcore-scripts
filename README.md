@@ -4,11 +4,14 @@ Hardening scripts for immutable Fedora
 Work in progress...
 
 To do:
-disable location services (GNOME)
-disable automatic reporting of crashes (Fedora)
-review sysctl hardening
-implement pam.d overwrites with stronger defaults
-review CIS recommendations and update scripts further
+- disable location services (GNOME)
+- disable automatic reporting of crashes (Fedora)
+- review sysctl hardening
+- implement pam.d overwrites with stronger defaults
+- review CIS recommendations and update scripts further
+- test scripts
+- tidy and beautify scripts
+- create scripts to audit all settings implemented in solidcore on new versions of Fedora
 
 
 Resources used in the creation of these scripts:
