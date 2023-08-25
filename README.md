@@ -11,7 +11,7 @@ To do:
 - review CIS recommendations and update scripts further
 - test scripts
 - tidy and beautify scripts
-- create scripts to audit all settings implemented in solidcore on new versions of Fedora
+- create scripts to audit all relevant settings on new versions of Fedora
 
 
 Resources used in the creation of these scripts:
