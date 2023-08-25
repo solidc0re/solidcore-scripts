@@ -250,6 +250,9 @@ echo "Kernel modules blacklisted."
 
 # High risk and unused services/sockets
 services=(
+    abrt-journal-core.service # Fedora crash reporting
+    abrt-oops.service # Fedora crash reporting
+    abrtd.service # Fedora crashing reporting
     avahi-daemon # Recommended by CIS
     geoclue.service # Location service
     httpd # Recommended by CIS
@@ -338,26 +341,40 @@ echo "Core dumps disabled."
 update-crypto-policies --set FUTURE
 echo "Strongest cryptographic policies applied."
 
-# This section regarding password requirements needs a complete re-write. It won't work in its current form. Commenting out.
-# Suggest backing up /etc/pam.d/password-auth and then adding the delay and min requirements. hashing rounds is too great, keep default for now. remove the null passwords being OK.
 # Create a custom authselect profile called "solidcore"
-#authselect create-profile solidcore
+authselect create-profile solidcore -b sssd
 
-# Define the custom rules for the profile
-#custom_rules=(
-#    "auth        required       pam_faildelay.so delay=5000000"
-#    "password    sufficient     pam_unix.so yescrypt shadow use_authtok rounds=32768"
-#    "password    requisite      pam_pwquality.so retry=3 minlen=12 mindigit=1 minspecial=1"
-#)
+# Increase password delay from 2 second default to 5 seconds
+new_delay="5000000"
 
-# Loop through the custom rules and add them to the profile
-#for rule in "${custom_rules[@]}"; do
-#    echo "$rule" | tee -a /etc/security/authconfig/solidcore/password-auth
-#done
+# Remove ability for someone to set an empty password
+text_to_remove=" {if not \"without-nullok\":nullok}"
+
+# Define the files to modify
+pwd_files=(
+    "/etc/authselect/custom/solidcore/password-auth"
+    "/etc/authselect/custom/solidcore/system-auth"
+)
+
+# Loop through the files and update the line
+for file in "${pwd_files[@]}"; do
+    # Check if the file exists
+    if [ -f "$file" ]; then
+        # Use sed to replace the line with the new value
+        sed -i "s/\(auth\s*required\s*pam_faildelay.so\s*delay=\).*$/\1$new_delay/" "$file"
+	# Remove nullok reference
+ 	sed -i "s/$text_to_remove//" "$file"
+  	# Append minimum length of 12
+   	sed -i "/pam_quality.so/ /s/$/ minlen=12/" "$file"
+        echo "Lines updated in: $file"
+    else
+        echo "File not found: $file"
+    fi
+done
 
 # Apply the custom profile
-#authselect select solidcore
-#echo "Custom authselect profile 'solidcore' created and applied."
+authselect select custom/solidcore
+echo "Custom password profile 'solidcore' created and applied."
 
 
 # === LOCK ROOT ===
@@ -473,12 +490,8 @@ echo "Automatic updates for Flatpak using systemd timer have been enabled."
 
 # === MISC ===
 
-# Generate new machine id - do this in first boot script, and change to WHONIX machine id
-#systemd-machine-id-setup
-
 # Mute microphone by default
 amixer set Capture nocap
-
 
 
 # === INSTALLS ===
