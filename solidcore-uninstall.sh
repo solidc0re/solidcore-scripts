@@ -126,6 +126,8 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 		"/etc/udev/rules.d/70-u2f.rules"
 		"/etc/udev/rules.d/41-nitrokey.rules"
 		"/etc/udev/rules.d/49-onlykey.rules"
+                "/etc/xdg/autostart/solidcore-firstboot.desktop"
+		"/etc/xdg/autostart/solidcore-secondboot.desktop"
 	)
 
 	for file in "${files_to_delete[@]}"; do
