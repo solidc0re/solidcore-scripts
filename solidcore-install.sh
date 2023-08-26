@@ -176,9 +176,9 @@ boot_parameters=(
 )
 
 # Add IOMMU parameter based on CPU vendor
-if [ "$cpu_vendor" == "GenuineIntel" ]; then
+if [ "$cpu_vendor" == GenuineIntel* ]; then
     boot_parameters+=("intel_iommu=on")
-elif [ "$cpu_vendor" == "AuthenticAMD" ]; then
+elif [ "$cpu_vendor" == AuthenticAMD* ]; then
     boot_parameters+=("amd_iommu=on")
 else
     echo "CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor"
@@ -550,12 +550,8 @@ echo "Flatseal & dnscrypt-proxy installed."
 
 # === SETUP FIRSTBOOT ===
 
-# Find current working directory
-working_dir=${PWD##*/}
-working_dir=${working_dir:-/} 
-
 # Check if solidcore-firstboot.sh exists in the working directory
-if [ -e "$working_dir/solidcore-firstboot.sh" ]; then
+if [ -e "$PWD/solidcore-firstboot.sh" ]; then
     # Make solidcore-firstboot.sh executable
     chmod +x solidcore-firstboot.sh
     # Create the directory if it doesn't exist
@@ -578,7 +574,7 @@ fi
 
 # === MAKE UNINSTALL EXECUTABLE ===
 
-if [ -e "$working_dir/solidcore-uninstall.sh" ]; then
+if [ -e "$PWD/solidcore-uninstall.sh" ]; then
     # Make solidcore-uninstall.sh executable
     chmod +x solidcore-uninstall.sh
 else
