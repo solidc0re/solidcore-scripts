@@ -295,8 +295,8 @@ echo "Configuration added to /etc/fstab and $hidepid_conf."
 # === FILE PERMISSIONS ===
 
 # Hide kernel modules from group and user (only root can access it)
-chmod -R go-rwx /usr/lib/modules
-chmod -R go-rwx /lib/modules
+chmod -R go-rwx /usr/lib/modules > /dev/null
+chmod -R go-rwx /lib/modules > /dev/null
 
 echo "Kernel information hidden from everyone, but root."
 
@@ -318,6 +318,9 @@ echo "Newly created files now only readable by user that created them."
 # Temporarily disable core dumps until next reboot
 ulimit -c 0
 
+# Purge old core dumps
+coredumpctl purge
+
 # Add a line to disable core dumps in limits.conf
 echo "* hard core 0" | tee -a /etc/security/limits.conf > /dev/null
 
@@ -327,8 +330,8 @@ echo "Storage=none" | tee -a /etc/systemd/coredump.conf
 echo "ProcessSizeMax=0" | tee -a /etc/systemd/coredump.conf
 echo "ExternalSizeMax=0" | tee -a /etc/systemd/coredump.conf
 
-# restart coredump service
-systemctl restart systemd-coredump
+# Reload systemctl configs
+sudo systemctl daemon-reload
 
 echo "Core dumps disabled."
 
@@ -336,8 +339,8 @@ echo "Core dumps disabled."
 # === PASSWORD POLICIES ===
 
 # Enforce strongest cryptographic policy available in Fedora
-update-crypto-policies --set FUTURE
-echo "Strongest cryptographic policies applied."
+#update-crypto-policies --set FUTURE
+#echo "Strongest cryptographic policies applied."
 
 # Create a custom authselect profile called "solidcore"
 authselect create-profile solidcore -b sssd
@@ -363,7 +366,7 @@ for file in "${pwd_files[@]}"; do
 	# Remove nullok reference
  	sed -i "s/$text_to_remove//" "$file"
   	# Append minimum length of 12
-   	sed -i "/pam_quality.so/ /s/$/ minlen=12/" "$file"
+        sed -i "/pam_pwquality.so/s/$/ minlen=12/" "$file"
         echo "Lines updated in: $file"
     else
         echo "File not found: $file"
@@ -541,17 +544,18 @@ if [ -e "solidcore-firstboot.sh" ]; then
     echo "solidcore-firstboot.sh moved to /etc/solidcore/"
     # Create a systemd service unit
     service_unit_file="/etc/systemd/system/solidcore-first-boot.service"
-        cat > "$service_unit_file" <<EOF
-        [Unit]
-        Description=Solidcore Script to Run on First Boot
     
-        [Service]
-        Type=oneshot
-        ExecStart=sudo /etc/solidcore/solidcore-firstboot.sh
-    
-        [Install]
-        WantedBy=multi-user.target
-        EOF
+cat > "$service_unit_file" <<EOF
+[Unit]
+Description=Solidcore Script to Run on First Boot
+
+[Service]
+Type=oneshot
+ExecStart=sudo /etc/solidcore/solidcore-firstboot.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
     
     # Make the service unit file readable only by root
     chmod 600 "$service_unit_file"
