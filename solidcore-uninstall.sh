@@ -27,7 +27,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	    "/etc/ssh/sshd_config"
     	    "/etc/systemd/coredump.conf"
     	    "/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
-    	    "/etc/systemd/system/systemd-logind.service.d/hidepid.conf"
 	)
 
 	# Loop through the array and restore backup copies
@@ -48,11 +47,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	        # Check if the source file should be deleted
     	        case "$source_file" in
     	            *"/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"*)
-    	                # Delete the source file
-    	                rm -f "$source_file"
-    	                echo "Deleted: $source_file"
-    	                ;;
-    	            *"/etc/systemd/system/systemd-logind.service.d/hidepid.conf"*)
     	                # Delete the source file
     	                rm -f "$source_file"
     	                echo "Deleted: $source_file"
