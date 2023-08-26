@@ -537,8 +537,8 @@ echo "Automatic updates for Flatpak using systemd timer have been enabled."
 
 # === MISC ===
 
-# Mute microphone by default
-amixer set Capture nocap
+# Mute microphone by default - doesn't work when run as sudo; devise another way of muting the microphone.
+#amixer set Capture nocap
 
 
 # === INSTALLS ===
@@ -560,7 +560,7 @@ if [ -e "$PWD/solidcore-firstboot.sh" ]; then
     mv "solidcore-firstboot.sh" "/etc/solidcore/"
     echo "solidcore-firstboot.sh moved to /etc/solidcore/"
 # Create a xdg autostart file
-cat > /etc/xdg/autostart <<EOF
+cat > /etc/xdg/autostart/solidcore-firstboot.desktop <<EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Run on First Boot
