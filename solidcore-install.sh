@@ -99,7 +99,8 @@ typeit "Hardening MAY reduce your experience of your device and is not suited fo
 
 sleep 2
 echo
-
+read -p "Do you want to continue? (Y/n): " grub_response
+if [[ "$grub_response" =~ ^[Yy]$ ]]; then
 
 # === SYSCTL PARAMETERS ===
 
@@ -626,4 +627,11 @@ if [[ "$test_mode" == false ]]; then
     reboot
 else
     echo "Script completed - check the changes made by the script"
+fi
+
+# === CHICKEN ===
+# Pressed no to original question?
+else
+    echo "Aborting."
+    exit 0
 fi
