@@ -73,7 +73,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	fi
 
 	# Update initramfs after removing kernel module blacklist file
-	update-initramfs -u
+	dracut --regenerate-all
 
 	# === UNMASK SERVICES ===
 	services=(
