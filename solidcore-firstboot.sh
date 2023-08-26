@@ -201,7 +201,7 @@ else
     blacklist_file="/etc/modprobe.d/solidcore-blacklist.conf"
     echo "blacklist usb_storage" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist usbcore" | tee -a "$blacklist_file" > /dev/null
-    update-initramfs -u
+    dracut --regenerate-all
     echo "USB has been disabled and added to the kernel module blacklist."
 fi
 
@@ -216,7 +216,7 @@ if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
 else
     rmmod uvcvideo
     echo "blacklist uvcvideo" | tee -a "$blacklist_file" > /dev/null
-    update-initramfs -u
+    dracut --regenerate-all
     echo "Webcam has been disabled and added to the kernel module blacklist."
 fi
 
@@ -252,7 +252,7 @@ else
     systemctl daemon-reload
     echo "blacklist bluetooth" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist btusb" | tee -a "$blacklist_file" > /dev/null
-    update-initramfs -u
+    dracut --regenerate-all
     echo "Bluetooth has been disabled and added to the kernel module blacklist."
 fi
 
@@ -268,7 +268,7 @@ else
     echo "blacklist firewire-core" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist ohcil394" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist sbp2" | tee -a "$blacklist_file" > /dev/null
-    update-initramfs -u
+    dracut --regenerate-all
     echo "Firewire has been disabled and added to the kernel module blacklist."
 fi
 
@@ -289,7 +289,7 @@ else
         boltctl disable "$domain"
     done
     echo "blacklist thunderbolt" | tee -a "$blacklist_file" > /dev/null
-    update-initramfs -u
+    dracut --regenerate-all
     echo "Thunderbolt has been disabled and added to the kernel module blacklist."
 fi
 
