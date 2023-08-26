@@ -125,7 +125,6 @@ files_to_backup=(
     "/etc/ssh/sshd_config"
     "/etc/systemd/coredump.conf"
     "/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
-    "/etc/systemd/system/systemd-logind.service.d/hidepid.conf"
 )
 
 # Loop through the array and create backup copies
@@ -296,17 +295,11 @@ done
 # === HIDEPID ===
 
 # Add line to /etc/fstab
-fstab_line="proc /proc proc nosuid,nodev,noexec,hidepid=2,gid=proc 0 0"
+fstab_line="proc /proc proc nosuid,nodev,noexec,hidepid=2 0 0"
 echo "$fstab_line" | tee -a /etc/fstab > /dev/null
 systemctl daemon-reload
 
-# Create systemd-logind hidepid.conf
-hidepid_conf="/etc/systemd/system/systemd-logind.service.d/hidepid.conf"
-mkdir -p "$(dirname $hidepid_conf)"
-echo "[Service]" | tee "$hidepid_conf" > /dev/null
-echo "SupplementaryGroups=proc" | tee -a "$hidepid_conf" > /dev/null
-
-echo "Configuration added to /etc/fstab and $hidepid_conf."
+echo "hidepid enabled for /proc."
 
 
 # === FILE PERMISSIONS ===
