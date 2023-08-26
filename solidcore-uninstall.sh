@@ -13,13 +13,13 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	# Define an array of files to be restored
 	files_to_restore=(
 	    "/etc/default/grub"
-    	"/etc/fstab"
+    	    "/etc/fstab"
  	    "/etc/rpm-ostreed.conf"
-    	"/etc/security/limits.conf"
-    	"/etc/ssh/sshd_config"
-    	"/etc/systemd/coredump.conf"
-    	"/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
-    	"/etc/systemd/system/systemd-logind.service.d/hidepid.conf"
+    	    "/etc/security/limits.conf"
+    	    "/etc/ssh/sshd_config"
+    	    "/etc/systemd/coredump.conf"
+    	    "/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
+    	    "/etc/systemd/system/systemd-logind.service.d/hidepid.conf"
 	)
 
 	# Loop through the array and restore backup copies
@@ -35,7 +35,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	    echo "Backup removed: $backup_file"
     	else
     	    echo "Backup file '$backup_file' does not exist."
-			# Check if the source file exists
+	    # Check if the source file exists
     	    if [ -e "$source_file" ]; then
     	        # Check if the source file should be deleted
     	        case "$source_file" in
@@ -107,7 +107,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	    echo "$service disabled and deleted."
 	done
 
-	# === REMOVE SOLICORE CREATED CONFIGS ===
+	# === REMOVE SOLICORE CREATED SCRIPTS & CONFIGS ===
 
 	files_to_delete=(
 		"/etc/modprobe.d/solidcore-blacklist.conf"
@@ -133,7 +133,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 
 	# Check if the script exists
 	if [ -e "/etc/solidcore/defaults.sh" ]; then
-	    # Run the script with sudo
+	    # Run the script
 	    /etc/solidcore/defaults.sh
 	    echo "Sysctl settings restored."
 	    # Reload sysctmctl
@@ -143,6 +143,21 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	else
 	    echo "Script /etc/solidcore/defaults.sh does not exist."
 	fi
+
+
+        # === RESTORE FEDORA FLATPAK ===
+
+ 	# Check if the script exists
+	if [ -e "/etc/solidcore/fedora_flatpak.sh" ]; then
+	    # Run the script
+	    /etc/solidcore/fedora_flatpak.sh
+	    echo "Fedora Flatpaks restored."
+	    # Remove flatpak undo script
+	    rm /etc/solidcore/fedora_flatpak.sh
+	else
+	    echo "Script /etc/solidcore/fedora_flatpak.sh does not exist."
+	fi
+
 
 	# === REVERT PASSWORD POLICIES ===
 
