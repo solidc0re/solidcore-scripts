@@ -454,10 +454,28 @@ flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.f
 flatpak remote-modify --no-filter --enable flathub
 
 # Change remotes of existing flathub apps
+echo "Replacing Fedora flatpaks with Flathub versions"
+
+# Create undo script
+echo "#!/bin/bash" > /etc/solidcore/fedora_flatpak.sh
+echo "flatpak remote-modify --enable fedora" >> /etc/solidcore/fedora_flatpak.sh
+
+# Get a list of Fedora flatpaks and output install commands
+flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +2 | while read -r flatpak_name; do
+    echo "flatpak install -y --noninteractive --reinstall fedora $flatpak_name" >> /etc/solidcore/fedora_flatpak.sh
+done
+
+# Append the disable command for Flathub to the end of fedora_flatpak.sh
+echo "flatpak remote-modify --disable flathub" >> /etc/solidcore/fedora_flatpak.sh
+chmod +x /etc/solidcore/fedora_flatpak.sh
+
+# Reinstall fedora apps with 
 flatpak install -y --noninteractive --reinstall flathub $(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 )
 
-# Remove Fedora flatpak repo
-flatpak remote-delete fedora
+# Disable Fedora flatpak repo
+flatpak remote-modify --disable fedora
+
+
 
 # Create the service file for Flatpak update
 cat > /etc/systemd/system/flatpak-update.service <<EOL
@@ -504,7 +522,7 @@ amixer set Capture nocap
 
 # === INSTALLS ===
 
-flatpak install flatseal
+flatpak install -y flatseal
 rpm-ostree install dnscrypt-proxy
 echo "Flatseal & dnscrypt-proxy installed."
 
