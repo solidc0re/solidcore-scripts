@@ -257,9 +257,6 @@ for module in "${modules_to_blacklist[@]}"; do
     echo "blacklist $module" | tee -a "$blacklist_file" > /dev/null
 done
 
-# Update initramfs
-dracut --regenerate-all
-
 echo "Kernel modules blacklisted."
 
 
