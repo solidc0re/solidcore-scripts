@@ -2,6 +2,14 @@
 
 # Solidcore uninstall file
 
+# === SUDO CHECK ===
+# Check if the script is being run with sudo privileges
+if [ "$EUID" -ne 0 ]; then
+    echo "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path to script>./solidcore-uninstall.sh"
+    exit 1
+fi
+
+
 # === INFORM USER ===
 echo "You are about to uninstall all solidcore changes to your system."
 read -p "Do you want to continue (Y/n): " uninstall_response
