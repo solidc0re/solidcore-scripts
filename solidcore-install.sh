@@ -176,13 +176,11 @@ boot_parameters=(
 )
 
 # Add IOMMU parameter based on CPU vendor
-if [ "$cpu_vendor" == GenuineIntel* ]; then
-    boot_parameters+=("intel_iommu=on")
-elif [ "$cpu_vendor" == AuthenticAMD* ]; then
-    boot_parameters+=("amd_iommu=on")
-else
-    echo "CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor"
-fi
+case "$cpu_vendor" in
+    GenuineIntel*) boot_parameters+=("intel_iommu=on") ;;
+    AuthenticAMD*) boot_parameters+=("amd_iommu=on") ;;
+    *) echo "CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor" ;;
+esac
 
 # Construct the new GRUB_CMDLINE_LINUX_DEFAULT value
 new_cmdline="GRUB_CMDLINE_LINUX_DEFAULT=\"${boot_parameters[*]}\""
