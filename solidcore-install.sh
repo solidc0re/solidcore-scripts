@@ -26,7 +26,7 @@ fi
 
 # Check immutable variant
 # Define an array of immutable Fedora variants
-declare -a fedora_variants=("Silverblue" "Kinoite" "Sericea" "Vauxite" "Onyx")
+declare -a fedora_variants=("silverblue" "kinoite" "sericea" "vauxite" "onyx")
 
 # Initialize a variable to store the detected variant
 detected_variant=""
