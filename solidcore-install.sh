@@ -247,7 +247,7 @@ for module in "${modules_to_blacklist[@]}"; do
 done
 
 # Update initramfs
-update-initramfs -u
+dracut --regenerate-all
 
 echo "Kernel modules blacklisted."
 
