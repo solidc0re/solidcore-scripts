@@ -181,7 +181,7 @@ if [ "$cpu_vendor" == "GenuineIntel" ]; then
 elif [ "$cpu_vendor" == "AuthenticAMD" ]; then
     boot_parameters+=("amd_iommu=on")
 else
-    echo "CPU vendor not defined."
+    echo "CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor"
 fi
 
 # Construct the new GRUB_CMDLINE_LINUX_DEFAULT value
