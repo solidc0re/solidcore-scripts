@@ -51,11 +51,55 @@ done
 
 # Use the detected_variant variable later in your script
 if [ -n "$detected_variant" ]; then
-    echo "Detected immutable Fedora variant: $detected_variant"
+    :
 else
     echo "No supported immutable Fedora variant detected."
     exit 1
 fi
+
+# === WELCOME ===
+
+typeit() {
+ local IFS=''
+ while read -n1 c; do
+ echo -n "$c"
+ sleep 0.1
+ done <<< "$1"
+}
+
+echo "             _  _      _                          "
+echo "            | |(_)    | |                         "
+echo " ___   ___  | | _   __| |  ___   ___   _ __   ___ "
+echo "/ __| / _ \ | || | / _` | / __| / _ \ | '__| / _ \"
+echo "\__ \| (_) || || || (_| || (__ | (_) || |   |  __/"
+echo "|___/ \___/ |_||_| \__,_| \___| \___/ |_|    \___|"
+                                                  
+sleep 3
+echo
+echo
+typeit "Welcome to solidcore, the hardening script for immutable Fedora"
+typeit "You are currently running: $detected_variant"
+
+sleep 1
+echo
+typeit "This script will carry out the following hardening measures:"
+typeit "1. Kernel and physical hardening to reduce attack surface"
+typeit "2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
+typeit "3. Hide sensitive kernel and file information from other users and potential attackers"
+typeit "4. Improved password policies"
+typeit "5. Enabling automatic updates for rpm-ostree and flatpaks"
+
+sleep 1
+echo
+typeit "This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
+typeit "If you encounter any issues please report them on Github."
+echo "https://github.com/solidc0re/solidcore-scripts"
+echo
+typeit "Hardening MAY reduce your experience of your device and is not suited for everyone."
+
+sleep 2
+echo
+
 
 # === SYSCTL PARAMETERS ===
 
