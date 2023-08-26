@@ -188,17 +188,25 @@ fi
 new_cmdline="GRUB_CMDLINE_LINUX_DEFAULT=\"${boot_parameters[*]}\""
 
 # Update the /etc/default/grub file
-if sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|$new_cmdline|" /etc/default/grub; then
+if grep -q "^GRUB_CMDLINE_LINUX_DEFAULT=" /etc/default/grub; then
+    # If the line already exists, replace it
+    sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|$new_cmdline|" /etc/default/grub
     echo "Updated GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub"
-    
-    # Run update-grub to update GRUB configuration
-    if [[ "$test_mode" == false ]]; then
-    	if grub2-mkconfig -o /boot/grub2/grub.cfg; then
-            echo "GRUB configuration updated."
-        else
-            echo "Failed to update GRUB configuration."
-	fi
+else
+    # If the line doesn't exist, add it at the end of the file
+    echo "$new_cmdline" >> /etc/default/grub
+    echo "Added GRUB_CMDLINE_LINUX_DEFAULT to /etc/default/grub"
+fi
+
+# Run update-grub to update GRUB configuration
+if [[ "$test_mode" == false ]]; then
+    if grub2-mkconfig -o /boot/grub2/grub.cfg; then
+        echo "GRUB configuration updated."
+    else
+        echo "Failed to update GRUB configuration."
     fi
+else
+    echo "Testing. Skipped updating of GRUB configuration."
 fi
 
 
@@ -244,6 +252,7 @@ modules_to_blacklist=(
 )
 
 # Add module names to the blacklist configuration file
+echo "# Blacklisted kernel modules to prevent loading. Created by solidcore script." | tee "$blacklist_file" > /dev/null
 for module in "${modules_to_blacklist[@]}"; do
     echo "blacklist $module" | tee -a "$blacklist_file" > /dev/null
 done
@@ -350,10 +359,6 @@ echo "Core dumps disabled."
 
 
 # === PASSWORD POLICIES ===
-
-# Enforce strongest cryptographic policy available in Fedora
-#update-crypto-policies --set FUTURE
-#echo "Strongest cryptographic policies applied."
 
 # Create a custom authselect profile called "solidcore"
 authselect create-profile solidcore -b sssd
@@ -580,10 +585,20 @@ EOF
     systemctl enable solidcore-first-boot.service
     systemctl start solidcore-first-boot.service
 else
-    echo "solidcore-firstboot.sh does not exist in the current directory."
+    echo "solidcore-firstboot.sh does not exist in the current directory. Aborting."
     exit 1
 fi
 
+
+# === MAKE UNINSTALL EXECUTABLE ===
+
+if [ -e "$working_dir/solidcore-uninstall.sh" ]; then
+    # Make solidcore-uninstall.sh executable
+    chmod +x solidcore-uninstall.sh
+else
+    echo "solidcore-uninstall.sh does not existing the current director. Aborting."
+    exit 1
+fi
 
 # === REBOOT ===
 if [[ "$test_mode" == false ]]; then
