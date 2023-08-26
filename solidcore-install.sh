@@ -286,7 +286,7 @@ for service in "${services[@]}"; do
         # Stop the service/socket
         systemctl stop "$service"
         # Disable the service/socket
-        systemctl disable "$service"
+        systemctl disable "$service" > /dev/null
         # Mask service/socket
         systemctl --now mask "$service" > /dev/null
         # Reload systemd after masking
