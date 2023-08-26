@@ -4,15 +4,13 @@ Hardening scripts for immutable Fedora
 Work in progress...
 
 To do:
-- disable location services (GNOME)
-- disable automatic reporting of crashes (Fedora)
 - review sysctl hardening
 - implement pam.d overwrites with stronger defaults
 - review CIS recommendations and update scripts further
 - test scripts
 - tidy and beautify scripts
 - create scripts to audit all relevant settings on new versions of Fedora
-
+- for uninstall script: re-add fedora flatpak repo and reinstall apps that were originally from that repo
 
 Resources used in the creation of these scripts:
 - https://madaidans-insecurities.github.io/guides/linux-hardening.html
