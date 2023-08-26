@@ -14,8 +14,16 @@
 
 # === INITIAL CHECKS ===
 
-# Sudo check
+# Test mode
+# Check if the -test flag is provided
+if [[ "$1" == "-test" ]]; then
+    test_mode=true
+    echo "Test mode: Some commands will not be executed."
+else
+    test_mode=false
+fi
 
+# Sudo check
 # Check if the script is being run with sudo privileges
 if [ "$EUID" -ne 0 ]; then
     echo "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-install.sh"
@@ -23,7 +31,6 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Variant check
-
 # Check immutable variant
 # Define an array of immutable Fedora variants
 declare -a fedora_variants=("silverblue" "kinoite" "sericea" "vauxite" "onyx")
@@ -183,13 +190,13 @@ if sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|$new_cmdline|" /etc/default/grub; th
     echo "Updated GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub"
     
     # Run update-grub to update GRUB configuration
-    if grub2-mkconfig -o /boot/grub2/grub.cfg; then
-        echo "GRUB configuration updated."
-    else
-        echo "Failed to update GRUB configuration."
+    if [[ "$test_mode" == false ]]; then
+    	if grub2-mkconfig -o /boot/grub2/grub.cfg; then
+            echo "GRUB configuration updated."
+        else
+            echo "Failed to update GRUB configuration."
+	fi
     fi
-else
-    echo "Failed to update GRUB_CMDLINE_LINUX_DEFAULT."
 fi
 
 
@@ -319,7 +326,7 @@ echo "Newly created files now only readable by user that created them."
 ulimit -c 0
 
 # Purge old core dumps
-coredumpctl purge
+systemd-tmpfiles --clean
 
 # Add a line to disable core dumps in limits.conf
 echo "* hard core 0" | tee -a /etc/security/limits.conf > /dev/null
@@ -570,10 +577,13 @@ fi
 
 
 # === REBOOT ===
-
-for i in {5..1}; do
-    echo -ne "\rRebooting in $i seconds..."
-    sleep 1
-done
-echo -e "\rRebooting now!"
-reboot
+if [[ "$test_mode" == false ]]; then
+    for i in {5..1}; do
+        echo -ne "\rRebooting in $i seconds..."
+        sleep 1
+    done
+    echo -e "\rRebooting now!"
+    reboot
+else
+    echo "Script completed - check the changes made by the script"
+fi
