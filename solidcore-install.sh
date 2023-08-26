@@ -72,9 +72,9 @@ clear
 echo
 echo
 echo ">  "
-typeit "Welcome to solidcore!
+typeit "Welcome to solidcore!"
 echo ">  "
-typeit "the hardening script for immutable Fedora"
+typeit "The hardening script for immutable Fedora."
 echo
 echo ">  "
 typeit "You are currently running: $detected_variant"
