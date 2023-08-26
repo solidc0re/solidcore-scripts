@@ -146,16 +146,16 @@ done
 # === APPLY SYSCTL SETTINGS ===
 
 # Apply new sysctl settings
+echo "Applying solidcore sysctl settings."
 for key in "${!sysctl_settings[@]}"; do
-    echo "Setting $key to new value: ${sysctl_settings[$key]}"
-    sysctl -w "$key=${sysctl_settings[$key]}"
+    sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
 done
 
 
 # === BOOTLOADER SETTINGS ===
 
 # Check CPU vendor using lscpu
-cpu_vendor=$(lscpu | grep Vendor | awk '{print $2}')
+cpu_vendor=$(lscpu | awk '/Vendor/ {print $3}')
 
 # Boot parameters to be added
 boot_parameters=(
@@ -180,6 +180,8 @@ if [ "$cpu_vendor" == "GenuineIntel" ]; then
     boot_parameters+=("intel_iommu=on")
 elif [ "$cpu_vendor" == "AuthenticAMD" ]; then
     boot_parameters+=("amd_iommu=on")
+else
+    echo "CPU vendor not defined."
 fi
 
 # Construct the new GRUB_CMDLINE_LINUX_DEFAULT value
@@ -256,9 +258,9 @@ echo "Kernel modules blacklisted."
 
 # High risk and unused services/sockets
 services=(
-    abrt-journal-core.service # Fedora crash reporting (does abrt exist in immutable variants?)
-    abrt-oops.service # Fedora crash reporting
-    abrtd.service # Fedora crashing reporting
+    #abrt-journal-core.service # Not found in F38
+    #abrt-oops.service # Fedora crash reporting
+    #abrtd.service # Fedora crashing reporting
     avahi-daemon # Recommended by CIS
     geoclue.service # Location service
     httpd # Recommended by CIS
@@ -270,18 +272,22 @@ services=(
 
 # Loop through the array and stop and disable each service/socket
 for service in "${services[@]}"; do
-    # Stop the service/socket
-    systemctl stop "$service"
-    # Disable the service/socket
-    systemctl disable "$service"
-    # Mask service/socket
-    systemctl --now mask "$service"
-    # Reload systemd after masking
-    systemctl daemon-reload
-    # Echo a message
-    echo "$service disabled and masked."
+    # Check if the service exists
+    if systemctl list-units --all | grep -q "^$service"; then
+        # Stop the service/socket
+        systemctl stop "$service"
+        # Disable the service/socket
+        systemctl disable "$service"
+        # Mask service/socket
+        systemctl --now mask "$service" > /dev/null
+        # Reload systemd after masking
+        systemctl daemon-reload
+        # Echo a message
+        echo "$service disabled and masked."
+    else
+        echo "$service does not exist. Skipping..."
+    fi
 done
-
 
 # === HIDEPID ===
 
@@ -302,8 +308,8 @@ echo "Configuration added to /etc/fstab and $hidepid_conf."
 # === FILE PERMISSIONS ===
 
 # Hide kernel modules from group and user (only root can access it)
-chmod -R go-rwx /usr/lib/modules > /dev/null
-chmod -R go-rwx /lib/modules > /dev/null
+chmod -R go-rwx /usr/lib/modules 2> /dev/null
+chmod -R go-rwx /lib/modules 2> /dev/null
 
 echo "Kernel information hidden from everyone, but root."
 
@@ -326,16 +332,16 @@ echo "Newly created files now only readable by user that created them."
 ulimit -c 0
 
 # Purge old core dumps
-systemd-tmpfiles --clean
+systemd-tmpfiles --clean 2> /dev/null
 
 # Add a line to disable core dumps in limits.conf
 echo "* hard core 0" | tee -a /etc/security/limits.conf > /dev/null
 
 # Update the coredump.conf file
-echo "[Coredump]" | tee /etc/systemd/coredump.conf
-echo "Storage=none" | tee -a /etc/systemd/coredump.conf
-echo "ProcessSizeMax=0" | tee -a /etc/systemd/coredump.conf
-echo "ExternalSizeMax=0" | tee -a /etc/systemd/coredump.conf
+echo "[Coredump]" | tee /etc/systemd/coredump.conf > /dev/null
+echo "Storage=none" | tee -a /etc/systemd/coredump.conf > /dev/null
+echo "ProcessSizeMax=0" | tee -a /etc/systemd/coredump.conf > /dev/null
+echo "ExternalSizeMax=0" | tee -a /etc/systemd/coredump.conf > /dev/null
 
 # Reload systemctl configs
 sudo systemctl daemon-reload
@@ -381,7 +387,7 @@ for file in "${pwd_files[@]}"; do
 done
 
 # Apply the custom profile
-authselect select custom/solidcore
+authselect select custom/solidcore > /dev/nul
 echo "Custom password profile 'solidcore' created and applied."
 
 
@@ -391,7 +397,8 @@ echo "Custom password profile 'solidcore' created and applied."
 sed -i 's/^#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
 
 # Lock root account
-passwd -l root
+passwd -l root > /dev/null
+echo "Root account locked."
 
 
 # === HTTPS REPO CHECK ===
@@ -417,8 +424,7 @@ echo "No insecure repos found in yum repository directory."
 
 # RPM-OSTREE 
 
-# Update the rpm-ostree timer to trigger updates 15 minutes after boot and every 3 hours
-echo "Changing rpm-ostreed-automatic.timer to update 15 minutes after boot and every 3 hours..."
+# Update the rpm-ostree timer to trigger updates 10 minutes after boot and every 3 hours
 
 timer_dir="/etc/systemd/system/rpm-ostreed-automatic.timer.d"
 override_file="$timer_dir/override.conf"
@@ -434,7 +440,7 @@ mkdir -p "$timer_dir"
 
 cat > /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf <<EOL
 [Unit]
-Description=Run rpm-ostree updates every 3 hours and 10 minutes after boot
+Description=Run rpm-ostree updates 10 minutes after boot and every 3 hours
 
 [Timer]
 Persistent=True
@@ -452,7 +458,7 @@ sed -i 's/^AutomaticUpdatePolicy=.*/AutomaticUpdatePolicy=stage/' /etc/rpm-ostre
 systemctl daemon-reload
 
 # Enable and start the rpm-ostreed-automatic.timer service
-systemctl enable rpm-ostreed-automatic.timer
+systemctl enable rpm-ostreed-automatic.timer > /dev/null
 systemctl start rpm-ostreed-automatic.timer
 
 echo "Automatic updates using rpm-ostree are enabled with a frequency of 10 minutes after boot and every 3 hours."
@@ -502,7 +508,7 @@ EOL
 # Create the timer file for Flatpak update
 cat > /etc/systemd/system/flatpak-update.timer <<EOL
 [Unit]
-Description=Run Flatpak updates every 3 hours and 10 minutes and 20 minutes after boot
+Description=Run Flatpak updates 20 minutes after boot and every 3 hours and 10 minute
 
 [Timer]
 Persistent=True
@@ -518,7 +524,7 @@ EOL
 systemctl daemon-reload
 
 # Enable and start the Flatpak update timer
-systemctl enable flatpak-update.timer
+systemctl enable flatpak-update.timer > /dev/null
 systemctl start flatpak-update.timer
 
 echo "Automatic updates for Flatpak using systemd timer have been enabled."
@@ -539,9 +545,12 @@ echo "Flatseal & dnscrypt-proxy installed."
 
 # === SETUP FIRSTBOOT ===
 
+# Find current working directory
+working_dir=${PWD##*/}
+working_dir=${working_dir:-/} 
 
-# Check if solidcore-firstboot.sh exists in the current directory
-if [ -e "solidcore-firstboot.sh" ]; then
+# Check if solidcore-firstboot.sh exists in the working directory
+if [ -e "$working_dir/solidcore-firstboot.sh" ]; then
 	# Make solidcore-firstboot.sh executable
 	chmod +x solidcore-firstboot.sh
     # Create the directory if it doesn't exist
