@@ -627,5 +627,7 @@ fi
 # Pressed no to original question?
 else
     echo "> Aborting."
+    echo
+    echo
     exit 0
 fi
