@@ -556,34 +556,20 @@ working_dir=${working_dir:-/}
 
 # Check if solidcore-firstboot.sh exists in the working directory
 if [ -e "$working_dir/solidcore-firstboot.sh" ]; then
-	# Make solidcore-firstboot.sh executable
-	chmod +x solidcore-firstboot.sh
+    # Make solidcore-firstboot.sh executable
+    chmod +x solidcore-firstboot.sh
     # Create the directory if it doesn't exist
-	mkdir -p /etc/solidcore
+    mkdir -p /etc/solidcore
     # Move the file to /etc/solidcore/
     mv "solidcore-firstboot.sh" "/etc/solidcore/"
     echo "solidcore-firstboot.sh moved to /etc/solidcore/"
-    # Create a systemd service unit
-    service_unit_file="/etc/systemd/system/solidcore-first-boot.service"
-    
-cat > "$service_unit_file" <<EOF
-[Unit]
-Description=Solidcore Script to Run on First Boot
-
-[Service]
-Type=oneshot
-ExecStart=sudo /etc/solidcore/solidcore-firstboot.sh
-
-[Install]
-WantedBy=multi-user.target
+# Create a xdg autostart file
+cat > /etc/xdg/autostart <<EOF
+[Desktop Entry]
+Type=Application
+Name=Solidcore Script to Run on First Boot
+Exec=xdg-terminal -e "sudo /etc/solidcore/solidcore-firstboot.sh"
 EOF
-    
-    # Make the service unit file readable only by root
-    chmod 600 "$service_unit_file"
-
-    # Enable and start the service
-    systemctl enable solidcore-first-boot.service
-    systemctl start solidcore-first-boot.service
 else
     echo "solidcore-firstboot.sh does not exist in the current directory. Aborting."
     exit 1
