@@ -12,6 +12,8 @@ To do:
 - create scripts to audit all relevant settings on new versions of Fedora
 - for uninstall script: re-add fedora flatpak repo and reinstall apps that were originally from that repo
 
+
+## Resources
 Resources used in the creation of these scripts:
 - https://madaidans-insecurities.github.io/guides/linux-hardening.html
 - https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/security_hardening/index
