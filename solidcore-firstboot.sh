@@ -6,7 +6,8 @@
 # === NEW PASSWORD ===
 echo "As part of solidcore's hardening, new password policies were implemented."
 sleep 1
-echo "You are now required to set a new password. Enter it below."
+echo "You are now required to set a new password. 12 characters minimum!"
+echo "Enter it below."
 passwd
 
 
