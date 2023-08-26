@@ -71,45 +71,43 @@ typeit() {
 clear
 echo
 echo
+echo -n ">  " && typeit "Welcome to solidcore!"
 echo ">  "
-typeit "Welcome to solidcore!"
+echo -n ">  " && typeit "The hardening script for immutable Fedora."
 echo ">  "
-typeit "The hardening script for immutable Fedora."
-echo
-echo ">  "
-typeit "You are currently running: $detected_variant"
+echo -n ">  " && typeit "You are currently running: $detected_variant"
 
 sleep 1
-echo
 echo ">  "
-typeit "This script will carry out the following hardening measures:"
 echo ">  "
-typeit "1. Kernel and physical hardening to reduce attack surface"
+echo -n ">  " && typeit "This script will carry out the following hardening measures:"
 echo ">  "
-typeit "2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
+echo -n ">  " && typeit "1. Kernel and physical hardening to reduce attack surface"
 echo ">  "
-typeit "3. Hide sensitive kernel and file information from other users and potential attackers"
+echo -n ">  " && typeit "2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
 echo ">  "
-typeit "4. Improved password policies"
+echo -n ">  " && typeit "3. Hide sensitive kernel and file information from other users and potential attackers"
 echo ">  "
-typeit "5. Enabling automatic updates for rpm-ostree and flatpaks"
+echo -n ">  " && typeit "4. Improved password policies"
+echo ">  "
+echo -n ">  " && typeit "5. Enabling automatic updates for rpm-ostree and flatpaks"
 
 sleep 1
-echo
 echo ">  "
-typeit "This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
 echo ">  "
-typeit "If you encounter any issues please report them on Github."
+echo -n ">  " && typeit "This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
 echo ">  "
-typeit "https://github.com/solidc0re/solidcore-scripts"
-echo
+echo -n ">  " && typeit "If you encounter any issues please report them on Github."
 echo ">  "
-typeit "Hardening MAY reduce your experience of your device and is not suited for everyone."
+echo -n ">  " && typeit "https://github.com/solidc0re/solidcore-scripts"
+echo ">  "
+echo ">  "
+echo -n ">  " && typeit "Hardening MAY reduce your experience of your device and is not suited for everyone."
 
 sleep 2
-echo
-echo ">  " read -p "Do you want to continue? (Y/n): " grub_response
-if [[ "$grub_response" =~ ^[Yy]$ ]]; then
+echo ">  "
+echo ">  " && read -p "Do you want to continue? (Y/n): " solidcore_response
+if [[ "$solidcore_response" =~ ^[Yy]$ ]]; then
 
 # === SYSCTL PARAMETERS ===
 
