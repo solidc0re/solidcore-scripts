@@ -564,7 +564,9 @@ cat > /etc/xdg/autostart/solidcore-firstboot.desktop <<EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Run on First Boot
-Exec=xdg-terminal -e "sudo /etc/solidcore/solidcore-firstboot.sh"
+Exec=sudo /etc/solidcore/solidcore-firstboot.sh
+Terminal=true
+Icon=utilities-terminal
 EOF
 else
     echo "solidcore-firstboot.sh does not exist in the current directory. Aborting."
