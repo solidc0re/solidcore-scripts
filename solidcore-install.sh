@@ -63,37 +63,37 @@ typeit() {
  local IFS=''
  while read -n1 c; do
  echo -n "$c"
- sleep 0.05
+ sleep 0.04
  done <<< "$1"
  echo
 }
 
-
+clear
 echo
 echo
-typeit "Welcome to solidcore, the hardening script for immutable Fedora"
-typeit "You are currently running: $detected_variant"
-
-sleep 1
-echo
-typeit "This script will carry out the following hardening measures:"
-typeit "1. Kernel and physical hardening to reduce attack surface"
-typeit "2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
-typeit "3. Hide sensitive kernel and file information from other users and potential attackers"
-typeit "4. Improved password policies"
-typeit "5. Enabling automatic updates for rpm-ostree and flatpaks"
+echo "> " typeit "Welcome to solidcore, the hardening script for immutable Fedora"
+echo "> " typeit "You are currently running: $detected_variant"
 
 sleep 1
 echo
-typeit "This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
-typeit "If you encounter any issues please report them on Github."
-echo "https://github.com/solidc0re/solidcore-scripts"
+echo "> " typeit "This script will carry out the following hardening measures:"
+echo "> " typeit "1. Kernel and physical hardening to reduce attack surface"
+echo "> " typeit "2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
+echo "> " typeit "3. Hide sensitive kernel and file information from other users and potential attackers"
+echo "> " typeit "4. Improved password policies"
+echo "> " typeit "5. Enabling automatic updates for rpm-ostree and flatpaks"
+
+sleep 1
 echo
-typeit "Hardening MAY reduce your experience of your device and is not suited for everyone."
+echo "> " typeit "This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
+echo "> " typeit "If you encounter any issues please report them on Github."
+echo "> " echo "https://github.com/solidc0re/solidcore-scripts"
+echo
+echo "> " typeit "Hardening MAY reduce your experience of your device and is not suited for everyone."
 
 sleep 2
 echo
-read -p "Do you want to continue? (Y/n): " grub_response
+echo "> " read -p "Do you want to continue? (Y/n): " grub_response
 if [[ "$grub_response" =~ ^[Yy]$ ]]; then
 
 # === SYSCTL PARAMETERS ===
@@ -626,6 +626,6 @@ fi
 # === CHICKEN ===
 # Pressed no to original question?
 else
-    echo "Aborting."
+    echo "> Aborting."
     exit 0
 fi
