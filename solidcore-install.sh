@@ -53,46 +53,46 @@ fi
 # === SYSCTL PARAMETERS ===
 
 # Array of sysctl commands and their new settings
-declare -A sysctl_settings=(
+declare -A sysctl_settings
     # KERNEL
-    ["kernel.kptr_restrict"]="2" # Mitigate kernel pointer leaks
-    ["kernel.dmesg_restrict"]="1" # Restrict kernel log
-    ["kernel.printk"]="3 3 3 3" # Stop printing kernel log on boot
-    ["kernel.unprivileged_bpf_disabled"]="1" # Restrict eBPF
-    ["net.core.bpf_jit_harden"]="2"
-    ["dev.tty.ldisc_autoload"]="0" # Restrict loading TTY line disciplines
-    ["kernel.kexec_load_disabled"]="1" # Disable kexec
-    ["kernel.sysrq"]="0" # Disable SysRq
-    ["kernel.perf_event_paranoid"]="3" # Restrict usage of performance events
+    sysctl_settings["kernel.kptr_restrict"]="2" # Mitigate kernel pointer leaks
+    sysctl_settings["kernel.dmesg_restrict"]="1" # Restrict kernel log
+    sysctl_settings["kernel.printk"]="3 3 3 3" # Stop printing kernel log on boot
+    sysctl_settings["kernel.unprivileged_bpf_disabled"]="1" # Restrict eBPF
+    sysctl_settings["net.core.bpf_jit_harden"]="2"
+    sysctl_settings["dev.tty.ldisc_autoload"]="0" # Restrict loading TTY line disciplines
+    sysctl_settings["kernel.kexec_load_disabled"]="1" # Disable kexec
+    sysctl_settings["kernel.sysrq"]="0" # Disable SysRq
+    sysctl_settings["kernel.perf_event_paranoid"]="3" # Restrict usage of performance events
     # NETWORK
-    ["net.ipv4.tcp_syncookies"]="1" # Protect against SYN flood attacks
-    ["net.ipv4.tcp_rfc1337"]="1" # Protect against time-wait assassination
-    ["net.ipv4.conf.all.rp_filter"]="1" ] # Protect against IP spoofing
-    ["net.ipv4.conf.default.rp_filter"]="1"
-    ["net.ipv4.conf.all.accept_redirects"]="0" # Disable ICMP redirect acceptance
-    ["net.ipv4.conf.default.accept_redirects"]="0"
-    ["net.ipv4.conf.all.secure_redirects"]="0"
-    ["net.ipv4.conf.default.secure_redirects"]="0"
-    ["net.ipv6.conf.all.accept_redirects"]="0"
-    ["net.ipv6.conf.default.accept_redirects"]="0"
-    ["net.ipv4.conf.all.send_redirects"]="0"
-    ["net.ipv4.conf.default.send_redirects"]="0"
-    ["net.ipv4.icmp_echo_ignore_all"]="1" # Prevent smurf attacks and clock fingerprinting
-    ["net.ipv6.conf.all.accept_ra"]="0" # Disable IPv6 router advertisements
-    ["net.ipv6.conf.default.accept_ra"]="0"
-    ["net.ipv4.tcp_sack"]="0" # Disable TCP SACK
-    ["net.ipv4.tcp_dsack"]="0"
-    ["net.ipv4.tcp_fack"]="0"
-    ["net.ipv4.tcp_timestamps"]="0" # Disable TCP timestamps
-    ["net.ipv6.conf.all.use_tempaddr"]="2" # Generate random IPv6 addresses
-    ["net.ipv6.conf.default.use_tempaddr"]="2"
+    sysctl_settings["net.ipv4.tcp_syncookies"]="1" # Protect against SYN flood attacks
+    sysctl_settings["net.ipv4.tcp_rfc1337"]="1" # Protect against time-wait assassination
+    sysctl_settings["net.ipv4.conf.all.rp_filter"]="1" # Protect against IP spoofing
+    sysctl_settings["net.ipv4.conf.default.rp_filter"]="1"
+    sysctl_settings["net.ipv4.conf.all.accept_redirects"]="0" # Disable ICMP redirect acceptance
+    sysctl_settings["net.ipv4.conf.default.accept_redirects"]="0"
+    sysctl_settings["net.ipv4.conf.all.secure_redirects"]="0"
+    sysctl_settings["net.ipv4.conf.default.secure_redirects"]="0"
+    sysctl_settings["net.ipv6.conf.all.accept_redirects"]="0"
+    sysctl_settings["net.ipv6.conf.default.accept_redirects"]="0"
+    sysctl_settings["net.ipv4.conf.all.send_redirects"]="0"
+    sysctl_settings["net.ipv4.conf.default.send_redirects"]="0"
+    sysctl_settings["net.ipv4.icmp_echo_ignore_all"]="1" # Prevent smurf attacks and clock fingerprinting
+    sysctl_settings["net.ipv6.conf.all.accept_ra"]="0" # Disable IPv6 router advertisements
+    sysctl_settings["net.ipv6.conf.default.accept_ra"]="0"
+    sysctl_settings["net.ipv4.tcp_sack"]="0" # Disable TCP SACK
+    sysctl_settings["net.ipv4.tcp_dsack"]="0"
+    sysctl_settings["net.ipv4.tcp_fack"]="0"
+    sysctl_settings["net.ipv4.tcp_timestamps"]="0" # Disable TCP timestamps
+    sysctl_settings["net.ipv6.conf.all.use_tempaddr"]="2" # Generate random IPv6 addresses
+    sysctl_settings["net.ipv6.conf.default.use_tempaddr"]="2"
     # USERSPACE
-    ["kernel.yama.ptrace_scope"]="2" # Restrict ptrace
-    ["vm.mmap_rnd_bits"]="32" # Increase mmap ALSR entropy
-    ["vm.mmap_rnd_compat_bits"]="16"
-    ["fs.protected_fifos"]="2" # Prevent creating files in potential attacker-controlled directories
-    ["fs.protected_regular"]="2"
-)
+    sysctl_settings["kernel.yama.ptrace_scope"]="2" # Restrict ptrace
+    sysctl_settings["vm.mmap_rnd_bits"]="32" # Increase mmap ALSR entropy
+    sysctl_settings["vm.mmap_rnd_compat_bits"]="16"
+    sysctl_settings["fs.protected_fifos"]="2" # Prevent creating files in potential attacker-controlled directories
+    sysctl_settings["fs.protected_regular"]="2"
+
 
 # === BACKUPS & RESTORE FILE ===
 
@@ -102,7 +102,10 @@ mkdir -p /etc/solidcore
 # Output default settings to the new script
 echo "#!/bin/bash" > /etc/solidcore/defaults.sh
 for key in "${!sysctl_settings[@]}"; do
-    echo "sysctl -w $key=${sysctl_settings[$key]}" >> /etc/solidcore/defaults.sh
+    # Get the existing sysctl value
+    existing_value=$(sysctl -n "$key")
+    echo "# Current value of $key: $existing_value" >> /etc/solidcore/defaults.sh
+    echo "sysctl -w $key=$existing_value" >> /etc/solidcore/defaults.sh
 done
 chmod +x /etc/solidcore/defaults.sh
 
@@ -246,7 +249,7 @@ echo "Kernel modules blacklisted."
 
 # High risk and unused services/sockets
 services=(
-    abrt-journal-core.service # Fedora crash reporting
+    abrt-journal-core.service # Fedora crash reporting (does abrt exist in immutable variants?)
     abrt-oops.service # Fedora crash reporting
     abrtd.service # Fedora crashing reporting
     avahi-daemon # Recommended by CIS
@@ -262,13 +265,12 @@ services=(
 for service in "${services[@]}"; do
     # Stop the service/socket
     systemctl stop "$service"
-    
     # Disable the service/socket
     systemctl disable "$service"
-
     # Mask service/socket
     systemctl --now mask "$service"
-
+    # Reload systemd after masking
+    systemctl daemon-reload
     # Echo a message
     echo "$service disabled and masked."
 done
@@ -452,7 +454,7 @@ flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.f
 flatpak remote-modify --no-filter --enable flathub
 
 # Change remotes of existing flathub apps
-flatpak install --reinstall flathub $(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 )
+flatpak install -y --noninteractive --reinstall flathub $(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 )
 
 # Remove Fedora flatpak repo
 flatpak remote-delete fedora
