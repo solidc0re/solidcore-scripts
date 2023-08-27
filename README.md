@@ -19,29 +19,49 @@ To do
 ## Current features
 
 :white_check_mark: Cool interface
+
 :white_check_mark: Auto-generate backups of important config files
+
 :white_check_mark: Sysctl kernel, network and userspace hardening
+
 :white_check_mark: Hardened GRUB boot parameters
+
 :white_check_mark: Kernel module blacklist
+
 :white_check_mark: High risk and unused services disabled and masked
+
 :white_check_mark: Process information hidden from users
+
 :white_check_mark: Kernel information hidden from users
+
 :white_check_mark: New files only viewable to owner/creator
+
 :white_check_mark: Core dumps disabled (stops sensitive information about the system being available)
+
 :white_check_mark: Improved password policies
+
 :white_check_mark: Root account locked
+
 :white_check_mark: Firewalld zone set to drop (drops all incoming connections)
+
 :white_check_mark: Check yum repos for insecure HTTP URLs
+
 :white_check_mark: Automatic updates for rpm-ostree and flatpaks (10 - 20 mins after boot, then every 3 hours)
+
 :white_check_mark: Fedora flatpaks replaced with Flathub flatpaks
+
 :white_check_mark: Mute microphone by default on login
+
 :white_check_mark: Flatseal installed
+
 :white_check_mark: DNSCrypt-proxy installed
+
 :white_check_mark: Firstboot script installed to ensure:
 - New password set
 - GRUB password set
 - Unused ports are disabled and blacklisted
 - USBGuard installed
+
 :white_check_mark: Uninstall file (mostly working, not tested recently)
 
 ## Resources
