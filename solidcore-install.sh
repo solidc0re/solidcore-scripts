@@ -85,47 +85,65 @@ typeit() {
  echo
 }
 
+typeit2() {
+  local IFS=
+  local input="$1"
+  local lines=()
+  IFS=$'\n' read -r -d '' -a lines <<< "$input"
+  
+  for line in "${lines[@]}"; do
+    echo -n "$line"
+    while read -rsn1 char; do
+      echo -n "${input#"$line"}"
+      break
+    done
+    sleep 0.04
+    echo
+  done
+}
+
 RELEASE="$(rpm -E %fedora)"
 
 if [[ "$server_mode" == false ]]; then
     clear
-    echo
-    echo
-    echo -n ">  " && typeit "Welcome to solidcore!"
-    echo ">  "
-    echo -n ">  " && typeit "The hardening script for immutable Fedora."
-    echo ">  "
-    echo -n ">  " && typeit "You are currently running: ${detected_variant^} $RELEASE"
+    typeit2 ">
+    >
+    >
+    >  Welcome to solidcore!
+    >
+    >  The hardening script for immutable Fedora."
+    >
+    >  You are currently running: ${detected_variant^} $RELEASE"
 
     sleep 1
-    echo ">  "
-    echo ">  "
-    echo -n ">  " && typeit "This script will carry out the following hardening measures:"
-    echo ">  "
-    echo -n ">  " && typeit "1. Kernel and physical hardening to reduce attack surface"
-    echo ">  "
-    echo -n ">  " && typeit "2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
-    echo ">  "
-    echo -n ">  " && typeit "3. Hide sensitive kernel and file information from other users and potential attackers"
-    echo ">  "
-    echo -n ">  " && typeit "4. Improved password policies"
-    echo ">  "
-    echo -n ">  " && typeit "5. Enabling automatic updates for rpm-ostree and flatpaks"
+    >
+    >
+    >  This script will carry out the following hardening measures:"
+    >
+    >  1. Kernel and physical hardening to reduce attack surface"
+    >
+    >  2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
+    >
+    >  3. Hide sensitive kernel and file information from other users and potential attackers"
+    >
+    >  4. Improved password policies"
+    >
+    >  5. Enabling automatic updates for rpm-ostree and flatpaks"
 
     sleep 1
-    echo ">  "
-    echo ">  "
-    echo -n ">  " && typeit "This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
-    echo ">  "
-    echo -n ">  " && typeit "If you encounter any issues please report them on Github."
-    echo ">  "
-    echo -n ">  " && typeit "https://github.com/solidc0re/solidcore-scripts"
-    echo ">  "
-    echo ">  "
-    echo -n ">  " && typeit "Hardening MAY reduce your experience of your device and is not suited for everyone."
+    >
+    >
+    >  This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
+    >
+    >  If you encounter any issues please report them on Github."
+    >
+    >  https://github.com/solidc0re/solidcore-scripts"
+    >
+    >
+    >  Hardening MAY reduce your experience of your device and is not suited for everyone."
 
     sleep 2
-    echo ">  "
+    >
     echo ">  " && read -p "Do you want to continue? (Y/n): " solidcore_response
 fi
 if [[ "$server_mode" == true ]]; then
