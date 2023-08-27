@@ -258,8 +258,6 @@ files_to_backup=(
 for source_file in "${files_to_backup[@]}"; do
     # Check if the source file exists
     if [ -e "$source_file" ]; then
-        # Get the filename from the path
-        filename=$(basename "$source_file")
         # Construct the backup filename
         backup_file="${source_file}_sc.bak"
         # Copy the source file to the backup file
@@ -275,7 +273,7 @@ fi # End of -server flag if statement
 for key in "${!sysctl_settings[@]}"; do
     sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
 done
-conf_msg ">  Hardened sysctl settings applied
+conf_msg ">  Hardened sysctl settings applied"
 
 # === BOOTLOADER SETTINGS ===
 
