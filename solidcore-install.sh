@@ -725,9 +725,9 @@ fi
 # === CHICKEN ===
 # Pressed no to original question?
 else
-    short_msg ">  "
-    short_msg ">  Aborting."
-    short_msg ">  "
-    short_msg ">  "
+    short_msg "
+Aborting.
+
+"
     exit 0
 fi
