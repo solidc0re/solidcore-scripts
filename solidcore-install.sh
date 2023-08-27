@@ -85,28 +85,51 @@ typeit() {
  echo
 }
 
+#!/bin/bash
+
+# Function to type out a string
 typeit2() {
-  local IFS=
   local input="$1"
-  local lines=()
-  IFS=$'\n' read -r -d '' -a lines <<< "$input"
-  
-  for line in "${lines[@]}"; do
-    echo -n "$line"
-    while read -rsn1 char; do
-      echo -n "${input#"$line"}"
-      break
-    done
+  for ((i = 0; i < ${#input}; i++)); do
+    echo -n "${input:$i:1}"
     sleep 0.04
-    echo
   done
 }
+
+# Function to display all remaining lines at once on keypress
+display_remaining() {
+  echo "${remaining}"
+}
+
+# Main function
+main() {
+  input="line 1
+line 2
+line 3"
+
+  # Split the input into lines and process them
+  IFS=$'\n' read -r -d '' -a lines <<< "$input"
+  for line in "${lines[@]}"; do
+    typeit2 "$line"
+    echo
+    remaining="${input#"$line"}"
+    read -rsn1 -t 0.01 key
+    if [[ -n "$key" ]]; then
+      display_remaining
+      break
+    fi
+  done
+}
+
+# Call the main function
+main
+
 
 RELEASE="$(rpm -E %fedora)"
 
 if [[ "$server_mode" == false ]]; then
     clear
-    typeit2 ">
+    main ">
     >
     >
     >  Welcome to solidcore!
