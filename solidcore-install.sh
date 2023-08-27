@@ -725,9 +725,9 @@ fi
 # === CHICKEN ===
 # Pressed no to original question?
 else
-    echo ">  "
-    echo ">  Aborting."
-    echo ">  "
-    echo ">  "
+    short_msg ">  "
+    short_msg ">  Aborting."
+    short_msg ">  "
+    short_msg ">  "
     exit 0
 fi
