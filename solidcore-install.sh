@@ -74,9 +74,11 @@ else
     exit 1
 fi
 
-# === WELCOME ===
 
-typeit() {
+# === DISPLAY FUNCTIONS ===
+
+# Interruptable version for long texts
+long_msg() {
     local main_output="$1"
     local idx=0
     local char
@@ -92,17 +94,43 @@ typeit() {
             break
         fi
         
-        sleep 0.04
+        sleep 0.02
         idx=$((idx + 1))
     done
 }
 
+# Non-interruptable version for short messages
+
+short_msg() {
+    local main_output=">  $1"
+    local idx=0
+    local char
+
+    while [ $idx -lt ${#main_output} ]; do
+        char="${main_output:$idx:1}"
+        echo -n "$char"
+        sleep 0.02
+        idx=$((idx + 1))
+    done
+}
+
+# Non-interruptable version for confirmation messages
+
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+conf_msg() {
+    "$(short_msg "$1") ${GREEN}✓${NC}"
+}
+
+
+# === WELCOME ===
 
 RELEASE="$(rpm -E %fedora)"
 
 if [[ "$server_mode" == false ]]; then
 clear
-typeit ">
+long_msg ">
 >
 >
 >  Welcome to solidcore!
@@ -112,18 +140,20 @@ typeit ">
 >  You are currently running: ${detected_variant^} $RELEASE"
 
 sleep 1
-typeit ">
+long_msg "
 >
->  This script will carry out the following hardening measures:
+>
+>  This script will carry out various hardening measures, including:
 >
 >  1. Kernel and physical hardening to reduce attack surface
->  2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack
->  3. Hide sensitive kernel and file information from other users and potential attackers
->  4. Improved password policies
->  5. Enabling automatic updates for rpm-ostree and flatpaks"
+>  2. Drop all incoming connections, prevent IP spoofing and protect against various forms of attack
+>  3. Hide sensitive kernel and file information from potential attackers
+>  4. Stengthen password policies
+>  5. Enable automatic updates for rpm-ostree and flatpaks"
 
 sleep 1
-typeit ">
+long_msg "
+>
 >
 >  This script is open source (GPLv3) and has been tested on Silverblue 38 by the author.
 >
@@ -132,14 +162,23 @@ typeit ">
 >
 >  Hardening MAY reduce your experience of your device and is not suited for everyone."
 
-sleep 2
-typeit ">
+sleep 3
+long_msg "
+>
 >" && read -p "Do you want to continue? (Y/n): " solidcore_response
 fi
 if [[ "$server_mode" == true ]]; then
     $solidcore_response="Y"
 fi
 if [[ "$solidcore_response" =~ ^[Yy]$ ]]; then
+long_msg "
+>
+>  You will be presented with another script on first boot. Be sure to complete all the stages to finish the hardening process.
+>
+>  Starting...
+>
+>"
+
 
 # === SYSCTL PARAMETERS ===
 
@@ -195,10 +234,10 @@ if [[ "$server_mode" == false ]]; then
 
 # Output default settings to the new script
 echo "#!/bin/bash" > /etc/solidcore/defaults.sh
+echo "# Previous sysctl values. Created by solidcore script." >> /etc/solidcore/defaults.sh
 for key in "${!sysctl_settings[@]}"; do
     # Get the existing sysctl value
     existing_value=$(sysctl -n "$key")
-    echo "# Current value of $key: $existing_value" >> /etc/solidcore/defaults.sh
     echo "sysctl -w $key=$existing_value" >> /etc/solidcore/defaults.sh
 done
 chmod +x /etc/solidcore/defaults.sh
@@ -224,19 +263,18 @@ for source_file in "${files_to_backup[@]}"; do
         backup_file="${source_file}_sc.bak"
         # Copy the source file to the backup file
         cp "$source_file" "$backup_file"
-        echo "Backup created: $backup_file"
     fi
 done
+conf_msg "All backups created"
 fi # End of -server flag if statement
 
 # === APPLY SYSCTL SETTINGS ===
 
 # Apply new sysctl settings
-echo "Applying solidcore sysctl settings."
 for key in "${!sysctl_settings[@]}"; do
     sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
 done
-
+conf_msg ">  Hardened sysctl settings applied
 
 # === BOOTLOADER SETTINGS ===
 
@@ -265,7 +303,7 @@ boot_parameters=(
 case "$cpu_vendor" in
     GenuineIntel*) boot_parameters+=("intel_iommu=on") ;;
     AuthenticAMD*) boot_parameters+=("amd_iommu=on") ;;
-    *) echo "CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor" ;;
+    *) echo "Notice: CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor" ;;
 esac
 
 # Construct the new GRUB_CMDLINE_LINUX_DEFAULT value
@@ -275,22 +313,20 @@ new_cmdline="GRUB_CMDLINE_LINUX_DEFAULT=\"${boot_parameters[*]}\""
 if grep -q "^GRUB_CMDLINE_LINUX_DEFAULT=" /etc/default/grub; then
     # If the line already exists, replace it
     sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|$new_cmdline|" /etc/default/grub
-    echo "Updated GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub"
 else
     # If the line doesn't exist, add it at the end of the file
     echo "$new_cmdline" >> /etc/default/grub
-    echo "Added GRUB_CMDLINE_LINUX_DEFAULT to /etc/default/grub"
 fi
 
 # Run update-grub to update GRUB configuration
 if [[ "$test_mode" == false ]]; then
     if grub2-mkconfig -o /boot/grub2/grub.cfg; then
-        echo "GRUB configuration updated."
+        conf_msg "GRUB configuration updated."
     else
-        echo "Failed to update GRUB configuration."
+        echo "Notice: Failed to update GRUB configuration."
     fi
 else
-    echo "Testing. Skipped updating of GRUB configuration."
+    conf_msg "Testing. Skipped updating of GRUB configuration."
 fi
 
 
@@ -341,7 +377,7 @@ for module in "${modules_to_blacklist[@]}"; do
     echo "blacklist $module" | tee -a "$blacklist_file" > /dev/null
 done
 
-echo "Kernel modules blacklisted."
+conf_msg "Kernel modules blacklisted"
 
 
 # === DISABLE SERVICES ===
@@ -373,7 +409,7 @@ for service in "${services[@]}"; do
         # Reload systemd after masking
         systemctl daemon-reload
         # Echo a message
-        echo "$service disabled and masked."
+        conf_msg "$service disabled and masked."
     else
         echo "$service does not exist. Skipping..."
     fi
@@ -386,7 +422,7 @@ fstab_line="proc /proc proc nosuid,nodev,noexec,hidepid=2 0 0"
 echo "$fstab_line" | tee -a /etc/fstab > /dev/null
 systemctl daemon-reload
 
-echo "hidepid enabled for /proc."
+conf_msg "hidepid enabled for /proc"
 
 
 # === FILE PERMISSIONS ===
@@ -395,7 +431,7 @@ echo "hidepid enabled for /proc."
 chmod -R go-rwx /usr/lib/modules 2> /dev/null
 chmod -R go-rwx /lib/modules 2> /dev/null
 
-echo "Kernel information hidden from everyone, but root."
+conf_msg "Kernel information hidden from everyone, but root"
 
 # Ensure new files are only readable by the user who created them
 umask_script="/etc/profile.d/solidcore_umask.sh"
@@ -407,7 +443,7 @@ echo 'umask 0077' | tee -a "$umask_script" > /dev/null
 # Make the script executable
 chmod +x "$umask_script"
 
-echo "Newly created files now only readable by user that created them."
+conf_msg "Newly created files now only readable by user that created them"
 
 
 # === DISABLE CORE DUMPS ===
@@ -430,7 +466,7 @@ echo "ExternalSizeMax=0" | tee -a /etc/systemd/coredump.conf > /dev/null
 # Reload systemctl configs
 sudo systemctl daemon-reload
 
-echo "Core dumps disabled."
+conf_msg "Core dumps disabled"
 
 
 # === PASSWORD POLICIES ===
@@ -460,7 +496,6 @@ for file in "${pwd_files[@]}"; do
  	sed -i "s/$text_to_remove//" "$file"
   	# Append minimum length of 12
         sed -i "/pam_pwquality.so/s/$/ minlen=12/" "$file"
-        echo "Lines updated in: $file"
     else
         echo "File not found: $file"
     fi
@@ -468,7 +503,7 @@ done
 
 # Apply the custom profile
 authselect select custom/solidcore > /dev/nul
-echo "Custom password profile 'solidcore' created and applied."
+conf_msg "Custom password profile 'solidcore' created and applied"
 
 
 # === LOCK ROOT ===
@@ -478,7 +513,7 @@ sed -i 's/^#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
 
 # Lock root account
 passwd -l root > /dev/null
-echo "Root account locked."
+conf_msg "Root account locked"
 
 
 # === FIREWALL D ===
@@ -486,7 +521,7 @@ echo "Root account locked."
 # Drop all incoming connections
 firewall-cmd --set-default-zone drop
 firewall-cmd --reload
-echo "Firewalld updated so only outgoing connections are permitted."
+conf_msg "Firewalld updated so only outgoing connections are permitted"
 
 
 # === HTTPS REPO CHECK ===
@@ -505,7 +540,7 @@ for pattern in "${patterns[@]}"; do
     fi
 done
 
-echo "No insecure repos found in yum repository directory."
+conf_msg "No insecure repos found in yum repository directory"
 
 
 # === AUTOMATIC UPDATES ===
@@ -549,7 +584,7 @@ systemctl daemon-reload
 systemctl enable rpm-ostreed-automatic.timer > /dev/null
 systemctl start rpm-ostreed-automatic.timer
 
-echo "Automatic updates using rpm-ostree are enabled with a frequency of 10 minutes after boot and every 3 hours."
+conf_msg "Automatic updates using rpm-ostree are enabled"
 
 # FLATPAK
 
@@ -558,7 +593,7 @@ flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.f
 flatpak remote-modify --no-filter --enable flathub
 
 # Change remotes of existing flathub apps
-echo "Replacing Fedora flatpaks with Flathub versions"
+short_msg "Replacing Fedora flatpaks with Flathub versions"
 
 # Create undo script only if -server flag absent
 if [[ "$server_mode" == false ]]; then
@@ -616,7 +651,7 @@ systemctl daemon-reload
 systemctl enable flatpak-update.timer > /dev/null
 systemctl start flatpak-update.timer
 
-echo "Automatic updates for Flatpak using systemd timer have been enabled."
+conf_msg "Automatic updates for Flatpak enabled"
 
 
 # === MISC ===
@@ -635,7 +670,7 @@ EOF
 
 flatpak install -y flatseal
 rpm-ostree install dnscrypt-proxy
-echo "Flatseal & dnscrypt-proxy installed."
+conf_msg "Flatseal & dnscrypt-proxy installed."
 
 
 # === SETUP FIRSTBOOT ===
@@ -648,7 +683,6 @@ if [ -e "$PWD/solidcore-firstboot.sh" ]; then
     mkdir -p /etc/solidcore
     # Move the file to /etc/solidcore/
     mv "solidcore-firstboot.sh" "/etc/solidcore/"
-    echo "solidcore-firstboot.sh moved to /etc/solidcore/"
 # Create a xdg autostart file
 cat > /etc/xdg/autostart/solidcore-firstboot.desktop <<EOF
 [Desktop Entry]
@@ -677,13 +711,17 @@ fi
 # === REBOOT ===
 if [[ "$test_mode" == false && "$server_mode" == false ]]; then
     for i in {5..1}; do
-        echo -ne "\rRebooting in $i seconds..."
-        sleep 1
+        if [ "$i" -eq 1 ]; then
+            echo -ne "\r>  Rebooting in $i second... "
+        else
+            echo -ne "\r>  Rebooting in $i seconds..."
+        fi
+    sleep 1
     done
-    echo -e "\rRebooting now!"
+    echo -e "\r>  Rebooting now!            "
     reboot
 else
-    echo "Script completed - check the changes made by the script"
+    conf_msg "Script completed"
 fi
 
 # === CHICKEN ===
