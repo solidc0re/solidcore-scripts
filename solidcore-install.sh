@@ -165,10 +165,26 @@ long_msg "
 >
 >  Hardening MAY reduce your experience of your device and is not suited for everyone."
 
-sleep 3
+sleep 2
 long_msg "
 >
->  " && read -p "Do you want to continue? (Y/n): " solidcore_response
+>  "
+while true; do
+
+read -p "Do you want to continue? (y/n): " solidcore_response
+
+case $solidcore_response in 
+	[Yy]] ) solidcore_response="Y";
+		break;;
+	[Nn]] ) short_msg "Aborting.
+    
+    ";
+		exit 1;;
+	* ) echo invalid response;;
+esac
+
+done
+
 fi
 
 if [[ "$solidcore_response" =~ ^[Yy]$ ]]; then
