@@ -140,7 +140,7 @@ long_msg ">
 >
 >  The hardening script for immutable Fedora variants.
 >
->  You are currently running: ${detected_variant^} $RELEASE"
+>  You are currently running: ${detected_variant^} $RELEASE."
 
 sleep 1
 long_msg "
@@ -160,7 +160,7 @@ long_msg "
 >
 >  This script is open source (GPLv3) and has been tested on Silverblue 38 by the author.
 >
->  If you encounter any issues please report them on Github.
+>  If you encounter any issues or have any further hardening suggestions then please report them on Github.
 >  https://github.com/solidc0re/solidcore-scripts
 >
 >  Hardening MAY reduce your experience of your device and is not suited for everyone."
@@ -174,11 +174,12 @@ while true; do
 read -p "Do you want to continue? (y/n): " solidcore_response
 
 case $solidcore_response in 
-	[Yy]] ) solidcore_response="Y";
+	[Yy] ) solidcore_response="Y";
 		break;;
-	[Nn]] ) short_msg "Aborting.
-    
-    ";
+	[Nn] ) short_msg "Aborting.
+
+"
+clear;
 		exit 1;;
 	* ) echo invalid response;;
 esac
