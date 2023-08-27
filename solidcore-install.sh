@@ -111,40 +111,40 @@ if [[ "$server_mode" == false ]]; then
     >
     >  Welcome to solidcore!
     >
-    >  The hardening script for immutable Fedora."
+    >  The hardening script for immutable Fedora.
     >
-    >  You are currently running: ${detected_variant^} $RELEASE"
+    >  You are currently running: ${detected_variant^} $RELEASE
 
     sleep 1
     >
     >
-    >  This script will carry out the following hardening measures:"
+    >  This script will carry out the following hardening measures:
     >
-    >  1. Kernel and physical hardening to reduce attack surface"
+    >  1. Kernel and physical hardening to reduce attack surface
     >
-    >  2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
+    >  2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack
     >
-    >  3. Hide sensitive kernel and file information from other users and potential attackers"
+    >  3. Hide sensitive kernel and file information from other users and potential attackers
     >
-    >  4. Improved password policies"
+    >  4. Improved password policies
     >
-    >  5. Enabling automatic updates for rpm-ostree and flatpaks"
+    >  5. Enabling automatic updates for rpm-ostree and flatpaks
 
     sleep 1
     >
     >
-    >  This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
+    >  This script is open source (GPLv3) and has been tested on Silverblue 38 by the author.
     >
-    >  If you encounter any issues please report them on Github."
+    >  If you encounter any issues please report them on Github.
     >
-    >  https://github.com/solidc0re/solidcore-scripts"
+    >  https://github.com/solidc0re/solidcore-scripts
     >
     >
     >  Hardening MAY reduce your experience of your device and is not suited for everyone."
 
     sleep 2
-    >
-    echo ">  " && read -p "Do you want to continue? (Y/n): " solidcore_response
+    typeit2 ">
+    >" && read -p "Do you want to continue? (Y/n): " solidcore_response
 fi
 if [[ "$server_mode" == true ]]; then
     $solidcore_response="Y"
