@@ -686,7 +686,7 @@ cat > /etc/xdg/autostart/solidcore-firstboot.desktop <<EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Run on First Boot
-Exec=sudo /etc/solidcore/solidcore-firstboot.sh
+Exec=echo ">  This is solidcore's first boot script."&&echo&&sudo /etc/solidcore/solidcore-firstboot.sh
 Terminal=true
 Icon=utilities-terminal
 EOF
