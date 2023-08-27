@@ -182,7 +182,7 @@ case $solidcore_response in
 sleep 1
 clear;
 		exit 1;;
-	* ) echo invalid response;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
 esac
 
 done
@@ -680,6 +680,7 @@ Name=Solidcore Script to Mute Microphone on Boot
 Exec=amixer set Capture nocap
 Icon=utilities-terminal
 EOF
+chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 
 # === INSTALLS ===

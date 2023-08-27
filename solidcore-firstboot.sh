@@ -3,18 +3,54 @@
 # Solidcore first boot script
 # Contains all client-side hardening settings to make porting to the image builds easier.
 
+# === DISPLAY FUNCTIONS ===
+
+# Non-interruptable version for short messages
+
+short_msg() {
+    local main_output=">  $1"
+    local idx=0
+    local char
+
+    while [ $idx -lt ${#main_output} ]; do
+        char="${main_output:$idx:1}"
+        echo -n "$char"
+        sleep 0.015
+        idx=$((idx + 1))
+    done
+}
+
+# Non-interruptable version for confirmation messages
+
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+conf_msg() {
+    short_msg "$1"
+    echo -e " ${GREEN}✓${NC}"
+}
+
+
 # === NEW PASSWORD ===
-echo "As part of solidcore's hardening, new password policies were implemented."
+short_msg "As part of solidcore's hardening, new password policies were implemented."
 sleep 1
-echo "You are now required to set a new password. 12 characters minimum!"
-echo "Enter it below."
+short_msg "You are now required to set a new password. 12 characters minimum!"
+short_msg "Enter it below."
 passwd
 
 
 # === HOSTNAME ===
 
 # Ask the user if they want to set a new generic hostname
-read -p "Do you want to set a generic hostname [recommended]? Press 'n' if you already have one (Y/n): " hostname_response
+while true; do
+read -p "Do you want to set a generic hostname [recommended]? Press 'n' if you already have one (y/n): " hostname_response
+case $hostname_response in 
+	[Yy] ) hostname_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+esac
 if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
 
     # Prompt user for a new hostname
@@ -28,7 +64,7 @@ if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
 
     # Update /etc/hosts
     sed -i "s/127.0.1.1.*/127.0.1.1\t$new_hostname/" /etc/hosts
-    echo "Hostname is now $new_hostname."
+    conf_msg "Hostname is now $new_hostname"
 fi
 
 
@@ -43,13 +79,22 @@ echo "$new_machine_id" | sudo tee /etc/machine-id > /dev/null
 # Change machine ID in /var/lib/dbus/machine-id
 echo "$new_machine_id" | sudo tee /var/lib/dbus/machine-id > /dev/null
 
-echo "Machine IDs updated to Whonix's generic Machine ID."
+conf_msg "Machine IDs updated to Whonix's generic Machine ID"
 
 
 # === GRUB ===
 
 # Ask the user if they want to set a GRUB password
-read -p "Do you want to set a GRUB password [recommended]? (Y/n): " grub_response
+while true; do
+read -p "Do you want to set a GRUB password [recommended]? (y/n): " grub_response
+case $grub_response in 
+	[Yy] ) grub_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+esac
+
 if [[ "$grub_response" =~ ^[Yy]$ ]]; then
     # Generate a new GRUB password hash
     read -sp "Enter the new GRUB password: " password
@@ -63,32 +108,47 @@ if [[ "$grub_response" =~ ^[Yy]$ ]]; then
 
     # Regenerate the GRUB configuration
     grub-mkconfig -o /boot/grub/grub.cfg
-    echo "GRUB password updated."
+    conf_msg "GRUB password updated."
 fi
 
 
 # === CUPS ===
 
 # Enable or disable CUPS based on user response
-read -p "Do you use a printer? (y/N): " printer_response
-
+while true; do
+read -p "Do you use a printer? (y/n): " printer_response
+case $printer_response in 
+	[Yy] ) printer_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+esac
 if [[ "$printer_response" =~ ^[Yy]$ ]]; then
     # User confirmed using a printer
-    echo "Printer service (CUPS) remains enabled."
+    conf_msg "Printer service (CUPS) remains enabled."
 else
     # User didn't confirm using a printer, disable CUPS
     systemctl stop cups
     systemctl disable cups
     systemctl --now mask cups
     systemctl daemon-reload
-    echo "Printer service (CUPS) has been stopped and disabled."
+    conf_msg "Printer service (CUPS) has been stopped and disabled."
 fi
 
 
 # === USB ===
 
 # Install USBGuard or disable USB based on user response
-read -p "Do you use any USB devices? (Y/n): " usb_response
+while true; do
+read -p "Do you use any USB devices? (y/n): " usb_response
+case $usb_response in 
+	[Yy] ) usb_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+esac
 
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     
@@ -100,6 +160,36 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
         #!/bin/bash
         
         # Solidcore second boot script
+
+        # === DISPLAY FUNCTIONS ===
+
+        # Non-interruptable version for short messages
+
+        short_msg() {
+            local main_output=">  $1"
+            local idx=0
+            local char
+
+            while [ $idx -lt ${#main_output} ]; do
+                char="${main_output:$idx:1}"
+                echo -n "$char"
+                sleep 0.015
+                idx=$((idx + 1))
+            done
+        }
+
+        # Non-interruptable version for confirmation messages
+
+        GREEN='\033[0;32m'
+        NC='\033[0m' # No Color
+
+        conf_msg() {
+            short_msg "$1"
+            echo -e " ${GREEN}✓${NC}"
+        }
+
+        # === USBGUARD ===
+
         # Ask user to plugin all used USB devices
         echo "USBGuard setup: plugin the USB devices you wish to whitelist. Once you've plugged them in, press any key to continue.
         read -s -n 1 -p ""
