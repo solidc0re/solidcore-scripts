@@ -192,7 +192,7 @@ fi
 if [[ "$solidcore_response" =~ ^[Yy]$ ]]; then
 long_msg ">
 >
->  Your system will reboot once the first round of hardening is completed
+>  Your system will reboot once the first round of hardening is completed.
 >  You will be presented with another script on first boot.
 >  Be sure to complete all the stages to finish the hardening process.
 >
