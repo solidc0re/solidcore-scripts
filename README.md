@@ -3,14 +3,16 @@ Hardening scripts for immutable Fedora
 
 Work in progress...
 
+solidcore-install.sh is currently operational and functioning
+
 To do:
-- review sysctl hardening
-- implement pam.d overwrites with stronger defaults
-- review CIS recommendations and update scripts further
-- test scripts
-- tidy and beautify scripts
+- test dnscrypt-proxy and update settings
+- test firstboot script
+- tighten user interaction, currently y/n questions can fail on incorrect input
+- review sysctl hardening (not needed if we can get server-side signing of hardened kernel to work)
+- implement pam.d overwrites with stronger defaults (to meet CIS requirements)
+- review additional CIS recommendations and update scripts further
 - create scripts to audit all relevant settings on new versions of Fedora
-- for uninstall script: re-add fedora flatpak repo and reinstall apps that were originally from that repo
 
 
 ## Resources
