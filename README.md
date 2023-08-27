@@ -1,11 +1,11 @@
 # solidcore-scripts
-Hardening scripts for immutable Fedora
+Hardening scripts for immutable Fedora.
 
 Work in progress... *Not currently ready for home use.*
 
-solidcore-install.sh is currently operational and functioning
-solidcore-firstboot.sh still needs work
-solidcore-uninstall.sh to be tested once firstboot.sh finished
+- solidcore-install.sh is currently operational and functioning
+- solidcore-firstboot.sh still needs work
+- solidcore-uninstall.sh to be tested once firstboot.sh finished
 
 To do
 - test dnscrypt-proxy and update settings
@@ -56,11 +56,7 @@ To do
 
 :white_check_mark: DNSCrypt-proxy installed
 
-:white_check_mark: Firstboot script installed to ensure:
-- New password set
-- GRUB password set
-- Unused ports are disabled and blacklisted
-- USBGuard installed
+:white_check_mark: Firstboot script installed to ensure: new password set, GRUB password set, unused ports are disabled and blacklisted, USBGuard installed (if required)
 
 :white_check_mark: Uninstall file (mostly working, not tested recently)
 
