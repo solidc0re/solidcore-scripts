@@ -120,7 +120,8 @@ GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 conf_msg() {
-    "$(short_msg "$1") ${GREEN}✓${NC}"
+    short_msg "$1"
+    echo -e " ${GREEN}✓${NC}"
 }
 
 
