@@ -94,7 +94,7 @@ long_msg() {
             break
         fi
         
-        sleep 0.02
+        sleep 0.01
         idx=$((idx + 1))
     done
 }
@@ -109,7 +109,7 @@ short_msg() {
     while [ $idx -lt ${#main_output} ]; do
         char="${main_output:$idx:1}"
         echo -n "$char"
-        sleep 0.02
+        sleep 0.01
         idx=$((idx + 1))
     done
 }
@@ -189,14 +189,16 @@ done
 fi
 
 if [[ "$solidcore_response" =~ ^[Yy]$ ]]; then
-long_msg "
+long_msg ">
 >
->  You will be presented with another script on first boot. Be sure to complete all the stages to finish the hardening process.
+>  Your system will reboot once the first round of hardening is completed
+>  You will be presented with another script on first boot.
+>  Be sure to complete all the stages to finish the hardening process.
 >
 >  Starting...
 >
 "
-
+sleep 2
 
 # === SYSCTL PARAMETERS ===
 
@@ -336,7 +338,7 @@ fi
 
 # Run update-grub to update GRUB configuration
 if [[ "$test_mode" == false ]]; then
-    if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null; then
+    if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null 2>&1; then
         conf_msg "GRUB configuration updated."
     else
         echo "Notice: Failed to update GRUB configuration."
@@ -424,8 +426,6 @@ for service in "${services[@]}"; do
         systemctl --now mask "$service" > /dev/null
         # Reload systemd after masking
         systemctl daemon-reload
-    else
-        short_msg "$service does not exist. Skipping..."
     fi
 done
 
@@ -518,7 +518,7 @@ for file in "${pwd_files[@]}"; do
 done
 
 # Apply the custom profile
-authselect select custom/solidcore > /dev/nul
+authselect select custom/solidcore > /dev/null 2>&1
 conf_msg "Custom password profile 'solidcore' created and applied"
 
 
@@ -535,7 +535,7 @@ conf_msg "Root account locked"
 # === FIREWALL D ===
 
 # Drop all incoming connections
-firewall-cmd --set-default-zone drop > /dev/null
+firewall-cmd --set-default-zone drop > /dev/null 2>&1
 firewall-cmd --reload > /dev/null
 conf_msg "Firewalld updated so only outgoing connections are permitted"
 
@@ -625,7 +625,7 @@ chmod +x /etc/solidcore/fedora_flatpak.sh
 fi # End of -server flag if statement
 
 # Reinstall fedora apps with 
-flatpak install -y --noninteractive --reinstall flathub $(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 )
+flatpak install -y --noninteractive --reinstall flathub $(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 ) > /dev/null
 
 # Disable Fedora flatpak repo
 flatpak remote-modify --disable fedora
@@ -683,8 +683,8 @@ EOF
 
 # === INSTALLS ===
 
-flatpak install -y flatseal
-rpm-ostree install dnscrypt-proxy
+flatpak install -y flatseal > /dev/null
+rpm-ostree install dnscrypt-proxy > /dev/null
 conf_msg "Flatseal & dnscrypt-proxy installed."
 
 
