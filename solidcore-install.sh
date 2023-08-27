@@ -128,7 +128,9 @@ conf_msg() {
 
 RELEASE="$(rpm -E %fedora)"
 
-if [[ "$server_mode" == false ]]; then
+if [[ "$server_mode" == true ]]; then
+    solidcore_response="Y"
+else
 clear
 long_msg ">
 >
@@ -165,11 +167,9 @@ long_msg "
 sleep 3
 long_msg "
 >
->" && read -p "Do you want to continue? (Y/n): " solidcore_response
+>  " && read -p "Do you want to continue? (Y/n): " solidcore_response
 fi
-if [[ "$server_mode" == true ]]; then
-    $solidcore_response="Y"
-fi
+
 if [[ "$solidcore_response" =~ ^[Yy]$ ]]; then
 long_msg "
 >
