@@ -94,7 +94,7 @@ long_msg() {
             break
         fi
         
-        sleep 0.01
+        sleep 0.015
         idx=$((idx + 1))
     done
 }
@@ -109,7 +109,7 @@ short_msg() {
     while [ $idx -lt ${#main_output} ]; do
         char="${main_output:$idx:1}"
         echo -n "$char"
-        sleep 0.01
+        sleep 0.015
         idx=$((idx + 1))
     done
 }
@@ -179,6 +179,7 @@ case $solidcore_response in
 	[Nn] ) short_msg "Aborting.
 
 "
+sleep 1
 clear;
 		exit 1;;
 	* ) echo invalid response;;
