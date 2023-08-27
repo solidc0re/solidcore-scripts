@@ -12,7 +12,16 @@
 # https://github.com/a13xp0p0v/kconfig-hardened-check/
 
 
-# === INITIAL CHECKS ===
+# === FLAGS ===
+
+# Server mode
+# Check if the -server flag is provided
+if [[ "$1" == "-server" ]]; then
+    server_mode=true
+    echo "Server mode: Some commands will not be executed."
+else
+    server_mode=false
+fi
 
 # Test mode
 # Check if the -test flag is provided
@@ -22,6 +31,14 @@ if [[ "$1" == "-test" ]]; then
 else
     test_mode=false
 fi
+
+# === INITIAL CHECKS ===
+
+# Enable error tracing on -server flag
+if [[ "$server_mode" == true ]]; then
+    set -ouex pipefail
+fi
+
 
 # Sudo check
 # Check if the script is being run with sudo privileges
@@ -68,45 +85,52 @@ typeit() {
  echo
 }
 
-clear
-echo
-echo
-echo -n ">  " && typeit "Welcome to solidcore!"
-echo ">  "
-echo -n ">  " && typeit "The hardening script for immutable Fedora."
-echo ">  "
-echo -n ">  " && typeit "You are currently running: $detected_variant"
+RELEASE="$(rpm -E %fedora)"
 
-sleep 1
-echo ">  "
-echo ">  "
-echo -n ">  " && typeit "This script will carry out the following hardening measures:"
-echo ">  "
-echo -n ">  " && typeit "1. Kernel and physical hardening to reduce attack surface"
-echo ">  "
-echo -n ">  " && typeit "2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
-echo ">  "
-echo -n ">  " && typeit "3. Hide sensitive kernel and file information from other users and potential attackers"
-echo ">  "
-echo -n ">  " && typeit "4. Improved password policies"
-echo ">  "
-echo -n ">  " && typeit "5. Enabling automatic updates for rpm-ostree and flatpaks"
+if [[ "$server_mode" == false ]]; then
+    clear
+    echo
+    echo
+    echo -n ">  " && typeit "Welcome to solidcore!"
+    echo ">  "
+    echo -n ">  " && typeit "The hardening script for immutable Fedora."
+    echo ">  "
+    echo -n ">  " && typeit "You are currently running: ${detected_variant^} $RELEASE"
 
-sleep 1
-echo ">  "
-echo ">  "
-echo -n ">  " && typeit "This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
-echo ">  "
-echo -n ">  " && typeit "If you encounter any issues please report them on Github."
-echo ">  "
-echo -n ">  " && typeit "https://github.com/solidc0re/solidcore-scripts"
-echo ">  "
-echo ">  "
-echo -n ">  " && typeit "Hardening MAY reduce your experience of your device and is not suited for everyone."
+    sleep 1
+    echo ">  "
+    echo ">  "
+    echo -n ">  " && typeit "This script will carry out the following hardening measures:"
+    echo ">  "
+    echo -n ">  " && typeit "1. Kernel and physical hardening to reduce attack surface"
+    echo ">  "
+    echo -n ">  " && typeit "2. Hardening of network settings to prevent IP spoofing and protect against various forms of attack"
+    echo ">  "
+    echo -n ">  " && typeit "3. Hide sensitive kernel and file information from other users and potential attackers"
+    echo ">  "
+    echo -n ">  " && typeit "4. Improved password policies"
+    echo ">  "
+    echo -n ">  " && typeit "5. Enabling automatic updates for rpm-ostree and flatpaks"
 
-sleep 2
-echo ">  "
-echo ">  " && read -p "Do you want to continue? (Y/n): " solidcore_response
+    sleep 1
+    echo ">  "
+    echo ">  "
+    echo -n ">  " && typeit "This script is open source (GPLv3) and has been tested on Silverblue 38 by the author."
+    echo ">  "
+    echo -n ">  " && typeit "If you encounter any issues please report them on Github."
+    echo ">  "
+    echo -n ">  " && typeit "https://github.com/solidc0re/solidcore-scripts"
+    echo ">  "
+    echo ">  "
+    echo -n ">  " && typeit "Hardening MAY reduce your experience of your device and is not suited for everyone."
+
+    sleep 2
+    echo ">  "
+    echo ">  " && read -p "Do you want to continue? (Y/n): " solidcore_response
+fi
+if [[ "$server_mode" == true ]]; then
+    $solidcore_response="Y"
+fi
 if [[ "$solidcore_response" =~ ^[Yy]$ ]]; then
 
 # === SYSCTL PARAMETERS ===
@@ -158,6 +182,9 @@ declare -A sysctl_settings
 # Create the directory if it doesn't exist
 mkdir -p /etc/solidcore
 
+# Only do the backing up and creation of default scripts if server mode is not flagged
+if [[ "$server_mode" == false ]]; then
+
 # Output default settings to the new script
 echo "#!/bin/bash" > /etc/solidcore/defaults.sh
 for key in "${!sysctl_settings[@]}"; do
@@ -192,7 +219,7 @@ for source_file in "${files_to_backup[@]}"; do
         echo "Backup created: $backup_file"
     fi
 done
-
+fi # End of -server flag if statement
 
 # === APPLY SYSCTL SETTINGS ===
 
@@ -517,7 +544,8 @@ flatpak remote-modify --no-filter --enable flathub
 # Change remotes of existing flathub apps
 echo "Replacing Fedora flatpaks with Flathub versions"
 
-# Create undo script
+# Create undo script only if -server flag absent
+if [[ "$server_mode" == false ]]; then
 echo "#!/bin/bash" > /etc/solidcore/fedora_flatpak.sh
 echo "flatpak remote-modify --enable fedora" >> /etc/solidcore/fedora_flatpak.sh
 
@@ -526,9 +554,9 @@ flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | ta
     echo "flatpak install -y --noninteractive --reinstall fedora $flatpak_name" >> /etc/solidcore/fedora_flatpak.sh
 done
 
-# Append the disable command for Flathub to the end of fedora_flatpak.sh
-echo "flatpak remote-modify --disable flathub" >> /etc/solidcore/fedora_flatpak.sh
+# Make executable
 chmod +x /etc/solidcore/fedora_flatpak.sh
+fi # End of -server flag if statement
 
 # Reinstall fedora apps with 
 flatpak install -y --noninteractive --reinstall flathub $(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 )
@@ -577,8 +605,14 @@ echo "Automatic updates for Flatpak using systemd timer have been enabled."
 
 # === MISC ===
 
-# Mute microphone by default - doesn't work when run as sudo; devise another way of muting the microphone.
-#amixer set Capture nocap
+# Create a xdg autostart file to mute microphone on boot
+cat > /etc/xdg/autostart/solidcore-mute-mic.desktop <<EOF
+[Desktop Entry]
+Type=Application
+Name=Solidcore Script to Mute Microphone on Boot
+Exec=amixer set Capture nocap
+Icon=utilities-terminal
+EOF
 
 
 # === INSTALLS ===
@@ -625,7 +659,7 @@ else
 fi
 
 # === REBOOT ===
-if [[ "$test_mode" == false ]]; then
+if [[ "$test_mode" == false && "$server_mode" == false ]]; then
     for i in {5..1}; do
         echo -ne "\rRebooting in $i seconds..."
         sleep 1
@@ -639,8 +673,9 @@ fi
 # === CHICKEN ===
 # Pressed no to original question?
 else
+    echo ">  "
     echo ">  Aborting."
-    echo
-    echo
+    echo ">  "
+    echo ">  "
     exit 0
 fi
