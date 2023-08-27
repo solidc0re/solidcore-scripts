@@ -178,7 +178,7 @@ long_msg "
 >
 >  Starting...
 >
->"
+"
 
 
 # === SYSCTL PARAMETERS ===
@@ -273,7 +273,7 @@ fi # End of -server flag if statement
 for key in "${!sysctl_settings[@]}"; do
     sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
 done
-conf_msg ">  Hardened sysctl settings applied"
+conf_msg "Hardened sysctl settings applied"
 
 # === BOOTLOADER SETTINGS ===
 
@@ -319,7 +319,7 @@ fi
 
 # Run update-grub to update GRUB configuration
 if [[ "$test_mode" == false ]]; then
-    if grub2-mkconfig -o /boot/grub2/grub.cfg; then
+    if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null; then
         conf_msg "GRUB configuration updated."
     else
         echo "Notice: Failed to update GRUB configuration."
@@ -407,12 +407,12 @@ for service in "${services[@]}"; do
         systemctl --now mask "$service" > /dev/null
         # Reload systemd after masking
         systemctl daemon-reload
-        # Echo a message
-        conf_msg "$service disabled and masked."
     else
-        echo "$service does not exist. Skipping..."
+        short_msg "$service does not exist. Skipping..."
     fi
 done
+
+conf_msg "High risk and unnecessary services disabled"
 
 # === HIDEPID ===
 
@@ -518,8 +518,8 @@ conf_msg "Root account locked"
 # === FIREWALL D ===
 
 # Drop all incoming connections
-firewall-cmd --set-default-zone drop
-firewall-cmd --reload
+firewall-cmd --set-default-zone drop > /dev/null
+firewall-cmd --reload > /dev/null
 conf_msg "Firewalld updated so only outgoing connections are permitted"
 
 
@@ -555,7 +555,6 @@ override_file="$timer_dir/override.conf"
 if [ -f "$override_file" ]; then
     # Remove the original file
     rm "$override_file"
-    echo "Original file removed: $override_file"
 fi
 
 mkdir -p "$timer_dir"
