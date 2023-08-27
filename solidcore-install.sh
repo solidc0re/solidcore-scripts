@@ -85,8 +85,6 @@ typeit() {
  echo
 }
 
-#!/bin/bash
-
 # Function to type out a string
 typeit2() {
   local input="$1"
@@ -101,8 +99,8 @@ display_remaining() {
   echo "${remaining}"
 }
 
-# Main function
-main() {
+# Welcome function
+welcome() {
   input="line 1
 line 2
 line 3"
@@ -121,15 +119,33 @@ line 3"
   done
 }
 
-# Call the main function
-main
+typeit3() {
+    local main_output="$1"
+    local idx=0
+    local char
+
+    while [ $idx -lt ${#main_output} ]; do
+        char="${main_output:$idx:1}"
+        echo -n "$char"
+        
+        # Check if a key was pressed
+        if read -rsn1 -t 0.01 key; then
+            # Output the remaining portion of the main_output
+            echo -n "${main_output:idx+1}"
+            break
+        fi
+        
+        sleep 0.04
+        idx=$((idx + 1))
+    done
+}
 
 
 RELEASE="$(rpm -E %fedora)"
 
 if [[ "$server_mode" == false ]]; then
     clear
-    main ">
+    typeit3 ">
     >
     >
     >  Welcome to solidcore!
@@ -512,6 +528,14 @@ sed -i 's/^#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
 # Lock root account
 passwd -l root > /dev/null
 echo "Root account locked."
+
+
+# === FIREWALL D ===
+
+# Drop all incoming connections
+firewall-cmd --set-default-zone drop
+firewall-cmd --reload
+echo "Firewalld updated so only outgoing connections are permitted."
 
 
 # === HTTPS REPO CHECK ===
