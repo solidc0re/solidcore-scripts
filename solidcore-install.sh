@@ -88,7 +88,7 @@ long_msg() {
         echo -n "$char"
         
         # Check if a key was pressed
-        if read -rsn1 -t 0.01 key; then
+        if read -r -s -n 1 -t 0.01 key; then
             # Output the remaining portion of the main_output
             echo -n "${main_output:idx+1}"
             break
@@ -160,9 +160,6 @@ long_msg "
 >
 >  This script is open source (GPLv3) and has been tested on Silverblue 38 by the author.
 >
->  If you encounter any issues or have any further hardening suggestions then please report them on Github.
->  https://github.com/solidc0re/solidcore-scripts
->
 >  Hardening MAY reduce your experience of your device and is not suited for everyone."
 
 sleep 2
@@ -184,7 +181,6 @@ clear;
 		exit 1;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
 esac
-
 done
 
 fi
@@ -626,7 +622,7 @@ chmod +x /etc/solidcore/fedora_flatpak.sh
 fi # End of -server flag if statement
 
 # Reinstall fedora apps with 
-flatpak install -y --noninteractive --reinstall flathub $(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 ) > /dev/null
+flatpak install -y --noninteractive --reinstall flathub "$(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 )" > /dev/null
 
 # Disable Fedora flatpak repo
 flatpak remote-modify --disable fedora
@@ -687,7 +683,7 @@ chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 flatpak install -y flatseal > /dev/null
 rpm-ostree install dnscrypt-proxy > /dev/null
-conf_msg "Flatseal & dnscrypt-proxy installed."
+conf_msg "Flatseal & dnscrypt-proxy installed"
 
 
 # === SETUP FIRSTBOOT ===
@@ -705,12 +701,12 @@ cat > /etc/xdg/autostart/solidcore-firstboot.desktop <<EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Run on First Boot
-Exec=echo ">  This is solidcore's first boot script."&&echo&&sudo /etc/solidcore/solidcore-firstboot.sh
+Exec=/etc/solidcore/solidcore-firstboot.sh
 Terminal=true
 Icon=utilities-terminal
 EOF
 else
-    echo "solidcore-firstboot.sh does not exist in the current directory. Aborting."
+    short_msg "solidcore-firstboot.sh does not exist in the current directory. Aborting."
     exit 1
 fi
 
@@ -721,32 +717,29 @@ if [ -e "$PWD/solidcore-uninstall.sh" ]; then
     # Make solidcore-uninstall.sh executable
     chmod +x solidcore-uninstall.sh
 else
-    echo "solidcore-uninstall.sh does not existing the current director. Aborting."
+    short_msg "solidcore-uninstall.sh does not existing the current director. Aborting."
     exit 1
 fi
 
 # === REBOOT ===
 if [[ "$test_mode" == false && "$server_mode" == false ]]; then
-    for i in {5..1}; do
-        if [ "$i" -eq 1 ]; then
-            echo -ne "\r>  Rebooting in $i second... "
-        else
-            echo -ne "\r>  Rebooting in $i seconds..."
-        fi
-    sleep 1
-    done
+	read -n 1 -s -r -p ">  Press any key to continue"
+    short_msg ""
+    short_msg ""
+        for i in {5..1}; do
+            if [ "$i" -eq 1 ]; then
+                echo -ne "\r>  Rebooting in $i second... "
+            else
+                echo -ne "\r>  Rebooting in $i seconds..."
+            fi
+        sleep 1
+        done
     echo -e "\r>  Rebooting now!            "
     reboot
 else
     conf_msg "Script completed"
 fi
 
-# === CHICKEN ===
+# === UNSOLID ===
 # Pressed no to original question?
-else
-    short_msg "
-Aborting.
-
-"
-    exit 0
 fi
