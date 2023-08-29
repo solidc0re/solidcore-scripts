@@ -44,6 +44,11 @@ short_msg ""
 short_msg ""
 
 
+# === ESCALATE PRIVILEGES ===
+short_msg "To do so, the rest of the script need to be run with sudo privileges. Please enter your password below."
+echo ">  " && sudo -s
+
+
 # === NEW PASSWORD ===
 
 short_msg "As part of solidcore's hardening, new password policies were implemented."
@@ -91,20 +96,6 @@ else
     short_msg ""
     short_msg ""
 fi
-
-
-# === MACHINE ID ===
-
-#Whonix Machine ID
-new_machine_id="b08dfa6083e7567a1921a715000001fb"
-
-# Change machine ID in /etc/machine-id
-echo "$new_machine_id" | sudo tee /etc/machine-id > /dev/null
-
-# Change machine ID in /var/lib/dbus/machine-id
-echo "$new_machine_id" | sudo tee /var/lib/dbus/machine-id > /dev/null
-
-conf_msg "Machine IDs updated to Whonix's generic Machine ID"
 
 
 # === GRUB ===
@@ -535,6 +526,218 @@ else
 fi
 
 
+# === AUTOMATED TASKS ===
+
+# Install dnscrypt-proxy
+INSTALL_DIR="/opt/dnscrypt-proxy"
+LATEST_URL="https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest"
+PLATFORM="linux"
+CPU_ARCH="x86_64"
+workdir="$(mktemp -d)"
+download_url="$(curl -sL "$LATEST_URL" | grep dnscrypt-proxy-${PLATFORM}_${CPU_ARCH}- | grep browser_download_url | head -1 | cut -d \" -f 4)"
+short_msg "Downloading dnscrypt-proxy from '$download_url'..."
+download_file="dnscrypt-proxy-update.tar.gz"
+
+mkdir $INSTALL_DIR
+
+curl --request GET -sL --url "$download_url" --output "$workdir/$download_file"
+response=$?
+
+if [ $response -ne 0 ]; then
+    short_msg "[ERROR] Could not download file from '$download_url'" >&2
+    rm -Rf "$workdir"
+    return 1
+fi
+
+if [ -x "$(command -v minisign)" ]; then
+    curl --request GET -sL --url "${download_url}.minisig" --output "$workdir/${download_file}.minisig"
+    minisign -Vm "$workdir/$download_file" -P "$DNSCRYPT_PUBLIC_KEY"
+    valid_file=$?
+
+    if [ $valid_file -ne 0 ]; then
+      short_msg "[ERROR] Downloaded file has failed signature verification. Update aborted." >&2
+      rm -Rf "$workdir"
+      return 1
+    fi
+  else
+    short_msg '[WARN] minisign is not installed, downloaded file signature could not be verified.'
+fi
+
+tar xz -C "$workdir" -f "$workdir/$download_file" ${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy
+mv -f "${INSTALL_DIR}/dnscrypt-proxy" "${INSTALL_DIR}/dnscrypt-proxy.old"
+mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy" "${INSTALL_DIR}/"
+chmod u+x "${INSTALL_DIR}/dnscrypt-proxy"
+cd "$INSTALL_DIR"
+cp example-dnscrypt-proxy.toml dnscrypt-proxy.toml
+
+# Make amends to default dnscrypt-proxy.toml file
+
+
+# Disable resolved
+systemctl stop systemd-resolved || systemctl disable systemd-resolved
+
+# Replace resolv.conf
+rm -rf /etc/resolv.conf
+cat > /etc/resolv.conf <<EOF
+nameserver 127.0.0.1
+options edns0
+EOF
+
+./dnscrypt-proxy -check
+./dnscrypt-proxy -service install 2>/dev/null
+./dnscrypt-proxy -service start
+
+installed_successfully=$?
+
+rm -Rf "$workdir"
+    if [ $installed_successfully -eq 0 ]; then
+        conf_msg 'dnscrypt-proxy installed'
+        return 0
+    else
+        short_msg '[ERROR] Unable to complete dnscrypt-proxy install.' >&2
+        return 1
+    fi
+}
+
+# Install dnscrypt-proxy updater
+
+# Create dnscrypt-proxy script
+cat > $INSTALL_DIR/dnscrypt-proxy-update.sh << EOF
+#! /bin/sh
+
+INSTALL_DIR="/opt/dnscrypt-proxy"
+LATEST_URL="https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest"
+DNSCRYPT_PUBLIC_KEY="RWTk1xXqcTODeYttYMCMLo0YJHaFEHn7a3akqHlb/7QvIQXHVPxKbjB5"
+PLATFORM="linux"
+CPU_ARCH="x86_64"
+
+Update() {
+  workdir="$(mktemp -d)"
+  download_url="$(curl -sL "$LATEST_URL" | grep dnscrypt-proxy-${PLATFORM}_${CPU_ARCH}- | grep browser_download_url | head -1 | cut -d \" -f 4)"
+  echo "[INFO] Downloading update from '$download_url'..."
+  download_file="dnscrypt-proxy-update.tar.gz"
+  curl --request GET -sL --url "$download_url" --output "$workdir/$download_file"
+  response=$?
+
+  if [ $response -ne 0 ]; then
+    echo "[ERROR] Could not download file from '$download_url'" >&2
+    rm -Rf "$workdir"
+    return 1
+  fi
+
+  if [ -x "$(command -v minisign)" ]; then
+    curl --request GET -sL --url "${download_url}.minisig" --output "$workdir/${download_file}.minisig"
+    minisign -Vm "$workdir/$download_file" -P "$DNSCRYPT_PUBLIC_KEY"
+    valid_file=$?
+
+    if [ $valid_file -ne 0 ]; then
+      echo "[ERROR] Downloaded file has failed signature verification. Update aborted." >&2
+      rm -Rf "$workdir"
+      return 1
+    fi
+  else
+    echo '[WARN] minisign is not installed, downloaded file signature could not be verified.'
+  fi
+
+  echo '[INFO] Initiating update of DNSCrypt-proxy'
+
+  tar xz -C "$workdir" -f "$workdir/$download_file" ${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy &&
+    mv -f "${INSTALL_DIR}/dnscrypt-proxy" "${INSTALL_DIR}/dnscrypt-proxy.old" &&
+    mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy" "${INSTALL_DIR}/" &&
+    chmod u+x "${INSTALL_DIR}/dnscrypt-proxy" &&
+    cd "$INSTALL_DIR" &&
+    ./dnscrypt-proxy -check && ./dnscrypt-proxy -service install 2>/dev/null || : &&
+    ./dnscrypt-proxy -service restart || ./dnscrypt-proxy -service start
+
+  updated_successfully=$?
+
+  rm -Rf "$workdir"
+  if [ $updated_successfully -eq 0 ]; then
+    echo '[INFO] DNSCrypt-proxy has been successfully updated!'
+    return 0
+  else
+    echo '[ERROR] Unable to complete DNSCrypt-proxy update. Update has been aborted.' >&2
+    return 1
+  fi
+}
+
+if [ ! -f "${INSTALL_DIR}/dnscrypt-proxy" ]; then
+  echo "[ERROR] DNSCrypt-proxy is not installed in '${INSTALL_DIR}/dnscrypt-proxy'. Update aborted..." >&2
+  exit 1
+fi
+
+local_version=$("${INSTALL_DIR}/dnscrypt-proxy" -version)
+remote_version=$(curl -sL "$LATEST_URL" | grep "tag_name" | head -1 | cut -d \" -f 4)
+
+if [ -z "$local_version" ] || [ -z "$remote_version" ]; then
+  echo "[ERROR] Could not retrieve DNSCrypt-proxy version. Update aborted... " >&2
+  exit 1
+else
+  echo "[INFO] local_version=$local_version, remote_version=$remote_version"
+fi
+
+if [ "$local_version" != "$remote_version" ]; then
+  echo "[INFO] local_version not synced with remote_version, initiating update..."
+  Update
+  exit $?
+else
+  echo "[INFO] No updated needed."
+  exit 0
+fi
+EOF
+
+chmod +x $INSTALL_DIR/dnscrypt-proxy-update.sh
+
+conf_msg "dnscrypt-proxy update script created"
+
+# Set up dnscryp-proxy update systemd service
+
+# Create the service file for dnscrypt-proxy update
+cat > /etc/systemd/system/dnscrypt-proxy-update.service <<EOL
+[Unit]
+Description=Automatically update dnscrypt-proxy applications
+
+[Service]
+Type=oneshot
+ExecStart='${INSTALL_DIR}'/dnscrypt-proxy-update.sh
+EOL
+
+# Create the timer file for dnscrypt-proxy update
+cat > /etc/systemd/system/dnscrypt-proxy-update.timer <<EOL
+[Unit]
+Description=Run dnscrypt-proxy updates 20 seconds after boot and every day thereafter
+
+[Timer]
+Persistent=True
+OnBootSec=20sec
+OnCalendar=*-*-* 00:00:00
+
+
+[Install]
+WantedBy=timers.target
+EOL
+
+# Reload systemd configuration after creating the files
+systemctl daemon-reload
+
+# Enable and start the dnscrypt-proxy update timer
+systemctl enable dnscrypt-proxy-update.timer > /dev/null
+systemctl start dnscrypt-proxy-update.timer
+
+conf_msg "dnscrypt-proxy update timer installed"
+
+#Whonix Machine ID
+new_machine_id="b08dfa6083e7567a1921a715000001fb"
+
+# Change machine ID in /etc/machine-id
+echo "$new_machine_id" | sudo tee /etc/machine-id > /dev/null
+
+# Change machine ID in /var/lib/dbus/machine-id
+echo "$new_machine_id" | sudo tee /var/lib/dbus/machine-id > /dev/null
+
+conf_msg "Machine IDs updated to Whonix's generic Machine ID"
+
+
 # === TiDY UP & FINISH ===
 
 # Remove first boot autostart
@@ -575,5 +778,8 @@ else
     short_msg ""
     short_msg ""
     sleep 2
+
+    # De-escalate privileges & exit
+    sudo -k
     exit 0
 fi

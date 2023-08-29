@@ -263,6 +263,7 @@ chmod +x /etc/solidcore/defaults.sh
 files_to_backup=(
     "/etc/default/grub"
     "/etc/fstab"
+    "/etc/resolv.conf
     "/etc/rpm-ostreed.conf"
     "/etc/security/limits.conf"
     "/etc/ssh/sshd_config"
@@ -681,9 +682,13 @@ chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 # === INSTALLS ===
 
+# Minisign
+rpm-ostree install minisign
+conf_msg "Minisign installed (for dnscrypt-proxy installation & updates)"
+
+# Flatseal
 flatpak install -y flatseal > /dev/null
-rpm-ostree install dnscrypt-proxy > /dev/null
-conf_msg "Flatseal & dnscrypt-proxy installed"
+conf_msg "Flatseal installed (for managing Flatpak permissions)"
 
 
 # === SETUP FIRSTBOOT ===
@@ -696,8 +701,9 @@ if [ -e "$PWD/solidcore-firstboot.sh" ]; then
     mkdir -p /etc/solidcore
     # Move the file to /etc/solidcore/
     mv "solidcore-firstboot.sh" "/etc/solidcore/"
+
 # Create a xdg autostart file
-cat > /etc/xdg/autostart/solidcore-firstboot.desktop <<EOF
+cat > /etc/xdg/autostart/solidcore-firstboot.desktop << EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Run on First Boot
