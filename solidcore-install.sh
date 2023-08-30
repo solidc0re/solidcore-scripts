@@ -112,6 +112,7 @@ short_msg() {
         sleep 0.015
         idx=$((idx + 1))
     done
+    echo
 }
 
 # Non-interruptable version for confirmation messages
@@ -123,6 +124,14 @@ conf_msg() {
     short_msg "$1"
     echo -e " ${GREEN}✓${NC}"
 }
+
+# Create space
+
+space_big(
+    long_msg ">
+>"
+echo
+)
 
 
 # === WELCOME ===
@@ -263,7 +272,7 @@ chmod +x /etc/solidcore/defaults.sh
 files_to_backup=(
     "/etc/default/grub"
     "/etc/fstab"
-    "/etc/resolv.conf
+    "/etc/resolv.conf"
     "/etc/rpm-ostreed.conf"
     "/etc/security/limits.conf"
     "/etc/ssh/sshd_config"
@@ -593,11 +602,7 @@ sed -i 's/^AutomaticUpdatePolicy=.*/AutomaticUpdatePolicy=stage/' /etc/rpm-ostre
 # Reload systemd configuration after modifying the timer
 systemctl daemon-reload
 
-# Enable and start the rpm-ostreed-automatic.timer service
-systemctl enable rpm-ostreed-automatic.timer > /dev/null
-systemctl start rpm-ostreed-automatic.timer
-
-conf_msg "Automatic updates using rpm-ostree are enabled"
+conf_msg "Automatic rpm-ostree update timer installed"
 
 # FLATPAK
 
@@ -660,11 +665,7 @@ EOL
 # Reload systemd configuration after creating the files
 systemctl daemon-reload
 
-# Enable and start the Flatpak update timer
-systemctl enable flatpak-update.timer > /dev/null
-systemctl start flatpak-update.timer
-
-conf_msg "Automatic updates for Flatpak enabled"
+conf_msg "Automatic Flatpak update timer installed"
 
 
 # === MISC ===
@@ -677,6 +678,7 @@ Name=Solidcore Script to Mute Microphone on Boot
 Exec=amixer set Capture nocap
 Icon=utilities-terminal
 EOF
+
 chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 
@@ -695,12 +697,20 @@ conf_msg "Flatseal installed (for managing Flatpak permissions)"
 
 # Check if solidcore-firstboot.sh exists in the working directory
 if [ -e "$PWD/solidcore-firstboot.sh" ]; then
-    # Make solidcore-firstboot.sh executable
-    chmod +x solidcore-firstboot.sh
-    # Create the directory if it doesn't exist
-    mkdir -p /etc/solidcore
-    # Move the file to /etc/solidcore/
-    mv "solidcore-firstboot.sh" "/etc/solidcore/"
+    :
+else
+    # Download solidcore-firstboot.sh
+    wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-firstboot.sh
+fi
+
+# Make solidcore-firstboot.sh executable
+chmod +x solidcore-firstboot.sh
+
+# Create the directory if it doesn't exist
+mkdir -p /etc/solidcore
+
+# Move the file to /etc/solidcore/
+mv -f "solidcore-firstboot.sh" "/etc/solidcore/"
 
 # Create a xdg autostart file
 cat > /etc/xdg/autostart/solidcore-firstboot.desktop << EOF
@@ -717,15 +727,37 @@ else
 fi
 
 
-# === MAKE UNINSTALL EXECUTABLE ===
+# === INSTALL UNINSTALL SCRIPT ===
 
-if [ -e "$PWD/solidcore-uninstall.sh" ]; then
+# Check if the -server flag is provided
+if [[ "$server_mode" == false ]]; then
+    if [ -e "$PWD/solidcore-uninstall.sh" ]; then
+        :
+    else
+        # Download solidcore-uninstall.sh
+        wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-uninstall.sh
+    fi
+
     # Make solidcore-uninstall.sh executable
     chmod +x solidcore-uninstall.sh
-else
-    short_msg "solidcore-uninstall.sh does not existing the current director. Aborting."
-    exit 1
+
+    # Move the file to /etc/solidcore/
+    mv -f "solidcore-firstboot.sh" "/etc/solidcore/"
+
+# Create uninstall alias
+cat > /etc/profile.d/solidcore.sh << EOF
+solidcore() {
+    if [ "$1"= "uninstall" ]; then
+        shift
+        sudo bash /etc/solidcore/uninstall.sh
+    else
+        echo "solidcore: error - use 'solidcore uninstall' to uninstall."
+    fi
+}
+EOF
+
 fi
+
 
 # === REBOOT ===
 if [[ "$test_mode" == false && "$server_mode" == false ]]; then

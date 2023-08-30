@@ -5,6 +5,28 @@
 
 # === DISPLAY FUNCTIONS ===
 
+# Interruptable version for long texts
+long_msg() {
+    local main_output="$1"
+    local idx=0
+    local char
+
+    while [ $idx -lt ${#main_output} ]; do
+        char="${main_output:$idx:1}"
+        echo -n "$char"
+        
+        # Check if a key was pressed
+        if read -r -s -n 1 -t 0.01 key; then
+            # Output the remaining portion of the main_output
+            echo -n "${main_output:idx+1}"
+            break
+        fi
+        
+        sleep 0.015
+        idx=$((idx + 1))
+    done
+}
+
 # Non-interruptable version for short messages
 
 short_msg() {
@@ -18,6 +40,7 @@ short_msg() {
         sleep 0.015
         idx=$((idx + 1))
     done
+    echo
 }
 
 # Non-interruptable version for confirmation messages
@@ -30,36 +53,54 @@ conf_msg() {
     echo -e " ${GREEN}✓${NC}"
 }
 
+# Create two line gap
+
+space_2(
+    long_msg ">
+>"
+echo
+)
+
+
+# Create one line gap
+
+space_1(
+    long_msg ">"
+echo
+)
+
+
+
 # === WELCOME ===
 
-short_msg ""
-short_msg ""
-short_msg "Welcome back!"
-short_msg ""
-short_msg "You have part-completed the solidcore hardening process."
-short_msg ""
-short_msg "This script carries out the finishing touches which require your input."
+long_msg ">
+>
+>  Welcome back!
+>
+>  You have part-completed the solidcore hardening process.
+>
+>  This script carries out the finishing touches which require your input."
 sleep 3
-short_msg ""
-short_msg ""
+space_2
 
 
 # === ESCALATE PRIVILEGES ===
 short_msg "To do so, the rest of the script need to be run with sudo privileges. Please enter your password below."
-echo ">  " && sudo -s
+Space_1 && sudo -s
 
 
 # === NEW PASSWORD ===
 
 short_msg "As part of solidcore's hardening, new password policies were implemented."
 sleep 1
+space_1
 short_msg "You are now required to set a new password. 12 characters minimum!"
+space_1
 short_msg "Enter it below."
 passwd
-short_msg ""
+space_1
 conf_msg "New password set"
-short_msg ""
-short_msg ""
+space_2
 
 # === HOSTNAME ===
 
@@ -235,20 +276,23 @@ short_msg "USBGuard setup: plugin the USB devices you wish to whitelist.
 read -n 1 -s -r -p ">  Once you've plugged them in, press any key to continue."
         
 # Get USB device IDs and create whitelist rules
-usbguard generate-policy > /etc/usbguard/rules.conf
+sh -c 'usbguard generate-policy > /etc/usbguard/rules.conf'
+
+# Increase hardening and privacy of USBGuard
+# usbguard set-parameter PresentControllerPolicy=apply-policy
+# usbguard set-parameter HidePII=true
 
 # Reload usbguard service to apply the new rules
-systemctl reload usbguard
 systemctl enable --now usbguard.service
 conf_msg "USBGuard enabled and all connected USB devices whitelisted"
 sleep 1
 short_msg ""
 short_msg ""
 short_msg "To whitelist devices in future, run:"
-short_msg "$ usbguard list-devices"
+short_msg "$ sudo usbguard list-devices"
 short_msg ""
 short_msg "Followed by:
-short_msg "$ usbguard allow-device <device number>
+short_msg "$ sudo usbguard allow-device <device number>
 sleep 2
 
 
@@ -567,14 +611,16 @@ tar xz -C "$workdir" -f "$workdir/$download_file" ${PLATFORM}-${CPU_ARCH}/dnscry
 mv -f "${INSTALL_DIR}/dnscrypt-proxy" "${INSTALL_DIR}/dnscrypt-proxy.old"
 mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy" "${INSTALL_DIR}/"
 chmod u+x "${INSTALL_DIR}/dnscrypt-proxy"
-cd "$INSTALL_DIR"
-cp example-dnscrypt-proxy.toml dnscrypt-proxy.toml
+cp "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.toml"
 
 # Make amends to default dnscrypt-proxy.toml file
-
+# Use the minisgn suggested server list downloads
+# Enable DNSCrypt, DNSSec, no logging and unfiltered
+# Create option to block ads, trackers and malware using DNSCrypt-proxy?
 
 # Disable resolved
-systemctl stop systemd-resolved || systemctl disable systemd-resolved
+systemctl stop systemd-resolved
+systemctl disable systemd-resolved
 
 # Replace resolv.conf
 rm -rf /etc/resolv.conf
@@ -597,11 +643,10 @@ rm -Rf "$workdir"
         short_msg '[ERROR] Unable to complete dnscrypt-proxy install.' >&2
         return 1
     fi
-}
 
 # Install dnscrypt-proxy updater
 
-# Create dnscrypt-proxy script
+# Create dnscrypt-proxy update script
 cat > $INSTALL_DIR/dnscrypt-proxy-update.sh << EOF
 #! /bin/sh
 
@@ -686,7 +731,7 @@ else
 fi
 EOF
 
-chmod +x $INSTALL_DIR/dnscrypt-proxy-update.sh
+chmod +x "${INSTALL_DIR}"/dnscrypt-proxy-update.sh
 
 conf_msg "dnscrypt-proxy update script created"
 
@@ -720,13 +765,9 @@ EOL
 # Reload systemd configuration after creating the files
 systemctl daemon-reload
 
-# Enable and start the dnscrypt-proxy update timer
-systemctl enable dnscrypt-proxy-update.timer > /dev/null
-systemctl start dnscrypt-proxy-update.timer
-
 conf_msg "dnscrypt-proxy update timer installed"
 
-#Whonix Machine ID
+# Whonix Machine ID
 new_machine_id="b08dfa6083e7567a1921a715000001fb"
 
 # Change machine ID in /etc/machine-id
@@ -735,8 +776,22 @@ echo "$new_machine_id" | sudo tee /etc/machine-id > /dev/null
 # Change machine ID in /var/lib/dbus/machine-id
 echo "$new_machine_id" | sudo tee /var/lib/dbus/machine-id > /dev/null
 
-conf_msg "Machine IDs updated to Whonix's generic Machine ID"
+conf_msg "Generic Machine ID applied"
 
+
+# === START & ENABLE SYSTEMD SERVICES ===
+
+systemd_timers=(
+    "rpm-ostreed-automatic.timer"
+    "flatpak-update.timer"
+    "dnscrypt-proxy-update.timer"
+)
+
+for sc_timer in "${systemd_timers[@]}"; do
+    systemctl enable --now "${sc_timer}" > /dev/null
+done
+
+conf_msg "Automatic update timers initiated"
 
 # === TiDY UP & FINISH ===
 
