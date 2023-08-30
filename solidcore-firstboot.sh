@@ -55,7 +55,8 @@ conf_msg() {
 # Create two line gap
 
 space_2() {
-    long_msg ">
+    long_msg "
+>
 >"
 echo
 }
@@ -64,7 +65,8 @@ echo
 # Create one line gap
 
 space_1() {
-    long_msg ">"
+    long_msg "
+>"
 echo
 }
 
