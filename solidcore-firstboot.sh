@@ -79,13 +79,16 @@ long_msg ">
 >  You have part-completed the solidcore hardening process.
 >
 >  This script carries out the finishing touches which require your input."
-sleep 3
+sleep 2
 space_2
 
 
-# === ESCALATE PRIVILEGES ===
-short_msg "To do so, the rest of the script need to be run with sudo privileges. Please enter your password below."
-space_1 && sudo -s
+# === SUDO CHECK ===
+
+if [ "$EUID" -ne 0 ]; then
+    short_msg "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-firstboot.sh'"
+    exit 1
+fi
 
 
 # === NEW PASSWORD ===

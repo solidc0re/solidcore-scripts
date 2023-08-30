@@ -43,7 +43,8 @@ fi
 # Sudo check
 # Check if the script is being run with sudo privileges
 if [ "$EUID" -ne 0 ]; then
-    echo "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-install.sh'"
+    short_msg "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-install.sh'"
+    sleep 1
     exit 1
 fi
 
@@ -489,7 +490,7 @@ echo "ProcessSizeMax=0" | tee -a /etc/systemd/coredump.conf > /dev/null
 echo "ExternalSizeMax=0" | tee -a /etc/systemd/coredump.conf > /dev/null
 
 # Reload systemctl configs
-sudo systemctl daemon-reload
+systemctl daemon-reload
 
 conf_msg "Core dumps disabled"
 
