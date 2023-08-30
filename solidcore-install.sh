@@ -415,7 +415,9 @@ services=(
     avahi-daemon # Recommended by CIS
     geoclue.service # Location service
     httpd # Recommended by CIS
+    network-online.target # Remote file mounting, most likely unncessary
     nfs-server # Recommended by CIS
+    remote-fs.target # Remote file mounting, most likely unnecessary
     rpcbind # Recommended by CIS
     rpm-ostree-countme.service # Potential to leak information about OS to someone monitoring network
     sshd # Not needed on desktop

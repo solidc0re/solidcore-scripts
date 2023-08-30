@@ -40,7 +40,6 @@ short_msg() {
         sleep 0.015
         idx=$((idx + 1))
     done
-    echo
 }
 
 # Non-interruptable version for confirmation messages
@@ -70,9 +69,9 @@ echo
 }
 
 
-
 # === WELCOME ===
 
+clear
 long_msg ">
 >
 >  Welcome back!
@@ -86,7 +85,7 @@ space_2
 
 # === ESCALATE PRIVILEGES ===
 short_msg "To do so, the rest of the script need to be run with sudo privileges. Please enter your password below."
-Space_1 && sudo -s
+space_1 && sudo -s
 
 
 # === NEW PASSWORD ===
@@ -130,12 +129,10 @@ if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
     # Update /etc/hosts
     sed -i "s/127.0.1.1.*/127.0.1.1\t$new_hostname/" /etc/hosts
     conf_msg "Hostname is now $new_hostname"
-    short_msg ""
-    short_msg ""    
+    space_2    
 else
     short_msg "Skipping..."
-    short_msg ""
-    short_msg ""
+    space_2
 fi
 
 
@@ -167,12 +164,10 @@ if [[ "$grub_response" =~ ^[Yy]$ ]]; then
     # Regenerate the GRUB configuration
     grub-mkconfig -o /boot/grub/grub.cfg
     conf_msg "GRUB password updated"
-    short_msg ""
-    short_msg ""
+    space_2
 else
     short_msg "Skipping..."
-    short_msg ""
-    short_msg ""
+    space_2
 fi
 
 
@@ -193,8 +188,7 @@ done
 if [[ "$printer_response" =~ ^[Yy]$ ]]; then
     # User confirmed using a printer
     conf_msg "Printer service (CUPS) remains enabled"
-    short_msg ""
-    short_msg ""
+    space_2
 else
     # User didn't confirm using a printer, disable CUPS
     systemctl stop cups
@@ -202,8 +196,7 @@ else
     systemctl --now mask cups
     systemctl daemon-reload
     conf_msg "Printer service (CUPS) has been stopped and disabled"
-    short_msg ""
-    short_msg ""
+    space_2
 fi
 
 
@@ -261,12 +254,10 @@ conf_msg() {
 
 # === WELCOME ===
         
-short_msg ""
-short_msg ""
+space_2
 short_msg "This final solidcore script finishes USBGuard setup."
 sleep 3
-short_msg ""
-short_msg ""
+space_2
 
 
 # === USBGUARD ===
@@ -286,11 +277,10 @@ sh -c 'usbguard generate-policy > /etc/usbguard/rules.conf'
 systemctl enable --now usbguard.service
 conf_msg "USBGuard enabled and all connected USB devices whitelisted"
 sleep 1
-short_msg ""
-short_msg ""
+space_2
 short_msg "To whitelist devices in future, run:"
 short_msg "$ sudo usbguard list-devices"
-short_msg ""
+space_1
 short_msg "Followed by:
 short_msg "$ sudo usbguard allow-device <device number>
 sleep 2
@@ -299,17 +289,15 @@ sleep 2
 # === TIDY UP & FINISH ===
 
 rm /etc/xdg/autostart/solidcore-secondboot.desktop
-short_msg ""
-short_msg ""
+space_2
 short_msg "Thank you for running the solidcore script."
-short_msg ""
+space_1
 short_msg "Please use the github page to report any issues and suggest improvements."
 short_msg "If you encounter any issues or have any further hardening suggestions then please report them on Github."
 short_msg "https://github.com/solidc0re/solidcore-scripts"
-short_msg ""
+space_1
 short_msg "Enjoy your new hardened immutable Fedora :)"
-short_msg ""
-short_msg ""
+space_2
 sleep 2
 exit 0
 EOF
@@ -327,8 +315,7 @@ Icon=utilities-terminal
 EOF
 
     conf_msg "USBGuard staged for deployment on next reboot"
-    short_msg ""
-    short_msg ""
+    space_2
     
     while true; do
     
@@ -401,8 +388,7 @@ else
     echo "blacklist usb_storage" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist usbcore" | tee -a "$blacklist_file" > /dev/null
     conf_msg "USB has been disabled and added to the kernel module blacklist"
-    short_msg ""
-    short_msg ""
+    space_2
 fi
 
 
@@ -425,14 +411,12 @@ done
 
 if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
     conf_msg "Webcam remains enabled"
-    short_msg ""
-    short_msg ""
+    space_2
 else
     rmmod uvcvideo
     echo "blacklist uvcvideo" | tee -a "$blacklist_file" > /dev/null
     conf_msg "Webcam has been disabled and added to the kernel module blacklist"
-    short_msg ""
-    short_msg ""
+    space_2
 fi
 
 
@@ -458,13 +442,11 @@ if [[ "$wifi_response" =~ ^[Yy]$ ]]; then
     sleep 1
     rfkill unblock wifi
     conf_msg "All wireless devices, except Wi-Fi have been disabled"
-    short_msg ""
-    short_msg ""
+    space_2
 else
     rfkill block all
     conf_msg "All wireless devices have been disabled"
-    short_msg ""
-    short_msg ""
+    space_2
 fi
 
 
@@ -488,8 +470,7 @@ done
 if [[ "$bluetooth_response" =~ ^[Yy]$ ]]; then
     rfkill unblock bluetooth
     conf_msg "Bluetooth has been re-enabled"
-    short_msg ""
-    short_msg ""
+    space_2
 else
     systemctl stop bluetooth.service
     systemctl disable bluetooth.service
@@ -498,8 +479,7 @@ else
     echo "blacklist bluetooth" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist btusb" | tee -a "$blacklist_file" > /dev/null
     conf_msg "Bluetooth has been disabled and added to the kernel module blacklist"
-    short_msg ""
-    short_msg ""
+    space_2
 fi
 
 # === FIREWIRE ===
@@ -521,16 +501,14 @@ done
 
 if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
     conf_msg "Firewire remains enabled"
-    short_msg ""
-    short_msg ""
+    space_2
 else
     rmmod ohci1394 sbp2 firewire_core
     echo "blacklist firewire-core" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist ohcil394" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist sbp2" | tee -a "$blacklist_file" > /dev/null
     conf_msg "Firewire has been disabled and added to the kernel module blacklist"
-    short_msg ""
-    short_msg ""
+    space_2
 fi
 
 # === THUNDERBOLT ===
@@ -552,8 +530,7 @@ done
 
 if [[ "$thunderbolt_response" =~ ^[Yy]$ ]]; then
     conf_msg "Thunderbolt remains enabled"
-    short_msg ""
-    short_msg ""
+    space_2
 else
     # Get a list of active Thunderbolt domains
     active_domains=$(boltctl list | awk '/connected/ {print $1}')
@@ -565,8 +542,7 @@ else
     done
     echo "blacklist thunderbolt" | tee -a "$blacklist_file" > /dev/null
     conf_msg "Thunderbolt has been disabled and added to the kernel module blacklist"
-    short_msg ""
-    short_msg ""
+    space_2
 fi
 
 
@@ -579,7 +555,7 @@ PLATFORM="linux"
 CPU_ARCH="x86_64"
 workdir="$(mktemp -d)"
 download_url="$(curl -sL "$LATEST_URL" | grep dnscrypt-proxy-${PLATFORM}_${CPU_ARCH}- | grep browser_download_url | head -1 | cut -d \" -f 4)"
-short_msg "Downloading dnscrypt-proxy from '$download_url'..."
+short_msg "Downloading dnscrypt-proxy..."
 download_file="dnscrypt-proxy-update.tar.gz"
 
 mkdir $INSTALL_DIR
@@ -788,7 +764,7 @@ systemd_timers=(
 )
 
 for sc_timer in "${systemd_timers[@]}"; do
-    systemctl enable --now "${sc_timer}" > /dev/null
+    systemctl enable --now "${sc_timer}" 2>&1 /dev/null
 done
 
 conf_msg "Automatic update timers initiated"
@@ -800,16 +776,14 @@ rm /etc/exg/autostart/solidcore-firstboot.desktop
 
 # Display notice regarding additional 
 short_msg "Blacklisted kernel modules will be blacklisted on next reboot. They have been temporarily disabled until then."
-short_msg ""
-short_msg ""
+space_2
 sleep 1
 
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
 	short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard. Another script will guide you through whitelisting your USB devices."
 	read -n 1 -s -r -p ">  Press any key to continue"
-    short_msg ""
-    short_msg ""
+    space_2
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
                 echo -ne "\r>  Rebooting in $i second... "
@@ -821,17 +795,15 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     echo -e "\r>  Rebooting now!            "
     reboot
 else
-    short_msg ""
-    short_msg ""
+    space_2
     short_msg "Thank you for running the solidcore script."
-	short_msg ""
+	space_1
     short_msg "Please use the github page to report any issues and suggest improvements."
 	short_msg "If you encounter any issues or have any further hardening suggestions then please report them on Github."
     short_msg "https://github.com/solidc0re/solidcore-scripts"
-	short_msg ""
+	space_1
     short_msg "Enjoy your new hardened immutable Fedora :)"
-    short_msg ""
-    short_msg ""
+    space_2
     sleep 2
 
     # De-escalate privileges & exit
