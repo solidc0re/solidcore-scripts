@@ -201,8 +201,8 @@ if [[ "$printer_response" =~ ^[Yy]$ ]]; then
 else
     # User didn't confirm using a printer, disable CUPS
     systemctl stop cups
-    systemctl disable cups > /dev/null
-    systemctl --now mask cups > /dev/null
+    systemctl disable cups > /dev/null 2>&1
+    systemctl --now mask cups > /dev/null 2>&1
     systemctl daemon-reload
     conf_msg "Printer service (CUPS) has been stopped and disabled"
     space_2
@@ -289,9 +289,11 @@ conf_msg "USBGuard enabled and all connected USB devices whitelisted"
 sleep 1
 space_2
 short_msg "To whitelist devices in future, run:"
+space_1
 short_msg "$ sudo usbguard list-devices"
 space_1
 short_msg "Followed by:
+space_1
 short_msg "$ sudo usbguard allow-device <device number>
 sleep 2
 
@@ -394,7 +396,7 @@ EOF
     fi
 
 else
-    rmmod usbcore usb_storage
+    rmmod usbcore usb_storage > /dev/null 2>&1
     blacklist_file="/etc/modprobe.d/solidcore-blacklist.conf"
     echo "blacklist usb_storage" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist usbcore" | tee -a "$blacklist_file" > /dev/null
@@ -425,7 +427,7 @@ if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
     conf_msg "Webcam remains enabled"
     space_2
 else
-    rmmod uvcvideo
+    rmmod uvcvideo > /dev/null 2>&1
     echo "blacklist uvcvideo" | tee -a "$blacklist_file" > /dev/null
     conf_msg "Webcam has been disabled and added to the kernel module blacklist"
     space_2
@@ -487,8 +489,8 @@ if [[ "$bluetooth_response" =~ ^[Yy]$ ]]; then
     space_2
 else
     systemctl stop bluetooth.service
-    systemctl disable bluetooth.service > /dev/null
-    systemctl --now mask bluetooth.service > /dev/null
+    systemctl disable bluetooth.service > /dev/null 2>&1
+    systemctl --now mask bluetooth.service > /dev/null 2>&1
     systemctl daemon-reload
     echo "blacklist bluetooth" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist btusb" | tee -a "$blacklist_file" > /dev/null
@@ -518,7 +520,7 @@ if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
     conf_msg "Firewire remains enabled"
     space_2
 else
-    rmmod ohci1394 sbp2 firewire_core
+    rmmod ohci1394 sbp2 firewire_core > /dev/null 2>&1
     echo "blacklist firewire-core" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist ohcil394" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist sbp2" | tee -a "$blacklist_file" > /dev/null
@@ -613,7 +615,7 @@ cp "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.t
 
 # Disable resolved
 systemctl stop systemd-resolved
-systemctl disable systemd-resolved > /dev/null
+systemctl disable systemd-resolved > /dev/null 2>&1
 
 # Replace resolv.conf
 rm -rf /etc/resolv.conf
