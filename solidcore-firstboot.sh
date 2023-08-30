@@ -99,7 +99,8 @@ space_1
 short_msg "You are now required to set a new password. 12 characters minimum!"
 space_1
 short_msg "Enter it below."
-passwd
+space_1
+passwd > /dev/null
 space_1
 conf_msg "New password set"
 space_2
@@ -108,7 +109,7 @@ space_2
 
 # Ask the user if they want to set a new generic hostname
 while true; do
-read -p ">  Do you want to set a generic hostname [recommended]? Press 'n' if you already have one (y/n): " hostname_response
+read -p ">  Do you want to set a generic hostname [recommended]? (y/n)`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. :  '`" hostname_response
 case $hostname_response in 
 	[Yy] ) hostname_response="Y";
 		break;;
