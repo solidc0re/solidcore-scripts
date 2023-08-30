@@ -55,19 +55,19 @@ conf_msg() {
 
 # Create two line gap
 
-space_2(
+space_2() {
     long_msg ">
 >"
 echo
-)
+}
 
 
 # Create one line gap
 
-space_1(
+space_1() {
     long_msg ">"
 echo
-)
+}
 
 
 
