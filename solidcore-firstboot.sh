@@ -109,13 +109,14 @@ space_2
 
 # Ask the user if they want to set a new generic hostname
 while true; do
-read -p ">  Do you want to set a generic hostname [recommended]? (y/n)`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. :  '`" hostname_response
+read -p ">  Question: Do you want to set a generic hostname [recommended]? (y/n)`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. :  '`" hostname_response
 case $hostname_response in 
 	[Yy] ) hostname_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
 esac
 done
 
@@ -144,13 +145,14 @@ fi
 
 # Ask the user if they want to set a GRUB password
 while true; do
-read -p ">  Do you want to set a GRUB password [recommended]? (y/n): " grub_response
+read -p ">  Question: Do you want to set a GRUB password [recommended]? (y/n): " grub_response
 case $grub_response in 
 	[Yy] ) grub_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
 esac
 done
 
@@ -179,13 +181,14 @@ fi
 
 # Enable or disable CUPS based on user response
 while true; do
-read -p ">  Do you use a printer? (y/n): " printer_response
+read -p ">  Question: Do you use a printer? (y/n): " printer_response
 case $printer_response in 
 	[Yy] ) printer_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
 esac
 done
 
@@ -196,8 +199,8 @@ if [[ "$printer_response" =~ ^[Yy]$ ]]; then
 else
     # User didn't confirm using a printer, disable CUPS
     systemctl stop cups
-    systemctl disable cups
-    systemctl --now mask cups
+    systemctl disable cups > /dev/null
+    systemctl --now mask cups > /dev/null
     systemctl daemon-reload
     conf_msg "Printer service (CUPS) has been stopped and disabled"
     space_2
@@ -208,13 +211,14 @@ fi
 
 # Install USBGuard or disable USB based on user response
 while true; do
-read -p ">  Do you use any USB devices? (y/n): " usb_response
+read -p ">  Question: Do you use any USB devices? (y/n): " usb_response
 case $usb_response in 
 	[Yy] ) usb_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
 esac
 done
 
@@ -278,7 +282,7 @@ sh -c 'usbguard generate-policy > /etc/usbguard/rules.conf'
 # usbguard set-parameter HidePII=true
 
 # Reload usbguard service to apply the new rules
-systemctl enable --now usbguard.service
+systemctl enable --now usbguard.service > /dev/null
 conf_msg "USBGuard enabled and all connected USB devices whitelisted"
 sleep 1
 space_2
@@ -323,14 +327,15 @@ EOF
     
     while true; do
     
-    read -p ">  Do you use any hardware security keys? (y/n): " token_response
+    read -p ">  Question: Do you use any hardware security keys? (y/n): " token_response
     
     case $token_response in 
 	[Yy] ) token_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
     esac
     done
 
@@ -402,14 +407,15 @@ fi
 
 while true; do
 
-read -p ">  If you have a non-USB connect webcam, such as an inbuilt in a laptop, do you ever use it? (y/n): " webcam_response
+read -p ">  Question: If you have a non-USB connect webcam, such as an inbuilt in a laptop, do you ever use it? (y/n): " webcam_response
 
 case $webcam_response in 
 	[Yy] ) webcam_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
 esac
 done
 
@@ -430,14 +436,15 @@ fi
 
 while true; do
 
-read -p ">  Do you use Wi-Fi? (y/n): " wifi_response
+read -p ">  Question: Do you use Wi-Fi? (y/n): " wifi_response
 
 case $wifi_response in 
 	[Yy] ) wifi_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
 esac
 done
 
@@ -460,14 +467,15 @@ fi
 
 while true; do
 
-read -p ">  Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
+read -p ">  Question: Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
 
 case $bluetooth_response in 
 	[Yy] ) bluetooth_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
 esac
 done
 
@@ -477,8 +485,8 @@ if [[ "$bluetooth_response" =~ ^[Yy]$ ]]; then
     space_2
 else
     systemctl stop bluetooth.service
-    systemctl disable bluetooth.service
-    systemctl --now mask bluetooth.service
+    systemctl disable bluetooth.service > /dev/null
+    systemctl --now mask bluetooth.service > /dev/null
     systemctl daemon-reload
     echo "blacklist bluetooth" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist btusb" | tee -a "$blacklist_file" > /dev/null
@@ -492,14 +500,15 @@ fi
 
 while true; do
 
-read -p ">  Do you use any Firewire connected devices? (y/n): " firewire_response
+read -p ">  Question: Do you use any Firewire connected devices? (y/n): " firewire_response
 
 case $firewire_response in 
 	[Yy] ) firewire_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
 esac
 done
 
@@ -521,14 +530,15 @@ fi
 
 while true; do
 
-read -p ">  Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
+read -p ">  Question: Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
 
 case $thunderbolt_response in 
 	[Yy] ) thunderbolt_response="Y";
 		break;;
 	[Nn] )
         break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo;
 esac
 done
 
@@ -562,7 +572,7 @@ download_url="$(curl -sL "$LATEST_URL" | grep dnscrypt-proxy-${PLATFORM}_${CPU_A
 short_msg "Downloading dnscrypt-proxy..."
 download_file="dnscrypt-proxy-update.tar.gz"
 
-mkdir $INSTALL_DIR
+mkdir "$INSTALL_DIR"
 
 curl --request GET -sL --url "$download_url" --output "$workdir/$download_file"
 response=$?
@@ -583,7 +593,8 @@ if [ -x "$(command -v minisign)" ]; then
       rm -Rf "$workdir"
       return 1
     fi
-  else
+
+else
     short_msg '[WARN] minisign is not installed, downloaded file signature could not be verified.'
 fi
 
@@ -600,34 +611,35 @@ cp "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.t
 
 # Disable resolved
 systemctl stop systemd-resolved
-systemctl disable systemd-resolved
+systemctl disable systemd-resolved > /dev/null
 
 # Replace resolv.conf
 rm -rf /etc/resolv.conf
-cat > /etc/resolv.conf <<EOF
+cat > /etc/resolv.conf << EOF
 nameserver 127.0.0.1
 options edns0
 EOF
 
 ./dnscrypt-proxy -check
-./dnscrypt-proxy -service install 2>/dev/null
+./dnscrypt-proxy -service install > /dev/null
 ./dnscrypt-proxy -service start
 
 installed_successfully=$?
 
 rm -Rf "$workdir"
-    if [ $installed_successfully -eq 0 ]; then
-        conf_msg 'dnscrypt-proxy installed'
-        return 0
-    else
-        short_msg '[ERROR] Unable to complete dnscrypt-proxy install.' >&2
-        return 1
-    fi
+
+if [ $installed_successfully -eq 0 ]; then
+    conf_msg 'dnscrypt-proxy installed'
+    return 0
+else
+    short_msg '[ERROR] Unable to complete dnscrypt-proxy install.' >&2
+    return 1
+fi
 
 # Install dnscrypt-proxy updater
 
 # Create dnscrypt-proxy update script
-cat > $INSTALL_DIR/dnscrypt-proxy-update.sh << EOF
+cat > "$INSTALL_DIR"/dnscrypt-proxy-update.sh << EOF
 #! /bin/sh
 
 INSTALL_DIR="/opt/dnscrypt-proxy"
@@ -768,25 +780,28 @@ systemd_timers=(
 )
 
 for sc_timer in "${systemd_timers[@]}"; do
-    systemctl enable --now "${sc_timer}" 2>&1 /dev/null
+    systemctl enable --now "${sc_timer}" > /dev/null 2>&1
 done
 
 conf_msg "Automatic update timers initiated"
+space_2
 
 # === TiDY UP & FINISH ===
 
 # Remove first boot autostart
-rm /etc/exg/autostart/solidcore-firstboot.desktop
+rm /etc/exg/autostart/solidcore-firstboot.desktop > /dev/null 2>&1
 
 # Display notice regarding additional 
-short_msg "Blacklisted kernel modules will be blacklisted on next reboot. They have been temporarily disabled until then."
+sleep 1
+short_msg "Blacklisted kernel modules will not load on next reboot. They have been temporarily disabled until then."
 space_2
 sleep 1
 
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
 	short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard. Another script will guide you through whitelisting your USB devices."
-	read -n 1 -s -r -p ">  Press any key to continue"
+	space_1
+    read -n 1 -s -r -p ">  Press any key to continue"
     space_2
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
@@ -799,18 +814,16 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     echo -e "\r>  Rebooting now!            "
     reboot
 else
-    space_2
     short_msg "Thank you for running the solidcore script."
 	space_1
     short_msg "Please use the github page to report any issues and suggest improvements."
-	short_msg "If you encounter any issues or have any further hardening suggestions then please report them on Github."
+	space_1
+    short_msg "If you encounter any issues or have any further hardening suggestions then please report them on Github."
+    space_1
     short_msg "https://github.com/solidc0re/solidcore-scripts"
 	space_1
     short_msg "Enjoy your new hardened immutable Fedora :)"
     space_2
     sleep 2
-
-    # De-escalate privileges & exit
-    sudo -k
     exit 0
 fi
