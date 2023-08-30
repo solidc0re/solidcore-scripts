@@ -630,7 +630,7 @@ EOF
 
 installed_successfully=$?
 
-rm -Rf "$workdir"
+#rm -Rf "$workdir"
 
 if [ $installed_successfully -eq 0 ]; then
     conf_msg 'dnscrypt-proxy installed'
