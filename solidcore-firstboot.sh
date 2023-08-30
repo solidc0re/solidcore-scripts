@@ -411,7 +411,7 @@ fi
 
 while true; do
 
-read -p ">  Question: If you have a non-USB connect webcam, such as an inbuilt in a laptop, do you ever use it? (y/n): " webcam_response
+read -p ">  Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
 
 case $webcam_response in 
 	[Yy] ) webcam_response="Y";
@@ -571,12 +571,12 @@ INSTALL_DIR="/opt/dnscrypt-proxy"
 LATEST_URL="https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest"
 PLATFORM="linux"
 CPU_ARCH="x86_64"
-workdir="$(mktemp -d)"
+workdir="/opt/dnscrypt-proxy/tmp"
 download_url="$(curl -sL "$LATEST_URL" | grep dnscrypt-proxy-${PLATFORM}_${CPU_ARCH}- | grep browser_download_url | head -1 | cut -d \" -f 4)"
 short_msg "Downloading dnscrypt-proxy..."
 download_file="dnscrypt-proxy-update.tar.gz"
 
-mkdir "$INSTALL_DIR"
+mkdir -p "$workdir"
 
 curl --request GET -sL --url "$download_url" --output "$workdir/$download_file"
 response=$?
