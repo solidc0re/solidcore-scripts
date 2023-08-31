@@ -788,7 +788,7 @@ Description=Automatically update dnscrypt-proxy blocklist and application
 
 [Service]
 Type=oneshot
-ExecStart=python3 ${INSTALL_DIR}/generate-domains-blocklist.py -o blocklist.txt
+ExecStart=python3 ${INSTALL_DIR}/${download_file2} -c ${INSTALL_DIR}/domains-blocklist.conf -a ${INSTALL_DIR}/domains-allowlist.txt -r ${INSTALL_DIR}/${download_file3} -i -o blocklist.txt
 ExecStart=${INSTALL_DIR}/dnscrypt-proxy-update.sh
 EOL
 
@@ -816,7 +816,7 @@ chgrp -R root "${INSTALL_DIR}/"
 chmod -R 776 "${INSTALL_DIR}/"
 
 # Create blocklist file for dnscrypt-proxy
-python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "${INSTALL_DIR}/${download_file3}" -i -o blocklist.txt
+python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "${INSTALL_DIR}/${download_file3}" -i -o "${INSTALL_DIR}/blocklist.txt"
 
 # Disable resolved
 systemctl stop systemd-resolved
