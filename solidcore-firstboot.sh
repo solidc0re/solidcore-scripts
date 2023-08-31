@@ -56,19 +56,15 @@ conf_msg() {
 # Create two line gap
 
 space_2() {
-    long_msg "
->
+    long_msg ">
 >"
-echo
 }
 
 
 # Create one line gap
 
 space_1() {
-    long_msg "
->"
-echo
+    long_msg ">"
 }
 
 
@@ -139,6 +135,7 @@ if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
     conf_msg "Hostname is now $new_hostname"
     space_2    
 else
+    space_1
     short_msg "Skipping..."
     space_2
 fi
@@ -175,6 +172,7 @@ if [[ "$grub_response" =~ ^[Yy]$ ]]; then
     conf_msg "GRUB password updated"
     space_2
 else
+    space_1
     short_msg "Skipping..."
     space_2
 fi
@@ -655,9 +653,9 @@ nameserver 127.0.0.1
 options edns0
 EOF
 
-./dnscrypt-proxy -check
-./dnscrypt-proxy -service install > /dev/null
-./dnscrypt-proxy -service start
+bash "${INSTALL_DIR}/dnscrypt-proxy -check"
+bash "${INSTALL_DIR}/dnscrypt-proxy -service install > /dev/null"
+bash "${INSTALL_DIR}/dnscrypt-proxy -service start"
 
 installed_successfully=$?
 
