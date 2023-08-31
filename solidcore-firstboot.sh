@@ -31,10 +31,10 @@ long_msg() {
 
 short_msg() {
     local main_output=">  $1"
+    echo
     local idx=0
     local char
 
-    echo
     while [ $idx -lt ${#main_output} ]; do
         char="${main_output:$idx:1}"
         echo -n "$char"
@@ -608,7 +608,7 @@ tar xz -C "$workdir" -f "$workdir/$download_file" ${PLATFORM}-${CPU_ARCH}/*dnscr
 mv -f "${INSTALL_DIR}/dnscrypt-proxy" "${INSTALL_DIR}/dnscrypt-proxy.old"
 mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}/*dnscrypt-proxy*" "${INSTALL_DIR}/"
 chmod u+x "${INSTALL_DIR}/dnscrypt-proxy"
-mv "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.toml"
+mv -f "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.toml"
 
 config_file="${INSTALL_DIR}/dnscrypt-proxy.toml"
 
@@ -653,11 +653,9 @@ nameserver 127.0.0.1
 options edns0
 EOF
 
-bash "${INSTALL_DIR}/dnscrypt-proxy -check"
-bash "${INSTALL_DIR}/dnscrypt-proxy -service install > /dev/null"
-bash "${INSTALL_DIR}/dnscrypt-proxy -service start"
-
-installed_successfully=$?
+${INSTALL_DIR}/dnscrypt-proxy -check
+${INSTALL_DIR}/dnscrypt-proxy -service install > /dev/null
+${INSTALL_DIR}/dnscrypt-proxy -service start
 
 #rm -Rf "$workdir"
 
