@@ -28,7 +28,6 @@ long_msg() {
 }
 
 # Non-interruptable version for short messages
-
 short_msg() {
     local main_output=">  $1"
     echo
@@ -44,7 +43,6 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
@@ -54,7 +52,6 @@ conf_msg() {
 }
 
 # Create two line gap
-
 space_2() {
     long_msg "
 >
@@ -63,7 +60,6 @@ space_2() {
 
 
 # Create one line gap
-
 space_1() {
     long_msg "
 >  "
@@ -72,6 +68,10 @@ space_1() {
 # Declare bold and normal
 bold=$(tput bold)
 normal=$(tput sgr0)
+
+
+# === VARIABLES ===
+blacklist_file="/etc/modprobe.d/solidcore-blacklist.conf"
 
 
 # === WELCOME ===
@@ -184,40 +184,12 @@ if [[ "$grub_response" =~ ^[Yy]$ ]]; then
         else
             space_1
             short_msg "Password change failed. Please try again."
-            space_1
         fi
     done
 else
     short_msg "Skipping..."
 fi
 
-#old code
-#if [[ "$grub_response" =~ ^[Yy]$ ]]; then
-#    # Generate a new GRUB password hash
-#    while true; do
-#        space_1
-#        read -rsp "Enter the new GRUB password: " password
-#        space_1
-#        read -rsp "Confirm the new GRUB password: " password_confirm
-#        space_1 
-#        if [ "$password" = "$password_confirm" ]; then
-#            password_hash=$(echo -n "$password" | grub-mkpasswd-pbkdf2)
-#            # Update the GRUB configuration file
-#            new_entry="set superusers=\"root\"\npassword_pbkdf2 root $password_hash"
-#            sed -i "/^set superusers/d" /etc/grub.d/40_custom
-#            echo -e "$new_entry" | tee -a /etc/grub.d/40_custom > /dev/null
-#            # Regenerate the GRUB configuration
-#            grub-mkconfig -o /boot/grub/grub.cfg
-#            conf_msg "GRUB password updated"
-#            break
-#        else
-#            short_msg "Passwords do not match. Please try again."
-#            space_1
-#        fi
-#    done
-#else
-#    short_msg "Skipping..."
-#fi
 space_2
 space_1
 
@@ -268,11 +240,14 @@ done
 
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     
-    rpm-ostree install usbguard > /dev/null
+    space_1
+    short_msg "Installing USBGaurd. This may take a while."
+    space_1
+    rpm-ostree install usbguard
     script_path="/etc/solidcore/solidcore-secondboot.sh"
 
     # Write secondboot.sh script
-    cat > "$script_path" << EOF
+cat > "$script_path" << EOF
 #!/bin/bash
         
 # Solidcore second boot script
@@ -388,7 +363,7 @@ EOF
 
     if [[ "$token_response" =~ ^[Yy]$ ]]; then
         # User prompt for security key type
-        PS3="Select your preferred security key type: "
+        PS3="Select your security key type: "
         options=("Google Titan Security Key" "Yubico's YubiKey" "Nitrokey" "OnlyKey" "Other")
         select opt in "${options[@]}"
         do
@@ -440,7 +415,6 @@ EOF
 
 else
     rmmod usbcore usb_storage > /dev/null 2>&1
-    blacklist_file="/etc/modprobe.d/solidcore-blacklist.conf"
     echo "blacklist usb_storage" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist usbcore" | tee -a "$blacklist_file" > /dev/null
     conf_msg "USB has been disabled and added to the kernel module blacklist"
@@ -842,7 +816,7 @@ chgrp -R root "${INSTALL_DIR}/"
 chmod -R 776 "${INSTALL_DIR}/"
 
 # Create blocklist file for dnscrypt-proxy
-python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "{$INSTALL_DIR}/${download_file3}" -i -o blocklist.txt
+python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "${INSTALL_DIR}/${download_file3}" -i -o blocklist.txt
 
 # Disable resolved
 systemctl stop systemd-resolved
@@ -905,13 +879,16 @@ rm /etc/exg/autostart/solidcore-firstboot.desktop > /dev/null 2>&1
 sleep 1
 short_msg "Blacklisted kernel modules will not load on next reboot. They have been temporarily disabled until then."
 space_2
-sleep 1
+sleep 2
 
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
-	short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard. Another script will guide you through whitelisting your USB devices."
-	space_1
-    read -n 1 -s -r -p "  Press any key to continue"
+	short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard."
+    space_1
+    short_msg "Another script will guide you through whitelisting your USB devices."
+	sleep 1
+    space_1
+    read -n 1 -s -r -p "Press any key to continue..."
     space_2
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
