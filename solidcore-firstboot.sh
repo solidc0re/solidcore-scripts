@@ -102,7 +102,8 @@ short_msg "As part of solidcore's hardening, new password policies were implemen
 sleep 1
 space_1
 while true; do
-    short_msg "You are now required to set a new password. 12 characters minimum!"
+    short_msg "${bold}You are now required to set a new password. 12 characters minimum!${normal}"
+    sleep 1
     space_1
     short_msg "Enter it below."
     space_1
@@ -139,7 +140,7 @@ space_2
 
 if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
     # Prompt user for a new hostname
-    read -r -p "Enter a new, preferably generic hostname (e.g. hostname, host, laptop...): " new_hostname
+    read -r -p "Enter new hostname: " new_hostname
     # Update hostname
     hostnamectl set-hostname "$new_hostname" 
     conf_msg "Hostname is now $new_hostname"
@@ -167,7 +168,6 @@ done
 if [[ "$grub_response" =~ ^[Yy]$ ]]; then
     # Set new GRUB password
     while true; do
-        space_1
         echo
         grub2-setpassword
         if [ $? -eq 0 ]; then
@@ -699,10 +699,14 @@ https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/genera
 https://urlhaus.abuse.ch/downloads/hostfile/
 
 # === MEGA LISTS ===
-https://download.dnscrypt.info/blocklists/domains/mybase.txt # DNSCrypt List by Frank Denis
-https://raw.githubusercontent.com/notracking/hosts-blocklists/master/dnscrypt-proxy/dnscrypt-proxy.blacklist.txt # NoTracking
-https://big.oisd.nl/domainswild # OISD
-https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts # Steven Black's Unified Hosts
+# DNSCrypt List by Frank Denis
+https://download.dnscrypt.info/blocklists/domains/mybase.txt
+# NoTracking
+https://raw.githubusercontent.com/notracking/hosts-blocklists/master/dnscrypt-proxy/dnscrypt-proxy.blacklist.txt
+# OISD
+https://big.oisd.nl/domainswild
+# Steven Black's Unified Hosts
+https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
 
 
 # === PRIVACY ===
@@ -895,20 +899,14 @@ space_2
 
 # Remove first boot autostart
 rm /etc/exg/autostart/solidcore-firstboot.desktop > /dev/null 2>&1
-
-# Display notice regarding additional 
 sleep 1
-space_1
-short_msg "Blacklisted kernel modules will not load on next reboot. They have been temporarily disabled until then."
-sleep 2
 
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
-	space_1
     short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard."
     space_1
     short_msg "Another script will guide you through whitelisting your USB devices."
-	sleep 1
+	sleep 2
     space_2
     read -n 1 -s -r -p "Press any key to continue..."
     space_1
@@ -923,7 +921,6 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     echo -e "\r>  Rebooting now!            "
     reboot
 else
-    space_1
     short_msg "${bold}Thank you for running the solidcore script.${normal}"
 	space_1
     short_msg "Please use the github page to report any issues and suggest improvements."
