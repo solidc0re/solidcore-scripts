@@ -110,14 +110,14 @@ space_2
 
 # Ask the user if they want to set a new generic hostname
 while true; do
-read -p "  Question: Do you want to set a generic hostname [recommended]? (y/n)`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. :  '`" hostname_response
+read -rp "  Question: Do you want to set a generic hostname [recommended]? (y/n)`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. :  '`" hostname_response
 case $hostname_response in 
 	[Yy] ) hostname_response="Y";
 		break;;
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
 esac
 done
 
@@ -147,20 +147,20 @@ fi
 
 # Ask the user if they want to set a GRUB password
 while true; do
-read -p "  Question: Do you want to set a GRUB password [recommended]? (y/n): " grub_response
+read -rp "  Question: Do you want to set a GRUB password [recommended]? (y/n): " grub_response
 case $grub_response in 
 	[Yy] ) grub_response="Y";
 		break;;
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
 esac
 done
 
 if [[ "$grub_response" =~ ^[Yy]$ ]]; then
     # Generate a new GRUB password hash
-    read -sp "Enter the new GRUB password: " password
+    read -rsp "Enter the new GRUB password: " password
     echo
     password_hash=$(echo -n "$password" | grub-mkpasswd-pbkdf2)
 
@@ -184,14 +184,14 @@ fi
 
 # Enable or disable CUPS based on user response
 while true; do
-read -p "  Question: Do you use a printer? (y/n): " printer_response
+read -rp "  Question: Do you use a printer? (y/n): " printer_response
 case $printer_response in 
 	[Yy] ) printer_response="Y";
 		break;;
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
 esac
 done
 
@@ -214,14 +214,14 @@ fi
 
 # Install USBGuard or disable USB based on user response
 while true; do
-read -p "  Question: Do you use any USB devices? (y/n): " usb_response
+read -rp "  Question: Do you use any USB devices? (y/n): " usb_response
 case $usb_response in 
 	[Yy] ) usb_response="Y";
 		break;;
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
 esac
 done
 
@@ -332,7 +332,7 @@ EOF
     
     while true; do
     
-    read -p "  Question: Do you use any hardware security keys? (y/n): " token_response
+    read -rp "  Question: Do you use any hardware security keys? (y/n): " token_response
     
     case $token_response in 
 	[Yy] ) token_response="Y";
@@ -340,7 +340,7 @@ EOF
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
     esac
     done
 
@@ -412,7 +412,7 @@ fi
 
 while true; do
 
-read -p "  Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
+read -rp "  Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
 
 case $webcam_response in 
 	[Yy] ) webcam_response="Y";
@@ -420,7 +420,7 @@ case $webcam_response in
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
 esac
 done
 
@@ -441,7 +441,7 @@ fi
 
 while true; do
 
-read -p "  Question: Do you use Wi-Fi? (y/n): " wifi_response
+read -rp "  Question: Do you use Wi-Fi? (y/n): " wifi_response
 
 case $wifi_response in 
 	[Yy] ) wifi_response="Y";
@@ -449,7 +449,7 @@ case $wifi_response in
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
 esac
 done
 
@@ -472,7 +472,7 @@ fi
 
 while true; do
 
-read -p "  Question: Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
+read -rp "  Question: Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
 
 case $bluetooth_response in 
 	[Yy] ) bluetooth_response="Y";
@@ -480,7 +480,7 @@ case $bluetooth_response in
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
 esac
 done
 
@@ -505,7 +505,7 @@ fi
 
 while true; do
 
-read -p "  Question: Do you use any Firewire connected devices? (y/n): " firewire_response
+read -rp "  Question: Do you use any Firewire connected devices? (y/n): " firewire_response
 
 case $firewire_response in 
 	[Yy] ) firewire_response="Y";
@@ -513,7 +513,7 @@ case $firewire_response in
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
 esac
 done
 
@@ -535,7 +535,7 @@ fi
 
 while true; do
 
-read -p "  Question: Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
+read -rp "  Question: Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
 
 case $thunderbolt_response in 
 	[Yy] ) thunderbolt_response="Y";
@@ -543,7 +543,7 @@ case $thunderbolt_response in
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo;
+        echo ">";
 esac
 done
 
@@ -664,7 +664,7 @@ https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
 EOF
 
 # Create blocklist file for dnscrypt-proxy
-python3 "${INSTALL_DIR}/generate-domains-blocklist.py -o blocklist.txt"
+python3 "${INSTALL_DIR}/generate-domains-blocklist.py" -o blocklist.txt
 
 # Disable resolved
 systemctl stop systemd-resolved
