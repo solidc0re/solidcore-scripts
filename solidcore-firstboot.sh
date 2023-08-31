@@ -34,6 +34,7 @@ short_msg() {
     local idx=0
     local char
 
+    echo
     while [ $idx -lt ${#main_output} ]; do
         char="${main_output:$idx:1}"
         echo -n "$char"
@@ -573,11 +574,14 @@ PLATFORM="linux"
 CPU_ARCH="x86_64"
 workdir="/opt/dnscrypt-proxy/tmp"
 download_url="$(curl -sL "$LATEST_URL" | grep dnscrypt-proxy-${PLATFORM}_${CPU_ARCH}- | grep browser_download_url | head -1 | cut -d \" -f 4)"
-short_msg "Downloading dnscrypt-proxy..."
 download_file="dnscrypt-proxy-update.tar.gz"
+download_url2="https://raw.githubusercontent.com/DNSCrypt/dnscrypt-proxy/master/utils/generate-domains-blocklist/generate-domains-blocklist.py"
+download_file2="generate-domains-blocklist.py"
 
 mkdir -p "$workdir"
 
+short_msg "Downloading dnscrypt-proxy..."
+space_1
 curl --request GET -sL --url "$download_url" --output "$workdir/$download_file"
 response=$?
 
@@ -602,16 +606,43 @@ else
     short_msg '[WARN] minisign is not installed, downloaded file signature could not be verified.'
 fi
 
-tar xz -C "$workdir" -f "$workdir/$download_file" ${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy
+tar xz -C "$workdir" -f "$workdir/$download_file" ${PLATFORM}-${CPU_ARCH}/*dnscrypt-proxy*
 mv -f "${INSTALL_DIR}/dnscrypt-proxy" "${INSTALL_DIR}/dnscrypt-proxy.old"
-mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy" "${INSTALL_DIR}/"
+mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}/*dnscrypt-proxy*" "${INSTALL_DIR}/"
 chmod u+x "${INSTALL_DIR}/dnscrypt-proxy"
-cp "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.toml"
+mv "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.toml"
 
-# Make amends to default dnscrypt-proxy.toml file
-# Use the minisgn suggested server list downloads
-# Enable DNSCrypt, DNSSec, no logging and unfiltered
-# Create option to block ads, trackers and malware using DNSCrypt-proxy?
+config_file="${INSTALL_DIR}/dnscrypt-proxy.toml"
+
+# Modify require_dnssec parameter
+sed -i 's/require_dnssec = false/require_dnssec = true/' "$config_file"
+
+# Uncomment blocked_names_file parameter and update its value
+sed -i '/^# blocked_names_file =/ s/^# //' "$config_file"
+sed -i "s/blocked-names.txt/blocklist.txt/" "$config_file"
+
+# Basic ad blocking - get blocklist combining script
+curl --request GET -sL --url "$download_url2" --output "$INSTALL_DIR/$download_file2"
+
+# Add blocklist URLs to blocklist combining script config
+cat > "${INSTALL_DIR}/domains-blocklist.conf" << EOF
+# === AD BLOCKING ===
+
+# Adaway - opensource adblocker
+https://adaway.org/hosts.txt
+
+# OISD Small blocklist - mostly blocks ads; no false positives
+https://small.oisd.nl/domainswild
+
+
+# === PRIVACY ===
+
+# Privacy list from firebog.net - a great blocklist resource
+https://v.firebog.net/hosts/Easyprivacy.txt
+EOF
+
+# Create blocklist file for dnscrypt-proxy
+python3 "${INSTALL_DIR}/generate-domains-blocklist.py -o blocklist.txt"
 
 # Disable resolved
 systemctl stop systemd-resolved
@@ -632,13 +663,8 @@ installed_successfully=$?
 
 #rm -Rf "$workdir"
 
-if [ $installed_successfully -eq 0 ]; then
-    conf_msg 'dnscrypt-proxy installed'
-    return 0
-else
-    short_msg '[ERROR] Unable to complete dnscrypt-proxy install.' >&2
-    return 1
-fi
+conf_msg 'dnscrypt-proxy installed'
+
 
 # Install dnscrypt-proxy updater
 
@@ -731,15 +757,14 @@ chmod +x "${INSTALL_DIR}"/dnscrypt-proxy-update.sh
 
 conf_msg "dnscrypt-proxy update script created"
 
-# Set up dnscryp-proxy update systemd service
-
 # Create the service file for dnscrypt-proxy update
 cat > /etc/systemd/system/dnscrypt-proxy-update.service <<EOL
 [Unit]
-Description=Automatically update dnscrypt-proxy applications
+Description=Automatically update dnscrypt-proxy blocklist and application
 
 [Service]
 Type=oneshot
+ExecStart=python3 '${INSTALL_DIR}'/generate-domains-blocklist.py -o blocklist.txt
 ExecStart='${INSTALL_DIR}'/dnscrypt-proxy-update.sh
 EOL
 
