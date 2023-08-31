@@ -116,7 +116,7 @@ space_1
 
 # Ask the user if they want to set a new generic hostname
 while true; do
-read -rp "${bold}Question:${normal} Do you want to set a generic hostname [recommended]?`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
+read -rp "${bold}Question: Do you want to set a generic hostname [recommended]?${normal}`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
 case $hostname_response in 
 	[Yy] ) hostname_response="Y";
 		break;;
@@ -142,7 +142,6 @@ if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
     sed -i "s/127.0.1.1.*/127.0.1.1\t$new_hostname/" /etc/hosts
     conf_msg "Hostname is now $new_hostname"
 else
-    space_1
     short_msg "Skipping..."
 
 fi
@@ -153,7 +152,7 @@ space_1
 
 # Ask the user if they want to set a GRUB password
 while true; do
-read -rp "${bold}Question:${normal} Do you want to set a GRUB password [recommended]? (y/n): " grub_response
+read -rp "${bold}Question: Do you want to set a GRUB password [recommended]?${normal} (y/n): " grub_response
 case $grub_response in 
 	[Yy] ) grub_response="Y";
 		break;;
@@ -179,7 +178,6 @@ if [[ "$grub_response" =~ ^[Yy]$ ]]; then
     grub-mkconfig -o /boot/grub/grub.cfg
     conf_msg "GRUB password updated"
 else
-    space_1
     short_msg "Skipping..."
 fi
 space_2
@@ -190,7 +188,7 @@ space_1
 
 # Enable or disable CUPS based on user response
 while true; do
-read -rp "${bold}Question:${normal} Do you use a printer? (y/n): " printer_response
+read -rp "${bold}Question: Do you use a printer?${normal} (y/n): " printer_response
 case $printer_response in 
 	[Yy] ) printer_response="Y";
 		break;;
@@ -219,7 +217,7 @@ space_1
 
 # Install USBGuard or disable USB based on user response
 while true; do
-read -rp "${bold}Question:${normal} Do you use any USB devices? (y/n): " usb_response
+read -rp "${bold}Question: Do you use any USB devices?${normal} (y/n): " usb_response
 case $usb_response in 
 	[Yy] ) usb_response="Y";
 		break;;
@@ -338,7 +336,7 @@ EOF
     
     while true; do
     
-    read -rp "${bold}Question:${normal} Do you use any hardware security keys? (y/n): " token_response
+    read -rp "${bold}Question: Do you use any hardware security keys?${normal} (y/n): " token_response
     
     case $token_response in 
 	[Yy] ) token_response="Y";
@@ -419,7 +417,7 @@ space_1
 
 while true; do
 
-read -rp "${bold}Question:${normal} If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
+read -rp "${bold}Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you use it?${normal} (y/n): " webcam_response
 
 case $webcam_response in 
 	[Yy] ) webcam_response="Y";
@@ -449,7 +447,7 @@ space_1
 
 while true; do
 
-read -rp "${bold}Question:${normal} Do you use Wi-Fi? (y/n): " wifi_response
+read -rp "${bold}Question: Do you use Wi-Fi?${normal} (y/n): " wifi_response
 
 case $wifi_response in 
 	[Yy] ) wifi_response="Y";
@@ -481,7 +479,7 @@ space_1
 
 while true; do
 
-read -rp "${bold}Question:${normal} Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
+read -rp "${bold}Question: Do you use any Bluetooth connected devices?${normal} (y/n): " bluetooth_response
 
 case $bluetooth_response in 
 	[Yy] ) bluetooth_response="Y";
@@ -516,7 +514,7 @@ space_1
 
 while true; do
 
-read -rp "${bold}Question:${normal} Do you use any Firewire connected devices? (y/n): " firewire_response
+read -rp "${bold}Question: Do you use any Firewire connected devices?${normal} (y/n): " firewire_response
 
 case $firewire_response in 
 	[Yy] ) firewire_response="Y";
@@ -548,7 +546,7 @@ space_1
 
 while true; do
 
-read -rp "${bold}Question:${normal} Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
+read -rp "${bold}Question: Do you use any Thunderbolt connected devices?${normal} (y/n): " thunderbolt_response
 
 case $thunderbolt_response in 
 	[Yy] ) thunderbolt_response="Y";
@@ -578,7 +576,7 @@ else
 fi
 
 
-# === AUTOMATED TASKS ===
+# === DNSCRYPT-PROXY ===
 
 # Install dnscrypt-proxy
 INSTALL_DIR="/opt/dnscrypt-proxy"
@@ -616,7 +614,7 @@ if [ -x "$(command -v minisign)" ]; then
     fi
 
 else
-    short_msg '${bold}[WARN]${normal} minisign is not installed, downloaded file signature could not be verified.'
+    short_msg "${bold}[WARN]${normal} minisign is not installed, downloaded file signature could not be verified."
     space_1
 fi
 
@@ -675,36 +673,6 @@ https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.2o7Net/hosts
 https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
 https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
 EOF
-
-# Change permissions of all dnscrypt-proxy files
-chown -R root "${INSTALL_DIR}/" 
-chgrp -R root "${INSTALL_DIR}/"
-chmod -R 744 "${INSTALL_DIR}/"
-
-# Create blocklist file for dnscrypt-proxy
-python3 "${INSTALL_DIR}/generate-domains-blocklist.py" -o blocklist.txt
-
-# Disable resolved
-systemctl stop systemd-resolved
-systemctl disable systemd-resolved > /dev/null 2>&1
-
-# Replace resolv.conf
-rm -rf /etc/resolv.conf
-cat > /etc/resolv.conf << EOF
-nameserver 127.0.0.1
-options edns0
-EOF
-
-# Install dnscrypt=proxy and tidy up
-${INSTALL_DIR}/dnscrypt-proxy -service install
-sleep 1
-conf_msg "dnscrypt-proxy installed"
-space_1
-short_msg "Starting dnscrypt-proxy... This make take a while."
-${INSTALL_DIR}/dnscrypt-proxy -service start
-
-rm -Rf "$workdir"
-
 
 # Install dnscrypt-proxy updater
 
@@ -793,10 +761,6 @@ else
 fi
 EOF
 
-chmod +x "${INSTALL_DIR}"/dnscrypt-proxy-update.sh
-
-conf_msg "dnscrypt-proxy update script created"
-
 # Create the service file for dnscrypt-proxy update
 cat > /etc/systemd/system/dnscrypt-proxy-update.service <<EOL
 [Unit]
@@ -826,9 +790,40 @@ EOL
 # Reload systemd configuration after creating the files
 systemctl daemon-reload
 
+# Change permissions of all dnscrypt-proxy files
+chown -R root "${INSTALL_DIR}/" 
+chgrp -R root "${INSTALL_DIR}/"
+chmod -R 776 "${INSTALL_DIR}/"
+
+# Create blocklist file for dnscrypt-proxy
+python3 "${INSTALL_DIR}/generate-domains-blocklist.py" -c "${INSTALL_DIR}/domains-blocklist.conf" -o blocklist.txt
+
+# Disable resolved
+systemctl stop systemd-resolved
+systemctl disable systemd-resolved > /dev/null 2>&1
+
+# Replace resolv.conf
+rm -rf /etc/resolv.conf
+cat > /etc/resolv.conf << EOF
+nameserver 127.0.0.1
+options edns0
+EOF
+
+# Install dnscrypt=proxy and tidy up
+${INSTALL_DIR}/dnscrypt-proxy -service install
+sleep 1
+conf_msg "dnscrypt-proxy installed"
+space_1
+short_msg "Starting dnscrypt-proxy... This make take a while."
+${INSTALL_DIR}/dnscrypt-proxy -service start
+
+rm -Rf "$workdir"
+
 conf_msg "dnscrypt-proxy update timer installed"
 
-# Whonix Machine ID
+
+# === MACHINE ID ===
+
 new_machine_id="b08dfa6083e7567a1921a715000001fb"
 
 # Change machine ID in /etc/machine-id
