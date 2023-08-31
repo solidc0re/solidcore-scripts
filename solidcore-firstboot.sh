@@ -69,6 +69,10 @@ space_1() {
 >  "
 }
 
+# Declare bold and normal
+bold=$(tput bold)
+normal=$(tput sgr0)
+
 
 # === WELCOME ===
 
@@ -106,12 +110,13 @@ passwd > /dev/null
 space_1
 conf_msg "New password set"
 space_2
+space_1
 
 # === HOSTNAME ===
 
 # Ask the user if they want to set a new generic hostname
 while true; do
-read -rp "Question: Do you want to set a generic hostname [recommended]?`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
+read -rp "${bold}Question:${normal} Do you want to set a generic hostname [recommended]?`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
 case $hostname_response in 
 	[Yy] ) hostname_response="Y";
 		break;;
@@ -136,19 +141,19 @@ if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
     # Update /etc/hosts
     sed -i "s/127.0.1.1.*/127.0.1.1\t$new_hostname/" /etc/hosts
     conf_msg "Hostname is now $new_hostname"
-    space_2    
 else
     space_1
     short_msg "Skipping..."
-    space_2
-fi
 
+fi
+space_2
+space_1
 
 # === GRUB ===
 
 # Ask the user if they want to set a GRUB password
 while true; do
-read -rp "Question: Do you want to set a GRUB password [recommended]? (y/n): " grub_response
+read -rp "${bold}Question:${normal} Do you want to set a GRUB password [recommended]? (y/n): " grub_response
 case $grub_response in 
 	[Yy] ) grub_response="Y";
 		break;;
@@ -173,19 +178,19 @@ if [[ "$grub_response" =~ ^[Yy]$ ]]; then
     # Regenerate the GRUB configuration
     grub-mkconfig -o /boot/grub/grub.cfg
     conf_msg "GRUB password updated"
-    space_2
 else
     space_1
     short_msg "Skipping..."
-    space_2
 fi
+space_2
+space_1
 
 
 # === CUPS ===
 
 # Enable or disable CUPS based on user response
 while true; do
-read -rp "Question: Do you use a printer? (y/n): " printer_response
+read -rp "${bold}Question:${normal} Do you use a printer? (y/n): " printer_response
 case $printer_response in 
 	[Yy] ) printer_response="Y";
 		break;;
@@ -199,7 +204,6 @@ done
 if [[ "$printer_response" =~ ^[Yy]$ ]]; then
     # User confirmed using a printer
     conf_msg "Printer service (CUPS) remains enabled"
-    space_2
 else
     # User didn't confirm using a printer, disable CUPS
     systemctl stop cups
@@ -207,15 +211,15 @@ else
     systemctl --now mask cups > /dev/null 2>&1
     systemctl daemon-reload
     conf_msg "Printer service (CUPS) has been stopped and disabled"
-    space_2
 fi
-
+space_2
+space_1
 
 # === USB ===
 
 # Install USBGuard or disable USB based on user response
 while true; do
-read -rp "Question: Do you use any USB devices? (y/n): " usb_response
+read -rp "${bold}Question:${normal} Do you use any USB devices? (y/n): " usb_response
 case $usb_response in 
 	[Yy] ) usb_response="Y";
 		break;;
@@ -307,13 +311,13 @@ space_2
 short_msg "Thank you for running the solidcore script."
 space_1
 short_msg "Please use the github page to report any issues and suggest improvements."
-short_msg "If you encounter any issues or have any further hardening suggestions then please report them on Github."
+space_1
 short_msg "https://github.com/solidc0re/solidcore-scripts"
 space_1
 short_msg "Enjoy your new hardened immutable Fedora :)"
 space_2
 sleep 2
-exit 0
+echo
 EOF
 
     chmod +x "$script_path"
@@ -330,10 +334,11 @@ EOF
 
     conf_msg "USBGuard staged for deployment on next reboot"
     space_2
+    space_1
     
     while true; do
     
-    read -rp "Question: Do you use any hardware security keys? (y/n): " token_response
+    read -rp "${bold}Question:${normal} Do you use any hardware security keys? (y/n): " token_response
     
     case $token_response in 
 	[Yy] ) token_response="Y";
@@ -403,9 +408,10 @@ else
     echo "blacklist usb_storage" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist usbcore" | tee -a "$blacklist_file" > /dev/null
     conf_msg "USB has been disabled and added to the kernel module blacklist"
-    space_2
 fi
 
+space_2
+space_1
 
 # === WEBCAM ===
 
@@ -413,7 +419,7 @@ fi
 
 while true; do
 
-read -rp "Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
+read -rp "${bold}Question:${normal} If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
 
 case $webcam_response in 
 	[Yy] ) webcam_response="Y";
@@ -427,13 +433,14 @@ done
 
 if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
     conf_msg "Webcam remains enabled"
-    space_2
 else
     rmmod uvcvideo > /dev/null 2>&1
     echo "blacklist uvcvideo" | tee -a "$blacklist_file" > /dev/null
     conf_msg "Webcam has been disabled and added to the kernel module blacklist"
-    space_2
 fi
+
+space_2
+space_1
 
 
 # === WIFI ===
@@ -442,7 +449,7 @@ fi
 
 while true; do
 
-read -rp "Question: Do you use Wi-Fi? (y/n): " wifi_response
+read -rp "${bold}Question:${normal} Do you use Wi-Fi? (y/n): " wifi_response
 
 case $wifi_response in 
 	[Yy] ) wifi_response="Y";
@@ -459,12 +466,13 @@ if [[ "$wifi_response" =~ ^[Yy]$ ]]; then
     sleep 1
     rfkill unblock wifi
     conf_msg "All wireless devices, except Wi-Fi have been disabled"
-    space_2
 else
     rfkill block all
     conf_msg "All wireless devices have been disabled"
-    space_2
 fi
+
+space_2
+space_1
 
 
 # === BLUETOOTH ===
@@ -473,7 +481,7 @@ fi
 
 while true; do
 
-read -rp "Question: Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
+read -rp "${bold}Question:${normal} Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
 
 case $bluetooth_response in 
 	[Yy] ) bluetooth_response="Y";
@@ -488,7 +496,6 @@ done
 if [[ "$bluetooth_response" =~ ^[Yy]$ ]]; then
     rfkill unblock bluetooth
     conf_msg "Bluetooth has been re-enabled"
-    space_2
 else
     systemctl stop bluetooth.service
     systemctl disable bluetooth.service > /dev/null 2>&1
@@ -497,8 +504,11 @@ else
     echo "blacklist bluetooth" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist btusb" | tee -a "$blacklist_file" > /dev/null
     conf_msg "Bluetooth has been disabled and added to the kernel module blacklist"
-    space_2
 fi
+
+space_2
+space_1
+
 
 # === FIREWIRE ===
 
@@ -506,7 +516,7 @@ fi
 
 while true; do
 
-read -rp "Question: Do you use any Firewire connected devices? (y/n): " firewire_response
+read -rp "${bold}Question:${normal} Do you use any Firewire connected devices? (y/n): " firewire_response
 
 case $firewire_response in 
 	[Yy] ) firewire_response="Y";
@@ -520,15 +530,17 @@ done
 
 if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
     conf_msg "Firewire remains enabled"
-    space_2
 else
     rmmod ohci1394 sbp2 firewire_core > /dev/null 2>&1
     echo "blacklist firewire-core" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist ohcil394" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist sbp2" | tee -a "$blacklist_file" > /dev/null
     conf_msg "Firewire has been disabled and added to the kernel module blacklist"
-    space_2
 fi
+
+space_2
+space_1
+
 
 # === THUNDERBOLT ===
 
@@ -536,7 +548,7 @@ fi
 
 while true; do
 
-read -rp "Question: Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
+read -rp "${bold}Question:${normal} Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
 
 case $thunderbolt_response in 
 	[Yy] ) thunderbolt_response="Y";
@@ -587,7 +599,7 @@ curl --request GET -sL --url "$download_url" --output "$workdir/$download_file"
 response=$?
 
 if [ $response -ne 0 ]; then
-    short_msg "[ERROR] Could not download file from '$download_url'" >&2
+    short_msg "${bold}[ERROR]${normal} Could not download file from '$download_url'" >&2
     rm -Rf "$workdir"
     return 1
 fi
@@ -598,18 +610,18 @@ if [ -x "$(command -v minisign)" ]; then
     valid_file=$?
 
     if [ $valid_file -ne 0 ]; then
-      short_msg "[ERROR] Downloaded file has failed signature verification. Update aborted." >&2
+      short_msg "${bold}[ERROR]${normal} Downloaded file has failed signature verification. Update aborted." >&2
       rm -Rf "$workdir"
       return 1
     fi
 
 else
-    short_msg '[WARN] minisign is not installed, downloaded file signature could not be verified.'
+    short_msg '${bold}[WARN]${normal} minisign is not installed, downloaded file signature could not be verified.'
+    space_1
 fi
 
 tar xz -C "$workdir" -f "$workdir/$download_file" "${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy" "${PLATFORM}-${CPU_ARCH}/example-dnscrypt-proxy.toml"
 mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}"/* "${INSTALL_DIR}/"
-chmod u+x "${INSTALL_DIR}/dnscrypt-proxy"
 mv -f "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.toml"
 
 config_file="${INSTALL_DIR}/dnscrypt-proxy.toml"
@@ -623,7 +635,6 @@ sed -i "s/blocked-names.txt/blocklist.txt/" "$config_file"
 
 # Basic ad blocking - get blocklist combining script
 curl --request GET -sL --url "$download_url2" --output "$INSTALL_DIR/$download_file2"
-chmod u+x "${INSTALL_DIR}/$download_file2"
 
 # Add blocklist URLs to blocklist combining script config
 cat > "${INSTALL_DIR}/domains-blocklist.conf" << EOF
@@ -665,7 +676,10 @@ https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/
 https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
 EOF
 
-sleep 1
+# Change permissions of all dnscrypt-proxy files
+chown -R root "${INSTALL_DIR}/" 
+chgrp -R root "${INSTALL_DIR}/"
+chmod -R 744 "${INSTALL_DIR}/"
 
 # Create blocklist file for dnscrypt-proxy
 python3 "${INSTALL_DIR}/generate-domains-blocklist.py" -o blocklist.txt
@@ -686,7 +700,7 @@ ${INSTALL_DIR}/dnscrypt-proxy -service install
 sleep 1
 conf_msg "dnscrypt-proxy installed"
 space_1
-short_msg "Starting dnscrypt-proxy... This make take several minutes."
+short_msg "Starting dnscrypt-proxy... This make take a while."
 ${INSTALL_DIR}/dnscrypt-proxy -service start
 
 rm -Rf "$workdir"
@@ -872,8 +886,6 @@ else
     short_msg "Thank you for running the solidcore script."
 	space_1
     short_msg "Please use the github page to report any issues and suggest improvements."
-	space_1
-    short_msg "If you encounter any issues or have any further hardening suggestions then please report them on Github."
     space_1
     short_msg "https://github.com/solidc0re/solidcore-scripts"
 	space_1
