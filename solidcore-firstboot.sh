@@ -135,6 +135,7 @@ case $hostname_response in
         echo ">";
 esac
 done
+space_2
 
 if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
     # Prompt user for a new hostname
@@ -210,6 +211,7 @@ else
     systemctl disable cups > /dev/null 2>&1
     systemctl --now mask cups > /dev/null 2>&1
     systemctl daemon-reload
+    space_1
     conf_msg "Printer service (CUPS) has been stopped and disabled"
 fi
 space_2
@@ -234,7 +236,7 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     
     space_1
     short_msg "Installing USBGaurd. This may take a while."
-    space_1
+    echo
     rpm-ostree install usbguard
     script_path="/etc/solidcore/solidcore-secondboot.sh"
 
@@ -335,6 +337,7 @@ Terminal=true
 Icon=utilities-terminal
 EOF
 
+    space_1
     conf_msg "USBGuard staged for deployment on next reboot"
     space_2
     space_1
@@ -367,6 +370,7 @@ EOF
                     # Create the udev rules file and add the rule content
                     echo "$RULE_CONTENT" | tee /etc/udev/rules.d/70-titan-key.rules > /dev/null
                     udevadm control --reload-rules && udevadm trigger
+                    space_1
                     conf_msg "Google Titan Security Key udev rules installed"
                     break
                     ;;
@@ -375,6 +379,7 @@ EOF
                     wget https://github.com/Yubico/libfido2/raw/main/udev/70-u2f.rules
                     mv 70-u2f.rules /etc/udev/rules.d/
                     udevadm control --reload-rules && udevadm trigger
+                    space_1
                     conf_msg "Yubico's YubiKey udev rules installed"
                     break
                     ;;
@@ -383,6 +388,7 @@ EOF
                     wget https://raw.githubusercontent.com/Nitrokey/libnitrokey/master/data/41-nitrokey.rules
                     mv 41-nitrokey.rules /etc/udev/rules.d/
                     udevadm control --reload-rules && udevadm trigger
+                    space_1
                     conf_msg "Nitrokey udev rules installed"
                     break
                     ;;
@@ -391,12 +397,14 @@ EOF
                     wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/pages/49-onlykey.rules
                     mv 49-onlykey.rules /etc/udev/rules.d/
                     udevadm control --reload-rules && udevadm trigger
+                    space_1
                     conf_msg "OnlyKey udev rules installed"
                     break
                     ;;
                 "Other")
-                    echo "Other hardware tokens are not currently supported by this script."
-                    echo "Please check with your hardware security key supplier for instructions on how to implement the required udev rules."
+                    space_1
+                    short_msg "Other hardware tokens are not currently supported by this script."
+                    short_msg "Please check with your hardware security key supplier for instructions on how to implement the required udev rules."
                     sleep 3
                     break
                     ;;
@@ -409,6 +417,7 @@ else
     rmmod usbcore usb_storage > /dev/null 2>&1
     echo "blacklist usb_storage" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist usbcore" | tee -a "$blacklist_file" > /dev/null
+    space_1
     conf_msg "USB has been disabled and added to the kernel module blacklist"
 fi
 
@@ -434,10 +443,12 @@ esac
 done
 
 if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
+    space_1
     conf_msg "Webcam remains enabled"
 else
     rmmod uvcvideo > /dev/null 2>&1
     echo "blacklist uvcvideo" | tee -a "$blacklist_file" > /dev/null
+    space_1
     conf_msg "Webcam has been disabled and added to the kernel module blacklist"
 fi
 
@@ -467,9 +478,11 @@ if [[ "$wifi_response" =~ ^[Yy]$ ]]; then
     rfkill block all
     sleep 1
     rfkill unblock wifi
+    space_1
     conf_msg "All wireless devices, except Wi-Fi have been disabled"
 else
     rfkill block all
+    space_1
     conf_msg "All wireless devices have been disabled"
 fi
 
@@ -497,6 +510,7 @@ done
 
 if [[ "$bluetooth_response" =~ ^[Yy]$ ]]; then
     rfkill unblock bluetooth
+    space_1
     conf_msg "Bluetooth has been re-enabled"
 else
     systemctl stop bluetooth.service
@@ -505,6 +519,7 @@ else
     systemctl daemon-reload
     echo "blacklist bluetooth" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist btusb" | tee -a "$blacklist_file" > /dev/null
+    space_1
     conf_msg "Bluetooth has been disabled and added to the kernel module blacklist"
 fi
 
@@ -531,12 +546,14 @@ esac
 done
 
 if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
+    space_1
     conf_msg "Firewire remains enabled"
 else
     rmmod ohci1394 sbp2 firewire_core > /dev/null 2>&1
     echo "blacklist firewire-core" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist ohcil394" | tee -a "$blacklist_file" > /dev/null
     echo "blacklist sbp2" | tee -a "$blacklist_file" > /dev/null
+    space_1
     conf_msg "Firewire has been disabled and added to the kernel module blacklist"
 fi
 
@@ -563,22 +580,25 @@ esac
 done
 
 if [[ "$thunderbolt_response" =~ ^[Yy]$ ]]; then
+    space_1
     conf_msg "Thunderbolt remains enabled"
-    space_2
+    
 else
     # Get a list of active Thunderbolt domains
     active_domains=$(boltctl list | awk '/connected/ {print $1}')
 
     # Disable each active domain
     for domain in $active_domains; do
-        echo "Disabling Thunderbolt domain: $domain"
+        short_msg "Disabling Thunderbolt domain: $domain"
         boltctl disable "$domain"
     done
     echo "blacklist thunderbolt" | tee -a "$blacklist_file" > /dev/null
+    space_1
     conf_msg "Thunderbolt has been disabled and added to the kernel module blacklist"
-    space_2
 fi
 
+space_2
+space_1
 
 # === DNSCRYPT-PROXY ===
 
@@ -677,6 +697,12 @@ https://v.firebog.net/hosts/RPiList-Phishing.txt
 https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt
 https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts
 https://urlhaus.abuse.ch/downloads/hostfile/
+
+# === MEGA LISTS ===
+https://download.dnscrypt.info/blocklists/domains/mybase.txt # DNSCrypt List by Frank Denis
+https://raw.githubusercontent.com/notracking/hosts-blocklists/master/dnscrypt-proxy/dnscrypt-proxy.blacklist.txt # NoTracking
+https://big.oisd.nl/domainswild # OISD
+https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts # Steven Black's Unified Hosts
 
 
 # === PRIVACY ===
@@ -803,7 +829,7 @@ EOL
 systemctl daemon-reload
 
 # Restore SELinux policies to /usr/local/sbin
-restorecon -Rv /usr/local/bin
+restorecon -Rv /usr/local/sbin
 
 # Change permissions of all dnscrypt-proxy files
 chown -R root "${INSTALL_DIR}/" 
@@ -811,7 +837,7 @@ chgrp -R root "${INSTALL_DIR}/"
 chmod -R 775 "${INSTALL_DIR}/"
 
 # Create blocklist file for dnscrypt-proxy
-python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "${INSTALL_DIR}/${download_file3}" -i -o "${INSTALL_DIR}/blocklist.txt"
+python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "${INSTALL_DIR}/${download_file3}" -i -o "${INSTALL_DIR}/blocklist.txt"  > /dev/null
 
 # Disable resolved
 systemctl stop systemd-resolved
@@ -824,17 +850,15 @@ nameserver 127.0.0.1
 options edns0
 EOF
 
-# Install dnscrypt=proxy and tidy up
+# Install and start dnscrypt-proxy service, then tidy up
 ${INSTALL_DIR}/dnscrypt-proxy -service install
 sleep 1
-conf_msg "dnscrypt-proxy installed"
-space_1
-short_msg "Starting dnscrypt-proxy... This make take a while."
-${INSTALL_DIR}/dnscrypt-proxy -service start
 
+${INSTALL_DIR}/dnscrypt-proxy -service start > /dev/null
 rm -Rf "$workdir"
 
-conf_msg "dnscrypt-proxy update timer installed"
+space_1
+conf_msg "dnscrypt-proxy installed"
 
 
 # === MACHINE ID ===
@@ -847,6 +871,7 @@ echo "$new_machine_id" | sudo tee /etc/machine-id > /dev/null
 # Change machine ID in /var/lib/dbus/machine-id
 echo "$new_machine_id" | sudo tee /var/lib/dbus/machine-id > /dev/null
 
+space_1
 conf_msg "Generic Machine ID applied"
 
 
@@ -862,6 +887,7 @@ for sc_timer in "${systemd_timers[@]}"; do
     systemctl enable --now "${sc_timer}" > /dev/null 2>&1
 done
 
+space_1
 conf_msg "Automatic update timers initiated"
 space_2
 
@@ -872,31 +898,33 @@ rm /etc/exg/autostart/solidcore-firstboot.desktop > /dev/null 2>&1
 
 # Display notice regarding additional 
 sleep 1
+space_1
 short_msg "Blacklisted kernel modules will not load on next reboot. They have been temporarily disabled until then."
-space_2
 sleep 2
 
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
-	short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard."
+	space_1
+    short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard."
     space_1
     short_msg "Another script will guide you through whitelisting your USB devices."
 	sleep 1
-    space_1
-    read -n 1 -s -r -p "Press any key to continue..."
     space_2
+    read -n 1 -s -r -p "Press any key to continue..."
+    space_1
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
-                echo -ne "\r>  Rebooting in $i second... "
+                echo -ne "\r>  Rebooting in ${bold}$i${normal} second... "
             else
-                echo -ne "\r>  Rebooting in $i seconds..."
+                echo -ne "\r>  Rebooting in ${bold}$i${normal} seconds..."
             fi
         sleep 1
         done
     echo -e "\r>  Rebooting now!            "
     reboot
 else
-    short_msg "Thank you for running the solidcore script."
+    space_1
+    short_msg "${bold}Thank you for running the solidcore script.${normal}"
 	space_1
     short_msg "Please use the github page to report any issues and suggest improvements."
     space_1
