@@ -591,11 +591,11 @@ fi
 # === DNSCRYPT-PROXY ===
 
 # Install dnscrypt-proxy
-INSTALL_DIR="/opt/dnscrypt-proxy"
+INSTALL_DIR="/usr/local/sbin/dnscrypt-proxy"
 LATEST_URL="https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest"
 PLATFORM="linux"
 CPU_ARCH="x86_64"
-workdir="/opt/dnscrypt-proxy/tmp"
+workdir="/usr/local/sbin/dnscrypt-proxy/tmp"
 download_url="$(curl -sL "$LATEST_URL" | grep dnscrypt-proxy-${PLATFORM}_${CPU_ARCH}- | grep browser_download_url | head -1 | cut -d \" -f 4)"
 download_file="dnscrypt-proxy-update.tar.gz"
 download_url2="https://raw.githubusercontent.com/DNSCrypt/dnscrypt-proxy/master/utils/generate-domains-blocklist/generate-domains-blocklist.py"
@@ -700,7 +700,7 @@ EOF
 cat > "$INSTALL_DIR"/dnscrypt-proxy-update.sh << EOF
 #! /bin/sh
 
-INSTALL_DIR="/opt/dnscrypt-proxy"
+INSTALL_DIR="/usr/local/sbin/dnscrypt-proxy"
 LATEST_URL="https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest"
 DNSCRYPT_PUBLIC_KEY="RWTk1xXqcTODeYttYMCMLo0YJHaFEHn7a3akqHlb/7QvIQXHVPxKbjB5"
 PLATFORM="linux"
@@ -809,6 +809,9 @@ EOL
 
 # Reload systemd configuration after creating the files
 systemctl daemon-reload
+
+# Restore SELinux policies to /usr/local/sbin
+restorecon -Rv /usr/local/bin
 
 # Change permissions of all dnscrypt-proxy files
 chown -R root "${INSTALL_DIR}/" 
