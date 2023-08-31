@@ -101,14 +101,23 @@ fi
 short_msg "As part of solidcore's hardening, new password policies were implemented."
 sleep 1
 space_1
-short_msg "You are now required to set a new password. 12 characters minimum!"
-space_1
-short_msg "Enter it below."
-space_1
-echo
-passwd > /dev/null
-space_1
-conf_msg "New password set"
+while true; do
+    short_msg "You are now required to set a new password. 12 characters minimum!"
+    space_1
+    short_msg "Enter it below."
+    space_1
+    echo
+    passwd > /dev/null
+    if [ $? -eq 0 ]; then
+        space_1
+        conf_msg "New password set"
+        break
+    else
+        space_1
+        short_msg "Password change failed. Please try again."
+        space_1
+    fi
+done
 space_2
 space_1
 
@@ -143,7 +152,6 @@ if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
     conf_msg "Hostname is now $new_hostname"
 else
     short_msg "Skipping..."
-
 fi
 space_2
 space_1
@@ -165,18 +173,28 @@ done
 
 if [[ "$grub_response" =~ ^[Yy]$ ]]; then
     # Generate a new GRUB password hash
-    read -rsp "Enter the new GRUB password: " password
-    echo
-    password_hash=$(echo -n "$password" | grub-mkpasswd-pbkdf2)
+    while true; do
+        space_1
+        read -rsp "Enter the new GRUB password: " password
+        space_1
+        read -rsp "Confirm the new GRUB password: " password_confirm
+        space_1 
+        if [ "$password" = "$password_confirm" ]; then
+            password_hash=$(echo -n "$password" | grub-mkpasswd-pbkdf2)
 
-    # Update the GRUB configuration file
-    new_entry="set superusers=\"root\"\npassword_pbkdf2 root $password_hash"
-    sed -i "/^set superusers/d" /etc/grub.d/40_custom
-    echo -e "$new_entry" | tee -a /etc/grub.d/40_custom > /dev/null
+            # Update the GRUB configuration file
+            new_entry="set superusers=\"root\"\npassword_pbkdf2 root $password_hash"
+            sed -i "/^set superusers/d" /etc/grub.d/40_custom
+            echo -e "$new_entry" | tee -a /etc/grub.d/40_custom > /dev/null
 
-    # Regenerate the GRUB configuration
-    grub-mkconfig -o /boot/grub/grub.cfg
-    conf_msg "GRUB password updated"
+            # Regenerate the GRUB configuration
+            grub-mkconfig -o /boot/grub/grub.cfg
+            conf_msg "GRUB password updated"
+            break
+        else
+            short_msg "Passwords do not match. Please try again."
+        fi
+    done
 else
     short_msg "Skipping..."
 fi
@@ -679,8 +697,6 @@ https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/
 https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
 EOF
 
-# Install dnscrypt-proxy updater
-
 # Create dnscrypt-proxy update script
 cat > "$INSTALL_DIR"/dnscrypt-proxy-update.sh << EOF
 #! /bin/sh
@@ -801,7 +817,8 @@ chgrp -R root "${INSTALL_DIR}/"
 chmod -R 776 "${INSTALL_DIR}/"
 
 # Create blocklist file for dnscrypt-proxy
-python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -r "{$INSTALL_DIR}/${download_file3}" -i -o blocklist.txt
+# python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -r "{$INSTALL_DIR}/${download_file3}" -i -o blocklist.txt <-- doesn't work
+python3 ${INSTALL_DIR}/${download_file2} -i -o blocklist.txt # another attempt to get this to work
 
 # Disable resolved
 systemctl stop systemd-resolved
