@@ -137,18 +137,10 @@ esac
 done
 
 if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
-
     # Prompt user for a new hostname
     read -r -p "Enter a new, preferably generic hostname (e.g. hostname, host, laptop...): " new_hostname
-
-    # Temporarily change the hostname
-    hostname "$new_hostname"
-
-    # Update /etc/hostname
-    echo "$new_hostname" | tee /etc/hostname > /dev/null
-
-    # Update /etc/hosts
-    sed -i "s/127.0.1.1.*/127.0.1.1\t$new_hostname/" /etc/hosts
+    # Update hostname
+    hostnamectl set-hostname "$new_hostname" 
     conf_msg "Hostname is now $new_hostname"
 else
     short_msg "Skipping..."
