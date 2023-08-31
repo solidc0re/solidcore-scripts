@@ -50,13 +50,14 @@ NC='\033[0m' # No Color
 
 conf_msg() {
     short_msg "$1"
-    echo -e " ${GREEN}✓${NC}"
+    echo -ne " ${GREEN}✓${NC}"
 }
 
 # Create two line gap
 
 space_2() {
-    long_msg ">
+    long_msg "
+>
 >"
 }
 
@@ -64,7 +65,8 @@ space_2() {
 # Create one line gap
 
 space_1() {
-    long_msg ">"
+    long_msg "
+>"
 }
 
 
@@ -604,9 +606,8 @@ else
     short_msg '[WARN] minisign is not installed, downloaded file signature could not be verified.'
 fi
 
-tar xz -C "$workdir" -f "$workdir/$download_file" ${PLATFORM}-${CPU_ARCH}/*dnscrypt-proxy*
-mv -f "${INSTALL_DIR}/dnscrypt-proxy" "${INSTALL_DIR}/dnscrypt-proxy.old"
-mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}/*dnscrypt-proxy*" "${INSTALL_DIR}/"
+tar xz -C "$workdir" -f "$workdir/$download_file" "${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy" "${PLATFORM}-${CPU_ARCH}/example-dnscrypt-proxy.toml"
+mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}/*" "${INSTALL_DIR}/"
 chmod u+x "${INSTALL_DIR}/dnscrypt-proxy"
 mv -f "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.toml"
 
@@ -625,18 +626,41 @@ curl --request GET -sL --url "$download_url2" --output "$INSTALL_DIR/$download_f
 # Add blocklist URLs to blocklist combining script config
 cat > "${INSTALL_DIR}/domains-blocklist.conf" << EOF
 # === AD BLOCKING ===
-
-# Adaway - opensource adblocker
+# Green lists from firebog.net
 https://adaway.org/hosts.txt
+https://v.firebog.net/hosts/AdguardDNS.txt
+https://v.firebog.net/hosts/Admiral.txt
+https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt
+https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
+https://v.firebog.net/hosts/Easylist.txt
+https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
+https://raw.githubusercontent.com/FadeMind/hosts.extras/master/UncheckyAds/hosts
+https://raw.githubusercontent.com/bigdargon/hostsVN/master/hosts
 
-# OISD Small blocklist - mostly blocks ads; no false positives
-https://small.oisd.nl/domainswild
+# === MALICIOUS ===
+# Green lists from firebog.net
+https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareHosts.txt
+https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt
+https://s3.amazonaws.com/lists.disconnect.me/simple_malvertising.txt
+https://v.firebog.net/hosts/Prigent-Crypto.txt
+https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Risk/hosts
+https://bitbucket.org/ethanr/dns-blacklists/raw/8575c9f96e5b4a1308f2f12394abd86d0927a4a0/bad_lists/Mandiant_APT1_Report_Appendix_D.txt
+https://phishing.army/download/phishing_army_blocklist_extended.txt
+https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-malware.txt
+https://v.firebog.net/hosts/RPiList-Malware.txt
+https://v.firebog.net/hosts/RPiList-Phishing.txt
+https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt
+https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts
+https://urlhaus.abuse.ch/downloads/hostfile/
 
 
 # === PRIVACY ===
-
-# Privacy list from firebog.net - a great blocklist resource
+# Green lists from firebog.net
 https://v.firebog.net/hosts/Easyprivacy.txt
+https://v.firebog.net/hosts/Prigent-Ads.txt
+https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.2o7Net/hosts
+https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
+https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
 EOF
 
 # Create blocklist file for dnscrypt-proxy
