@@ -813,7 +813,7 @@ systemctl daemon-reload
 # Change permissions of all dnscrypt-proxy files
 chown -R root "${INSTALL_DIR}/" 
 chgrp -R root "${INSTALL_DIR}/"
-chmod -R 776 "${INSTALL_DIR}/"
+chmod -R 775 "${INSTALL_DIR}/"
 
 # Create blocklist file for dnscrypt-proxy
 python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "${INSTALL_DIR}/${download_file3}" -i -o "${INSTALL_DIR}/blocklist.txt"
