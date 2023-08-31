@@ -58,7 +58,7 @@ conf_msg() {
 space_2() {
     long_msg "
 >
->"
+>  "
 }
 
 
@@ -66,7 +66,7 @@ space_2() {
 
 space_1() {
     long_msg "
->"
+>  "
 }
 
 
@@ -101,6 +101,7 @@ short_msg "You are now required to set a new password. 12 characters minimum!"
 space_1
 short_msg "Enter it below."
 space_1
+echo
 passwd > /dev/null
 space_1
 conf_msg "New password set"
@@ -662,6 +663,8 @@ https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.2o7Net/hosts
 https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
 https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
 EOF
+
+sleep 1
 
 # Create blocklist file for dnscrypt-proxy
 python3 "${INSTALL_DIR}/generate-domains-blocklist.py" -o blocklist.txt
