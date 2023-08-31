@@ -110,7 +110,7 @@ space_2
 
 # Ask the user if they want to set a new generic hostname
 while true; do
-read -p ">  Question: Do you want to set a generic hostname [recommended]? (y/n)`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. :  '`" hostname_response
+read -p "  Question: Do you want to set a generic hostname [recommended]? (y/n)`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. :  '`" hostname_response
 case $hostname_response in 
 	[Yy] ) hostname_response="Y";
 		break;;
@@ -147,7 +147,7 @@ fi
 
 # Ask the user if they want to set a GRUB password
 while true; do
-read -p ">  Question: Do you want to set a GRUB password [recommended]? (y/n): " grub_response
+read -p "  Question: Do you want to set a GRUB password [recommended]? (y/n): " grub_response
 case $grub_response in 
 	[Yy] ) grub_response="Y";
 		break;;
@@ -184,7 +184,7 @@ fi
 
 # Enable or disable CUPS based on user response
 while true; do
-read -p ">  Question: Do you use a printer? (y/n): " printer_response
+read -p "  Question: Do you use a printer? (y/n): " printer_response
 case $printer_response in 
 	[Yy] ) printer_response="Y";
 		break;;
@@ -214,7 +214,7 @@ fi
 
 # Install USBGuard or disable USB based on user response
 while true; do
-read -p ">  Question: Do you use any USB devices? (y/n): " usb_response
+read -p "  Question: Do you use any USB devices? (y/n): " usb_response
 case $usb_response in 
 	[Yy] ) usb_response="Y";
 		break;;
@@ -275,7 +275,7 @@ space_2
 
 # Ask user to plugin all used USB devices
 short_msg "USBGuard setup: plugin the USB devices you wish to whitelist.
-read -n 1 -s -r -p ">  Once you've plugged them in, press any key to continue."
+read -n 1 -s -r -p "  Once you've plugged them in, press any key to continue."
         
 # Get USB device IDs and create whitelist rules
 sh -c 'usbguard generate-policy > /etc/usbguard/rules.conf'
@@ -332,7 +332,7 @@ EOF
     
     while true; do
     
-    read -p ">  Question: Do you use any hardware security keys? (y/n): " token_response
+    read -p "  Question: Do you use any hardware security keys? (y/n): " token_response
     
     case $token_response in 
 	[Yy] ) token_response="Y";
@@ -412,7 +412,7 @@ fi
 
 while true; do
 
-read -p ">  Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
+read -p "  Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
 
 case $webcam_response in 
 	[Yy] ) webcam_response="Y";
@@ -441,7 +441,7 @@ fi
 
 while true; do
 
-read -p ">  Question: Do you use Wi-Fi? (y/n): " wifi_response
+read -p "  Question: Do you use Wi-Fi? (y/n): " wifi_response
 
 case $wifi_response in 
 	[Yy] ) wifi_response="Y";
@@ -472,7 +472,7 @@ fi
 
 while true; do
 
-read -p ">  Question: Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
+read -p "  Question: Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
 
 case $bluetooth_response in 
 	[Yy] ) bluetooth_response="Y";
@@ -505,7 +505,7 @@ fi
 
 while true; do
 
-read -p ">  Question: Do you use any Firewire connected devices? (y/n): " firewire_response
+read -p "  Question: Do you use any Firewire connected devices? (y/n): " firewire_response
 
 case $firewire_response in 
 	[Yy] ) firewire_response="Y";
@@ -535,7 +535,7 @@ fi
 
 while true; do
 
-read -p ">  Question: Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
+read -p "  Question: Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
 
 case $thunderbolt_response in 
 	[Yy] ) thunderbolt_response="Y";
@@ -607,7 +607,7 @@ else
 fi
 
 tar xz -C "$workdir" -f "$workdir/$download_file" "${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy" "${PLATFORM}-${CPU_ARCH}/example-dnscrypt-proxy.toml"
-mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}/*" "${INSTALL_DIR}/"
+mv -f "${workdir}/${PLATFORM}-${CPU_ARCH}"/* "${INSTALL_DIR}/"
 chmod u+x "${INSTALL_DIR}/dnscrypt-proxy"
 mv -f "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-proxy.toml"
 
@@ -850,7 +850,7 @@ sleep 1
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
 	short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard. Another script will guide you through whitelisting your USB devices."
 	space_1
-    read -n 1 -s -r -p ">  Press any key to continue"
+    read -n 1 -s -r -p "  Press any key to continue"
     space_2
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
@@ -874,5 +874,5 @@ else
     short_msg "Enjoy your new hardened immutable Fedora :)"
     space_2
     sleep 2
-    exit 0
 fi
+echo
