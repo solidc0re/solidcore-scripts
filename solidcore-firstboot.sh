@@ -178,15 +178,18 @@ if [[ "$grub_response" =~ ^[Yy]$ ]]; then
         echo
         grub2-setpassword
         if [ $? -eq 0 ]; then
-        space_1
-        conf_msg "New password set"
-        break
-    else
-        space_1
-        short_msg "Password change failed. Please try again."
-        space_1
-    fi
-done
+            space_1
+            conf_msg "New password set"
+            break
+        else
+            space_1
+            short_msg "Password change failed. Please try again."
+            space_1
+        fi
+    done
+else
+    short_msg "Skipping..."
+fi
 
 #old code
 #if [[ "$grub_response" =~ ^[Yy]$ ]]; then
