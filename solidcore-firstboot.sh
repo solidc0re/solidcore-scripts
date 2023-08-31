@@ -677,13 +677,15 @@ nameserver 127.0.0.1
 options edns0
 EOF
 
-${INSTALL_DIR}/dnscrypt-proxy -check
-${INSTALL_DIR}/dnscrypt-proxy -service install > /dev/null
+# Install dnscrypt=proxy and tidy up
+${INSTALL_DIR}/dnscrypt-proxy -service install
+sleep 1
+conf_msg "dnscrypt-proxy installed"
+space_1
+short_msg "Starting dnscrypt-proxy... This make take several minutes."
 ${INSTALL_DIR}/dnscrypt-proxy -service start
 
-#rm -Rf "$workdir"
-
-conf_msg 'dnscrypt-proxy installed'
+rm -Rf "$workdir"
 
 
 # Install dnscrypt-proxy updater
@@ -784,8 +786,8 @@ Description=Automatically update dnscrypt-proxy blocklist and application
 
 [Service]
 Type=oneshot
-ExecStart=python3 '${INSTALL_DIR}'/generate-domains-blocklist.py -o blocklist.txt
-ExecStart='${INSTALL_DIR}'/dnscrypt-proxy-update.sh
+ExecStart=python3 ${INSTALL_DIR}/generate-domains-blocklist.py -o blocklist.txt
+ExecStart=${INSTALL_DIR}/dnscrypt-proxy-update.sh
 EOL
 
 # Create the timer file for dnscrypt-proxy update
