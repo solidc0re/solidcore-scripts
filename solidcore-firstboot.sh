@@ -588,6 +588,8 @@ download_url="$(curl -sL "$LATEST_URL" | grep dnscrypt-proxy-${PLATFORM}_${CPU_A
 download_file="dnscrypt-proxy-update.tar.gz"
 download_url2="https://raw.githubusercontent.com/DNSCrypt/dnscrypt-proxy/master/utils/generate-domains-blocklist/generate-domains-blocklist.py"
 download_file2="generate-domains-blocklist.py"
+download_url3="https://raw.githubusercontent.com/DNSCrypt/dnscrypt-proxy/master/utils/generate-domains-blocklist/domains-time-restricted.txt"
+download_file3="domains-time-restricted.txt"
 
 mkdir -p "$workdir"
 
@@ -633,6 +635,9 @@ sed -i "s/blocked-names.txt/blocklist.txt/" "$config_file"
 
 # Basic ad blocking - get blocklist combining script
 curl --request GET -sL --url "$download_url2" --output "$INSTALL_DIR/$download_file2"
+
+# generate-domains-blocklist.py fails without this file
+curl --request GET -sL --url "$download_url3" --output "$INSTALL_DIR/$download_file3"
 
 # Add blocklist URLs to blocklist combining script config
 cat > "${INSTALL_DIR}/domains-blocklist.conf" << EOF
