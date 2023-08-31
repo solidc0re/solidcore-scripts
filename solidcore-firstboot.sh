@@ -111,7 +111,7 @@ space_2
 
 # Ask the user if they want to set a new generic hostname
 while true; do
-read -rp "  Question: Do you want to set a generic hostname [recommended]? (y/n)`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. :  '`" hostname_response
+read -rp "Question: Do you want to set a generic hostname [recommended]?`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
 case $hostname_response in 
 	[Yy] ) hostname_response="Y";
 		break;;
@@ -148,7 +148,7 @@ fi
 
 # Ask the user if they want to set a GRUB password
 while true; do
-read -rp "  Question: Do you want to set a GRUB password [recommended]? (y/n): " grub_response
+read -rp "Question: Do you want to set a GRUB password [recommended]? (y/n): " grub_response
 case $grub_response in 
 	[Yy] ) grub_response="Y";
 		break;;
@@ -185,7 +185,7 @@ fi
 
 # Enable or disable CUPS based on user response
 while true; do
-read -rp "  Question: Do you use a printer? (y/n): " printer_response
+read -rp "Question: Do you use a printer? (y/n): " printer_response
 case $printer_response in 
 	[Yy] ) printer_response="Y";
 		break;;
@@ -215,7 +215,7 @@ fi
 
 # Install USBGuard or disable USB based on user response
 while true; do
-read -rp "  Question: Do you use any USB devices? (y/n): " usb_response
+read -rp "Question: Do you use any USB devices? (y/n): " usb_response
 case $usb_response in 
 	[Yy] ) usb_response="Y";
 		break;;
@@ -256,7 +256,7 @@ short_msg() {
 
 # Non-interruptable version for confirmation messages
 
-GREEN='\033[0;32m'
+GREEN='\033[1;32m'
 NC='\033[0m' # No Color
 
 conf_msg() {
@@ -333,7 +333,7 @@ EOF
     
     while true; do
     
-    read -rp "  Question: Do you use any hardware security keys? (y/n): " token_response
+    read -rp "Question: Do you use any hardware security keys? (y/n): " token_response
     
     case $token_response in 
 	[Yy] ) token_response="Y";
@@ -413,7 +413,7 @@ fi
 
 while true; do
 
-read -rp "  Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
+read -rp "Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you ever use it? (y/n): " webcam_response
 
 case $webcam_response in 
 	[Yy] ) webcam_response="Y";
@@ -442,7 +442,7 @@ fi
 
 while true; do
 
-read -rp "  Question: Do you use Wi-Fi? (y/n): " wifi_response
+read -rp "Question: Do you use Wi-Fi? (y/n): " wifi_response
 
 case $wifi_response in 
 	[Yy] ) wifi_response="Y";
@@ -473,7 +473,7 @@ fi
 
 while true; do
 
-read -rp "  Question: Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
+read -rp "Question: Do you use any Bluetooth connected devices? (y/n): " bluetooth_response
 
 case $bluetooth_response in 
 	[Yy] ) bluetooth_response="Y";
@@ -506,7 +506,7 @@ fi
 
 while true; do
 
-read -rp "  Question: Do you use any Firewire connected devices? (y/n): " firewire_response
+read -rp "Question: Do you use any Firewire connected devices? (y/n): " firewire_response
 
 case $firewire_response in 
 	[Yy] ) firewire_response="Y";
@@ -536,7 +536,7 @@ fi
 
 while true; do
 
-read -rp "  Question: Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
+read -rp "Question: Do you use any Thunderbolt connected devices? (y/n): " thunderbolt_response
 
 case $thunderbolt_response in 
 	[Yy] ) thunderbolt_response="Y";
@@ -623,6 +623,7 @@ sed -i "s/blocked-names.txt/blocklist.txt/" "$config_file"
 
 # Basic ad blocking - get blocklist combining script
 curl --request GET -sL --url "$download_url2" --output "$INSTALL_DIR/$download_file2"
+chmod u+x "${INSTALL_DIR}/$download_file2"
 
 # Add blocklist URLs to blocklist combining script config
 cat > "${INSTALL_DIR}/domains-blocklist.conf" << EOF

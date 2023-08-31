@@ -118,7 +118,7 @@ short_msg() {
 
 # Non-interruptable version for confirmation messages
 
-GREEN='\033[0;32m'
+GREEN='\033[1;32m'
 NC='\033[0m' # No Color
 
 conf_msg() {
