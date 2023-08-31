@@ -172,32 +172,49 @@ esac
 done
 
 if [[ "$grub_response" =~ ^[Yy]$ ]]; then
-    # Generate a new GRUB password hash
+    # Set new GRUB password
     while true; do
         space_1
-        read -rsp "Enter the new GRUB password: " password
+        echo
+        grub2-setpassword
+        if [ $? -eq 0 ]; then
         space_1
-        read -rsp "Confirm the new GRUB password: " password_confirm
-        space_1 
-        if [ "$password" = "$password_confirm" ]; then
-            password_hash=$(echo -n "$password" | grub-mkpasswd-pbkdf2)
+        conf_msg "New password set"
+        break
+    else
+        space_1
+        short_msg "Password change failed. Please try again."
+        space_1
+    fi
+done
 
-            # Update the GRUB configuration file
-            new_entry="set superusers=\"root\"\npassword_pbkdf2 root $password_hash"
-            sed -i "/^set superusers/d" /etc/grub.d/40_custom
-            echo -e "$new_entry" | tee -a /etc/grub.d/40_custom > /dev/null
-
-            # Regenerate the GRUB configuration
-            grub-mkconfig -o /boot/grub/grub.cfg
-            conf_msg "GRUB password updated"
-            break
-        else
-            short_msg "Passwords do not match. Please try again."
-        fi
-    done
-else
-    short_msg "Skipping..."
-fi
+#old code
+#if [[ "$grub_response" =~ ^[Yy]$ ]]; then
+#    # Generate a new GRUB password hash
+#    while true; do
+#        space_1
+#        read -rsp "Enter the new GRUB password: " password
+#        space_1
+#        read -rsp "Confirm the new GRUB password: " password_confirm
+#        space_1 
+#        if [ "$password" = "$password_confirm" ]; then
+#            password_hash=$(echo -n "$password" | grub-mkpasswd-pbkdf2)
+#            # Update the GRUB configuration file
+#            new_entry="set superusers=\"root\"\npassword_pbkdf2 root $password_hash"
+#            sed -i "/^set superusers/d" /etc/grub.d/40_custom
+#            echo -e "$new_entry" | tee -a /etc/grub.d/40_custom > /dev/null
+#            # Regenerate the GRUB configuration
+#            grub-mkconfig -o /boot/grub/grub.cfg
+#            conf_msg "GRUB password updated"
+#            break
+#        else
+#            short_msg "Passwords do not match. Please try again."
+#            space_1
+#        fi
+#    done
+#else
+#    short_msg "Skipping..."
+#fi
 space_2
 space_1
 
@@ -657,6 +674,11 @@ curl --request GET -sL --url "$download_url2" --output "$INSTALL_DIR/$download_f
 # generate-domains-blocklist.py fails without this file
 curl --request GET -sL --url "$download_url3" --output "$INSTALL_DIR/$download_file3"
 
+# generate-domains-blocklist.py fails without this file, too
+cat > "${INSTALL_DIR}/domains-allowlist.txt" << EOF
+# Empty file
+EOF
+
 # Add blocklist URLs to blocklist combining script config
 cat > "${INSTALL_DIR}/domains-blocklist.conf" << EOF
 # === AD BLOCKING ===
@@ -817,8 +839,7 @@ chgrp -R root "${INSTALL_DIR}/"
 chmod -R 776 "${INSTALL_DIR}/"
 
 # Create blocklist file for dnscrypt-proxy
-# python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -r "{$INSTALL_DIR}/${download_file3}" -i -o blocklist.txt <-- doesn't work
-python3 ${INSTALL_DIR}/${download_file2} -i -o blocklist.txt # another attempt to get this to work
+python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "{$INSTALL_DIR}/${download_file3}" -i -o blocklist.txt
 
 # Disable resolved
 systemctl stop systemd-resolved

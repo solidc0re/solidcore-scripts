@@ -346,7 +346,7 @@ fi
 
 # Run update-grub to update GRUB configuration
 if [[ "$test_mode" == false ]]; then
-    if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null 2>&1; then
+    if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null ; then
         conf_msg "GRUB configuration updated."
     else
         echo "Notice: Failed to update GRUB configuration."
