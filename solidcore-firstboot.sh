@@ -801,7 +801,7 @@ chgrp -R root "${INSTALL_DIR}/"
 chmod -R 776 "${INSTALL_DIR}/"
 
 # Create blocklist file for dnscrypt-proxy
-python3 "${INSTALL_DIR}/generate-domains-blocklist.py" -c "${INSTALL_DIR}/domains-blocklist.conf" -i -o blocklist.txt
+python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -r "{$INSTALL_DIR}/${download_file3}" -i -o blocklist.txt
 
 # Disable resolved
 systemctl stop systemd-resolved
