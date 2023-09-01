@@ -12,13 +12,13 @@
 
 
 **This project aims to protect against a variety of attack vectors by:**
-- Securing the bootloader
-- Hardening the kernel
-- Locking down root and implementing strong password policies
-- Encrypting DNS (DNSCrypt protocol) and blocking malicious domains
-- Disabling all unused ports and interfaces
-- Improved firewall settings
-- ... plus more!! :fire:
+- **Securing the bootloader**
+- **Hardening the kernel**
+- **Locking down root and implementing strong password policies**
+- **Encrypting DNS (DNSCrypt protocol) and blocking malicious domains**
+- **Disabling all unused ports and interfaces**
+- **Improved firewall settings**
+- ***... plus more!!*** :fire:
 
 > [!WARNING]
 > Work in progress... *Not currently ready for home use. ALMOST READY!!*
@@ -75,7 +75,8 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - develop the `-server` flag further to eliminate all user interaction
 - write more documentation/start a Github wiki
 
-## Installation
+## Instructions
+### Installing
 It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is only possible during the installation process of the OS. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
 
 To install the solidcore-scripts:
@@ -85,7 +86,7 @@ wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcor
 
 Then follow the on-screen instructions.
 
-## Upgrading
+### Upgrading
 
 Uninstall first, then re-install, just to be safe.
 
@@ -100,7 +101,7 @@ wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcor
 ```
 
 
-## Uninstalling
+### Uninstalling
 Uninstalling reverts all changed system settings to how they previously were, along with uninstalling any solidcore-installed packages.
 ```
 sudo bash /etc/soldicore/uninstall
@@ -127,12 +128,11 @@ Your system will automatically update the following:
 
 Please report any issues and suggested improvements on [this Github page](https://github.com/solidc0re/solidcore-scripts/issues).
 
+## 'How to' guides
+
 <details>
 <summary>How to: whitelist a USB device</summary>
-If you notified the script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible.
-
-
-To whitelist devices:
+If you notified the script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible. To whitelist devices:
 ```
 sudo usbguard list-devices
 ```
@@ -141,10 +141,11 @@ sudo usbguard allow-device <device number>
 ```
 </details>
 
-### How to: add a domain to the DNS allowlist
+<details>
+<summary>How to: add a domain to the DNS allowlist</summary>
 If you're happy with the blocklist set up but there's still the odd domain that you want to allow that's currently being blocked, then the allowlist is for you.
 
-The allowlist is located here: /usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt
+The allowlist is located here: `/usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt`
 
 To edit:
 ```
@@ -153,29 +154,31 @@ sudo nano /usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt
 
 Simply add a domain, such as `github.com`, with each domain on a new line.
 
-Once changes have been made to domains-allowlist.txt, run the following command to apply them:
+Once changes have been made to `domains-allowlist.txt`, run the following command to apply them:
 ```
 sudo systemctl start dnscrypt-proxy-update
 ```
 
 Refer to the (dnscrypt-proxy wiki)[https://github.com/DNSCrypt/dnscrypt-proxy/wiki] if you need further assistance.
+</details>
 
-### How to: change the DNS blocklists
-The blocklists are stored in /usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf.
-
-To edit:
+<details>
+<summary></summary>How to: change the DNS blocklists
+The blocklists are stored in `/usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf`. To edit:
 ```
 sudo nano /usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf
 ```
 
-Once changes have been made to domains-blocklist.conf, run the following command to apply them:
+Once changes have been made to `domains-blocklist.conf`, run the following command to apply them:
 ```
 sudo systemctl start dnscrypt-proxy-update
 ```
 
 Refer to the (dnscrypt-proxy wiki)[https://github.com/DNSCrypt/dnscrypt-proxy/wiki] if you need further assistance.
+</details>
 
-### How to: unblock bluetooth
+<details>
+<summary>How to: unblock bluetooth</summary>
 First:
 ```
 sudo sed -i '/blacklist bluetooth/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
@@ -194,8 +197,10 @@ sudo systemctl unmask bluetooth.service
 ```
 sudo systemctl enable --now bluetooth.service
 ```
+</details>
 
-### How to: unblock Firewire
+<details>
+<summary>How to: unblock Firewire</summary>
 First:
 ```
 sudo sed -i '/blacklist firewire-core/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
@@ -211,8 +216,10 @@ Then reboot. After reboot:
 ```
 sudo insmod firewire_core ohcil394 sbp2
 ```
+</details>
 
-### How to: unblock Thunderbolt
+<details>
+<summary>How to: unblock Thunderbolt</summary>
 ```
 sudo sed -i '/blacklist thunderbolt/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
@@ -228,8 +235,10 @@ Then use:
 sudo boltctl enable <domain>
 ```
 ... for the Thunderbolt domain you wish to enable.
+</details>
 
-### How to: unblock USB
+<details>
+<summary>How to: unblock USB</summary>
 First:
 ```
 sudo sed -i '/blacklist usbcore/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
@@ -242,8 +251,10 @@ Then reboot. After reboot:
 ```
 sudo insmod usbcore usb_storage
 ```
+</details>
 
-### How to: unblock webcam
+<details>
+<summary>How to: unblock webcam</summary>
 First:
 ```
 sudo sed -i '/blacklist uvcvideo/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
@@ -253,16 +264,20 @@ Then reboot. After reboot:
 ```
 sudo insmod uvcvideo
 ```
-
-### How to: unblock Wi-Fi
+</details>
+<details>
+<summary>How to: unblock Wi-Fi</summary>
 ```
 rfkill unblock wifi
 ```
+</details>
 
-### How to: stop mic being muted on login
+<details>
+<summary>How to: stop mic being muted on login</summary>
 ```
 sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop
 ```
+</details>
 
 ## Acknowledgements
 This project is made possible by the diligent and forward-thinking work of the Fedora and RedHat developers and community. A special shout out to the CoreOS and rpm-ostree developers for their excellent work.
