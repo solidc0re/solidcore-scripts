@@ -21,7 +21,7 @@
 - ***... plus more!!*** :fire:
 
 > [!WARNING]
-> Work in progress... *Not currently ready for home use. ALMOST READY!!*
+> Work in progress... *ALMOST READY!!*
 
 
 ## Current features
