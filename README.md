@@ -20,7 +20,7 @@
 - **Improving the firewall settings**
 - :fire: ***... plus more!!*** :fire:
 
-> [!WARNING]
+> [!NOTE]
 > Currently in alpha stage. Only install for testing purposes or if you're really keen. The uninstall script is not fully tested, but all changes instigated by the script are reversible.
 
 
