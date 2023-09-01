@@ -8,7 +8,7 @@
 **:hushed: Thought you were safe?**
 
 
-**... So did I, until I started this project :scream:**
+**... So did I, until I started this project.**
 
 
 **This project aims to protect against a variety of attack vectors by:**
