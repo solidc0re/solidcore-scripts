@@ -21,7 +21,7 @@
 - :fire: ***... plus more!!*** :fire:
 
 > [!WARNING]
-> Work in progress... do not install... *ALMOST READY!!*
+> Currently in alpha stage. Only install for testing purposes or if you're really keen. The uninstall script is not fully tested, but all changes instigated by the script are reversible.
 
 
 ## Current features
@@ -57,7 +57,7 @@ What follows is a long list of the current features:
 - DNSCrypt-proxy installed (no need to trust your ISP, nor your VPN) :heavy_check_mark:
 - DNS blocklists added :heavy_check_mark:
 - Updates scheduled for dnscrypt-proxy and DNS blocklists :heavy_check_mark:
-- Uninstall file (mostly working, not tested recently)
+- Uninstall file (mostly working)
 
 > [!NOTE]
 > Tested on Fedora Silverblue 38.
@@ -84,8 +84,13 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - develop the `-server` flag further to eliminate all user interaction
 - write more documentation/start a Github wiki
 
+For the next release v0.1.5 alpha:
+- get minisign to work properly (dnscrypt-proxy install and updates)
+- user-testing and implement feedback
+- test uninstall process thoroughly
+
 ## Instructions
-### - Installing
+### = Installing =
 It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is only possible during the installation process of the OS. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
 
 To install the solidcore-scripts:
@@ -95,7 +100,7 @@ wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcor
 
 Then follow the on-screen instructions.
 
-### - Upgrading
+### = Upgrading =
 
 Uninstall first, then re-install, just to be safe.
 
@@ -110,7 +115,7 @@ wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcor
 ```
 
 
-### - Uninstalling
+### = Uninstalling =
 Uninstalling reverts all changed system settings to how they previously were, along with uninstalling any solidcore-installed packages.
 ```
 sudo bash /etc/soldicore/uninstall
