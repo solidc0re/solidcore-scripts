@@ -45,9 +45,16 @@
 - Fedora flatpaks replaced with Flathub flatpaks :heavy_check_mark:
 - Mute microphone by default on login :heavy_check_mark:
 - Flatseal installed :heavy_check_mark:
-- Firstboot script installed to ensure: new password set, GRUB password set, unused ports are disabled and blacklisted, USBGuard installed (if required) :heavy_check_mark:
-- DNSCrypt-proxy installed and updates scheduled :heavy_check_mark:
+- Firstboot script installed to ensure:
+  - New password set :heavy_check_mark:
+  - GRUB password set (optional, but recommended) :heavy_check_mark:
+  - Wireless technologies blocked (optional) :heavy_check_mark:
+  - Unused ports are disabled and blacklisted :heavy_check_mark:
+  - USBGuard installed (if required) :heavy_check_mark:
+  - Enable hardware key support (optional) :heavy_check_mark:
+- DNSCrypt-proxy installed :heavy_check_mark:
 - DNS blocklists added :heavy_check_mark:
+- Updates scheduled for dnscrypt-proxy and DNS blocklists :heavy_check_mark:
 - Uninstall file (mostly working, not tested recently)
 
 > [!NOTE]
