@@ -141,6 +141,8 @@ Please report any issues and suggested improvements on [this Github page](https:
 
 <details>
 <summary>How to: whitelist a USB device</summary>
+### How to: whitelist a USB device
+
 If you notified the script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible. To whitelist devices:
 ```
 sudo usbguard list-devices
