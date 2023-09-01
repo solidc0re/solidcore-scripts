@@ -221,8 +221,8 @@ long_msg ">
 >
 >  Starting...
 >
-"
-sleep 2
+>"
+sleep 3
 
 # === SYSCTL PARAMETERS ===
 
@@ -320,7 +320,6 @@ for key in "${!sysctl_settings[@]}"; do
     sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
 done
 conf_msg "Hardened sysctl settings applied"
-space_1
 
 # === BOOTLOADER SETTINGS ===
 
@@ -513,7 +512,6 @@ echo "ExternalSizeMax=0" | tee -a /etc/systemd/coredump.conf > /dev/null
 systemctl daemon-reload
 
 conf_msg "Core dumps disabled"
-space_1
 
 
 # === PASSWORD POLICIES ===
@@ -635,7 +633,7 @@ flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.f
 flatpak remote-modify --no-filter --enable flathub
 
 # Change remotes of existing flathub apps
-short_msg "Replacing Fedora flatpaks with Flathub versions. This could take a while..."
+short_msg "Replacing Fedora flatpaks with Flathub versions. This will take a while..."
 
 # Create undo script only if -server flag absent
 if [[ "$server_mode" == false ]]; then
@@ -655,6 +653,7 @@ fi # End of -server flag if statement
 flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +2 | while read -r flatpak_name; do
     flatpak install -y --noninteractive --reinstall flathub "$flatpak_name" > /dev/null 2>&1
 done
+conf_msg "Done"
 
 # Disable Fedora flatpak repo
 flatpak remote-modify --disable fedora
@@ -708,12 +707,15 @@ chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 # === INSTALLS ===
 
+short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This will take a while..."
+space_1
+
 # Minisign
 rpm-ostree install minisign > /dev/null
-conf_msg "Minisign installed (for dnscrypt-proxy installation & updates)"
+conf_msg "Minisign installed"
 
 # Flatseal
-flatpak install -y com.github.tchx84.Flatseal > /dev/null
+flatpak install -y com.github.tchx84.Flatseal > /dev/null 2>&1
 conf_msg "Flatseal installed (for managing Flatpak permissions)"
 
 
@@ -724,7 +726,7 @@ if [ -e "$PWD/solidcore-firstboot.sh" ]; then
     :
 else
     # Download solidcore-firstboot.sh
-    wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-firstboot.sh > /dev/null
+    wget -q https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-firstboot.sh
 fi
 
 # Make solidcore-firstboot.sh executable
@@ -760,7 +762,7 @@ if [[ "$server_mode" == false ]]; then
         :
     else
         # Download solidcore-uninstall.sh
-        wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-uninstall.sh > /dev/null
+        wget -q https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-uninstall.sh
     fi
 
     # Make solidcore-uninstall.sh executable
