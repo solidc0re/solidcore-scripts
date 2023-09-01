@@ -166,8 +166,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	    fi
     	fi
 	done
-	space_2
-	space_1
 
 	# Run update-grub to update GRUB configuration
 	if grub2-mkconfig -o /boot/grub2/grub.cfg; then
@@ -175,8 +173,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	else
     	short_msg "Failed to update GRUB configuration."
 	fi
-	space_2
-	space_1
 
 
 	# === UNMASK SERVICES ===
@@ -200,15 +196,13 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	# Echo a message
     	conf_msg "$service unmasked"
 	done
-	space_2
-	space_1
 
 	# Stop dnscrypt-proxy
 	/usr/local/sbin/dnscrypt-proxy/dnscrypt-proxy -service stop
+
 	# Restart systemd-resolved
 	systemctl enable --now systemd-resolved
-	space_2
-	space_1
+
 
 	# === REMOVE SOLIDCORE SERVICES ===
 
@@ -233,8 +227,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	    # Echo a message
 	    conf_msg "$service disabled and deleted"
 	done
-	space_2
-	space_1
 
 	# === REMOVE SOLICORE CREATED SCRIPTS & CONFIGS ===
 
@@ -263,8 +255,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	    conf_msg "Solidcore created file removed: $override_file"
 		fi
 	done
-	space_2
-	space_1
 
 
 	# === RESTORE SYSCTL SETTINGS ===
@@ -281,8 +271,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	else
 	    short_msg "Script /etc/solidcore/defaults.sh does not exist."
 	fi
-	space_2
-	space_1
 
      # === RESTORE FEDORA FLATPAK ===
 
@@ -296,8 +284,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	else
 	    short_msg "Script /etc/solidcore/fedora_flatpak.sh does not exist."
 	fi
-	space_2
-	space_1
 
 
 	# === REVERT PASSWORD POLICIES ===
@@ -366,10 +352,9 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	firewall-cmd --set-default-zone public > /dev/null 2>&1
 	firewall-cmd --reload > /dev/null
 	conf_msg "Firewalld zone reset to default (public)"
-	space_2
 
 	# === REBOOT ===
-	short_msg "Reboot required to implement all the changes."
+	short_msg "${bold}Reboot required to implement all the changes.${normal}"
 	space_2
 	read -n 1 -s -r -p "Press any key to continue"
     space_1
