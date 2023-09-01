@@ -21,7 +21,7 @@
 - :fire: ***... plus more!!*** :fire:
 
 > [!WARNING]
-> Work in progress... *ALMOST READY!!*
+> Work in progress... do not install... *ALMOST READY!!*
 
 
 ## Current features
