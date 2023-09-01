@@ -8,8 +8,6 @@
 - solidcore-firstboot.sh is currently operational and functioning
 - solidcore-uninstall.sh currently undergoing active testing
 
-> [!NOTE]
-> Tested on Fedora Silverblue 38.
 
 ## Current features
 Despite the lower version number, this script implements some serious hardening.
@@ -36,6 +34,9 @@ Despite the lower version number, this script implements some serious hardening.
 - [x] DNS blocklists added
 - [x] Firstboot script installed to ensure: new password set, GRUB password set, unused ports are disabled and blacklisted, USBGuard installed (if required)
 - [ ] Uninstall file (mostly working, not tested recently)
+
+> [!NOTE]
+> Tested on Fedora Silverblue 38.
 
 ## Planned features and future goals
 The long-term goal (probably for v1.0) is to have the hardening provided by this script work on both client-side - i.e. manual running of the script on any existing immutable Fedora system - and server-side, so people can carry out an rpm-ostree rebase to a pre-hardened and constantly updated system.
