@@ -1,6 +1,23 @@
 #!/bin/bash
 
-# Solidcore Hardening Script for Fedora's rpm-ostree Operating Systems
+## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
+## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see https://www.gnu.org/licenses/.
+
+# Install script
+
 
 # === FLAGS ===
 
@@ -68,6 +85,8 @@ fi
 
 # === DISPLAY FUNCTIONS ===
 
+# === DISPLAY FUNCTIONS ===
+
 # Interruptable version for long texts
 long_msg() {
     local main_output="$1"
@@ -91,9 +110,9 @@ long_msg() {
 }
 
 # Non-interruptable version for short messages
-
 short_msg() {
     local main_output=">  $1"
+    echo
     local idx=0
     local char
 
@@ -103,26 +122,34 @@ short_msg() {
         sleep 0.015
         idx=$((idx + 1))
     done
-    echo
 }
 
 # Non-interruptable version for confirmation messages
-
-GREEN='\033[1;32m'
+GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 conf_msg() {
     short_msg "$1"
-    echo -e " ${GREEN}✓${NC}"
+    echo -ne " ${GREEN}✓${NC}"
 }
 
-# Create space
+# Create two line gap
+space_2() {
+    long_msg "
+>
+>  "
+}
 
-space_big(
-    long_msg ">
->"
-echo
-)
+
+# Create one line gap
+space_1() {
+    long_msg "
+>  "
+}
+
+# Declare bold and normal
+bold=$(tput bold)
+normal=$(tput sgr0)
 
 
 # === WELCOME ===

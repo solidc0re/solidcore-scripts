@@ -1,7 +1,23 @@
 #!/bin/bash
 
-# Solidcore first boot script
-# Contains all client-side hardening settings to make porting to the image builds easier.
+## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
+## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see https://www.gnu.org/licenses/.
+
+# First boot script
+
 
 # === DISPLAY FUNCTIONS ===
 
@@ -244,14 +260,55 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
 cat > "$script_path" << EOF
 #!/bin/bash
         
-# Solidcore second boot script
+## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
+## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see https://www.gnu.org/licenses/.
+
+# Second boot script
+
 
 # === DISPLAY FUNCTIONS ===
 
-# Non-interruptable version for short messages
+# === DISPLAY FUNCTIONS ===
 
+# Interruptable version for long texts
+long_msg() {
+    local main_output="$1"
+    local idx=0
+    local char
+
+    while [ $idx -lt ${#main_output} ]; do
+        char="${main_output:$idx:1}"
+        echo -n "$char"
+        
+        # Check if a key was pressed
+        if read -r -s -n 1 -t 0.01 key; then
+            # Output the remaining portion of the main_output
+            echo -n "${main_output:idx+1}"
+            break
+        fi
+        
+        sleep 0.015
+        idx=$((idx + 1))
+    done
+}
+
+# Non-interruptable version for short messages
 short_msg() {
     local main_output=">  $1"
+    echo
     local idx=0
     local char
 
@@ -264,14 +321,32 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-
-GREEN='\033[1;32m'
+GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 conf_msg() {
     short_msg "$1"
-    echo -e " ${GREEN}✓${NC}"
+    echo -ne " ${GREEN}✓${NC}"
 }
+
+# Create two line gap
+space_2() {
+    long_msg "
+>
+>  "
+}
+
+
+# Create one line gap
+space_1() {
+    long_msg "
+>  "
+}
+
+# Declare bold and normal
+bold=$(tput bold)
+normal=$(tput sgr0)
+
 
 # === WELCOME ===
         
@@ -284,7 +359,7 @@ space_2
 # === USBGUARD ===
 
 # Ask user to plugin all used USB devices
-short_msg "USBGuard setup: plugin the USB devices you wish to whitelist.
+short_msg "${bold}USBGuard setup: plugin the USB devices you wish to whitelist.${normal}"
 read -n 1 -s -r -p "  Once you've plugged them in, press any key to continue."
         
 # Get USB device IDs and create whitelist rules
@@ -313,11 +388,10 @@ sleep 2
 
 rm /etc/xdg/autostart/solidcore-secondboot.desktop
 space_2
-short_msg "Thank you for running the solidcore script."
+short_msg "${bold}Thank you for running the solidcore script.${normal}"
 space_1
-short_msg "Please use the github page to report any issues and suggest improvements."
-space_1
-short_msg "https://github.com/solidc0re/solidcore-scripts"
+short_msg "For some suggestions on what to do next, see:"
+short_msg "https://github.com/solidc0re/solidcore-scripts#post-install-information"
 space_1
 short_msg "Enjoy your new hardened immutable Fedora :)"
 space_2
@@ -328,7 +402,7 @@ EOF
     chmod +x "$script_path"
     
     # Create a xdg autostart file
-    cat > /etc/xdg/autostart/solidcore-firstboot.desktop <<EOF
+    cat > /etc/xdg/autostart/solidcore-secondboot.desktop <<EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Run on Second Boot
@@ -612,8 +686,6 @@ download_url="$(curl -sL "$LATEST_URL" | grep dnscrypt-proxy-${PLATFORM}_${CPU_A
 download_file="dnscrypt-proxy-update.tar.gz"
 download_url2="https://raw.githubusercontent.com/DNSCrypt/dnscrypt-proxy/master/utils/generate-domains-blocklist/generate-domains-blocklist.py"
 download_file2="generate-domains-blocklist.py"
-download_url3="https://raw.githubusercontent.com/DNSCrypt/dnscrypt-proxy/master/utils/generate-domains-blocklist/domains-time-restricted.txt"
-download_file3="domains-time-restricted.txt"
 
 mkdir -p "$workdir"
 
@@ -938,8 +1010,8 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
 else
     short_msg "${bold}Thank you for running the solidcore script.${normal}"
 	space_1
-    short_msg "For some tips on what to do next. see:"
-    short_msg "https://github.com/solidc0re/solidcore-scripts/"
+    short_msg "For some suggestions on what to do next, see:"
+    short_msg "https://github.com/solidc0re/solidcore-scripts#post-install-information"
 	space_1
     short_msg "Enjoy your new hardened immutable Fedora :)"
     space_2
