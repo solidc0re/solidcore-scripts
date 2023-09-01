@@ -8,9 +8,9 @@
 **:hushed: Thought you were safe?**
 
 
-**... So did I, until I started this project.**
+**... So did I, until I started this project 😧**
 
-
+## Aims
 **This project aims to protect against a variety of attack vectors by:**
 - **Securing the bootloader**
 - **Hardening the kernel**
