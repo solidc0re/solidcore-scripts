@@ -240,15 +240,16 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	files_to_delete=(
 		"/etc/modprobe.d/solidcore-blacklist.conf"
 		"/etc/profile.d/solidcore_umask.sh"
-		"/etc/solidcore/firstboot.sh"
-		"/etc/solidcore/secondboot.sh"
+		"/etc/solidcore/solidcore-firstboot.sh"
+		"/etc/solidcore/solidcore-secondboot.sh"
+		"/etc/solidcore/solidcore-welcome.sh"
 		#"/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf" -> deleted if exists, in 'restore backups'
 		"/etc/udev/rules.d/70-titan-key.rules"
 		"/etc/udev/rules.d/70-u2f.rules"
 		"/etc/udev/rules.d/41-nitrokey.rules"
 		"/etc/udev/rules.d/49-onlykey.rules"
 		"/etc/xdg/autostart/solidcore-mute-mic.desktop"
-        "/etc/xdg/autostart/solidcore-firstboot.desktop"
+        "/etc/xdg/autostart/solidcore-welcome.desktop"
 		"/etc/xdg/autostart/solidcore-secondboot.desktop"
 	)
 
@@ -385,9 +386,9 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     space_1
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
-                echo -ne "\r>  Rebooting in $i second... "
+                echo -ne "\r>  Rebooting in ${bold}$i${normal} second... "
             else
-                echo -ne "\r>  Rebooting in $i seconds..."
+                echo -ne "\r>  Rebooting in ${bold}$i${normal} seconds..."
             fi
         sleep 1
         done

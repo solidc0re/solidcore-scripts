@@ -992,7 +992,7 @@ space_2
 # === TiDY UP & FINISH ===
 
 # Remove first boot autostart
-rm /etc/exg/autostart/solidcore-firstboot.desktop > /dev/null 2>&1
+rm /etc/exg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
 sleep 1
 
 # Reboot if USB Guard installed, otherwise farewell

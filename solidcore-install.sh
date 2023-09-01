@@ -190,13 +190,10 @@ long_msg "
 >  Hardening MAY reduce your experience of your device and is not suited for everyone."
 
 sleep 2
-long_msg "
->
->  "
+space_2
+
 while true; do
-
 read -p "Do you want to continue? (y/n): " solidcore_response
-
 case $solidcore_response in 
 	[Yy] ) solidcore_response="Y";
 		break;;
@@ -366,7 +363,7 @@ fi
 # Run update-grub to update GRUB configuration
 if [[ "$test_mode" == false ]]; then
     if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null 2>&1 ; then
-        conf_msg "GRUB configuration updated."
+        conf_msg "GRUB configuration updated"
     else
         short_msg "Notice: Failed to update GRUB configuration."
     fi
@@ -707,12 +704,12 @@ chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 # === INSTALLS ===
 
-short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This will take a while..."
+short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This will also take a while..."
 space_1
 
 # Minisign
 rpm-ostree install minisign > /dev/null
-conf_msg "Minisign installed"
+conf_msg "Done"
 
 # Flatseal
 flatpak install -y com.github.tchx84.Flatseal > /dev/null 2>&1
@@ -738,12 +735,129 @@ mkdir -p /etc/solidcore
 # Move the file to /etc/solidcore/
 mv -f "solidcore-firstboot.sh" "/etc/solidcore/"
 
+# Create first boot loader
+cat > /etc/solidcore/solidcore-welcome.sh << EOF
+#!/bin/bash
+## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
+## Version 0.1
+##
+## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see https://www.gnu.org/licenses/.
+
+# First boot script
+
+
+# === DISPLAY FUNCTIONS ===
+
+# Interruptable version for long texts
+long_msg() {
+    local main_output="$1"
+    local idx=0
+    local char
+
+    while [ $idx -lt ${#main_output} ]; do
+        char="${main_output:$idx:1}"
+        echo -n "$char"
+        
+        # Check if a key was pressed
+        if read -r -s -n 1 -t 0.01 key; then
+            # Output the remaining portion of the main_output
+            echo -n "${main_output:idx+1}"
+            break
+        fi
+        
+        sleep 0.015
+        idx=$((idx + 1))
+    done
+}
+
+# Non-interruptable version for short messages
+short_msg() {
+    local main_output=">  $1"
+    echo
+    local idx=0
+    local char
+
+    while [ $idx -lt ${#main_output} ]; do
+        char="${main_output:$idx:1}"
+        echo -n "$char"
+        sleep 0.015
+        idx=$((idx + 1))
+    done
+}
+
+# Non-interruptable version for confirmation messages
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+conf_msg() {
+    short_msg "$1"
+    echo -ne " ${GREEN}✓${NC}"
+}
+
+# Create two line gap
+space_2() {
+    long_msg "
+>
+>  "
+}
+
+
+# Create one line gap
+space_1() {
+    long_msg "
+>  "
+}
+
+# Declare bold and normal
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+
+# === VARIABLES ===
+firstboot="/etc/solidcore/solidcore-firstboot.sh"
+
+
+# === WELCOME ===
+
+clear
+long_msg ">
+>
+>  Welcome back!
+>
+>  You have part-completed the solidcore hardening process.
+>
+>  This script carries out the finishing touches which require your input."
+sleep 2
+space_2
+short_msg "We need to elevate to sudo privilges to continue."
+
+# === RUN FIRSTBOOT ===
+
+sudo bash $(firstboot)
+EOF
+
+# Make executable
+chmod +x /etc/solidcore/solidcore-welcome.sh
+
 # Create a xdg autostart file
-cat > /etc/xdg/autostart/solidcore-firstboot.desktop << EOF
+cat > /etc/xdg/autostart/solidcore-welcome.desktop << EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Run on First Boot
-Exec=/etc/solidcore/solidcore-firstboot.sh
+Exec=/etc/solidcore/solidcore-welcome.sh
 Terminal=true
 Icon=utilities-terminal
 EOF
@@ -781,18 +895,20 @@ EOF
 fi
 
 conf_msg "Downloaded uninstall script for future use"
+space_2
 
 # === REBOOT ===
 if [[ "$test_mode" == false && "$server_mode" == false ]]; then
-	short_msg "Reboot required."
-    read -n 1 -s -r -p ">  Press any key to continue"
-    short_msg ""
-    short_msg ""
+    short_msg "${bold}Reboot required.${normal}"
+    sleep 2
+    space_2
+    read -n 1 -s -r -p "Press any key to continue"
+    space_1
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
-                echo -ne "\r>  Rebooting in $i second... "
+                echo -ne "\r>  Rebooting in ${bold}$i${normal} second... "
             else
-                echo -ne "\r>  Rebooting in $i seconds..."
+                echo -ne "\r>  Rebooting in ${bold}$i${normal} seconds..."
             fi
         sleep 1
         done
