@@ -21,17 +21,11 @@
 - ... plus more!! :fire:
 
 > [!WARNING]
-> Work in progress... *Not currently ready for home use.*
-
-### Status
-
-- solidcore-install.sh is currently operational and functioning
-- solidcore-firstboot.sh is currently operational and functioning
-- solidcore-uninstall.sh currently undergoing active testing
+> Work in progress... *Not currently ready for home use. ALMOST READY!!*
 
 
 ## Current features
-Despite the low version number of v0.1, this script implements some serious hardening.
+**Despite the low version number of v0.1, this script implements some serious hardening.**
 
 - [x] Guided user interface
 - [x] Auto-generate backups of important config files
