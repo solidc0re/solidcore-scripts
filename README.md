@@ -27,28 +27,28 @@
 ## Current features
 **Despite the low version number of v0.1, this script implements some serious hardening.**
 
-- [x] Guided user interface
-- [x] Auto-generate backups of important config files
-- [x] Sysctl kernel, network and userspace hardening
-- [x] Hardened GRUB boot parameters
-- [x] Kernel module blacklist 
-- [x] High risk and unused services disabled and masked
-- [x] Process information hidden from users
-- [x] Kernel information hidden from users
-- [x] New files only viewable to owner/creator
-- [x] Core dumps disabled (stops sensitive information about the system being available)
-- [x] Improved password policies
-- [x] Root account locked
-- [x] Firewalld zone set to drop (drops all incoming connections)
-- [x] Check yum repos for insecure HTTP URLs
-- [x] Automatic updates for rpm-ostree and flatpaks
-- [x] Fedora flatpaks replaced with Flathub flatpaks
-- [x] Mute microphone by default on login
-- [x] Flatseal installed
-- [x] DNSCrypt-proxy installed
-- [x] DNS blocklists added
-- [x] Firstboot script installed to ensure: new password set, GRUB password set, unused ports are disabled and blacklisted, USBGuard installed (if required)
-- [ ] Uninstall file (mostly working, not tested recently)
+- Guided user interface :heavy_check_mark:
+- Auto-generate backups of important config files :heavy_check_mark:
+- Sysctl kernel, network and userspace hardening :heavy_check_mark:
+- Hardened GRUB boot parameters :heavy_check_mark:
+- Kernel module blacklist :heavy_check_mark:
+- High risk and unused services disabled and masked :heavy_check_mark:
+- Process information hidden from users :heavy_check_mark:
+- Kernel information hidden from users :heavy_check_mark:
+- New files only viewable to owner/creator :heavy_check_mark:
+- Core dumps disabled (stops sensitive information about the system being available) :heavy_check_mark:
+- Improved password policies :heavy_check_mark:
+- Root account locked :heavy_check_mark:
+- Firewalld zone set to drop (drops all incoming connections) :heavy_check_mark:
+- Check yum repos for insecure HTTP URLs :heavy_check_mark:
+- Automatic updates for rpm-ostree and flatpaks :heavy_check_mark:
+- Fedora flatpaks replaced with Flathub flatpaks :heavy_check_mark:
+- Mute microphone by default on login :heavy_check_mark:
+- Flatseal installed :heavy_check_mark:
+- Firstboot script installed to ensure: new password set, GRUB password set, unused ports are disabled and blacklisted, USBGuard installed (if required) :heavy_check_mark:
+- DNSCrypt-proxy installed and updates scheduled :heavy_check_mark:
+- DNS blocklists added :heavy_check_mark:
+- Uninstall file (mostly working, not tested recently)
 
 > [!NOTE]
 > Tested on Fedora Silverblue 38.
@@ -143,18 +143,13 @@ sudo usbguard allow-device <device number>
 
 <details>
 <summary>How to: add a domain to the DNS allowlist</summary>
-If you're happy with the blocklist set up but there's still the odd domain that you want to allow that's currently being blocked, then the allowlist is for you.
-
-The allowlist is located here: `/usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt`
+If you're happy with the blocklist set up but there's still the odd domain that you want to allow that's currently being blocked, then the allowlist is for you. The allowlist is located here: `/usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt`
 
 To edit:
 ```
 sudo nano /usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt
 ```
-
-Simply add a domain, such as `github.com`, with each domain on a new line.
-
-Once changes have been made to `domains-allowlist.txt`, run the following command to apply them:
+Simply add a domain, such as `github.com`, with each domain on a new line. Once changes have been made to `domains-allowlist.txt`, run the following command to apply them:
 ```
 sudo systemctl start dnscrypt-proxy-update
 ```
@@ -163,7 +158,7 @@ Refer to the (dnscrypt-proxy wiki)[https://github.com/DNSCrypt/dnscrypt-proxy/wi
 </details>
 
 <details>
-<summary></summary>How to: change the DNS blocklists
+<summary>How to: change the DNS blocklists</summary>
 The blocklists are stored in `/usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf`. To edit:
 ```
 sudo nano /usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf
