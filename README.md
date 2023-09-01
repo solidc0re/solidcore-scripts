@@ -90,7 +90,7 @@ It is strongly recommended to install your favourite immutable Fedora variant on
 
 To install the solidcore-scripts:
 ```
-wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-install.sh | sudo bash solidcore-install.sh
+wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-install.sh && sudo bash solidcore-install.sh
 ```
 
 Then follow the on-screen instructions.
@@ -106,7 +106,7 @@ sudo bash /etc/soldicore/uninstall
 
 Re-install:
 ```
-wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-install.sh | sudo bash solidcore-install.sh
+wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-install.sh && sudo bash solidcore-install.sh
 ```
 
 
