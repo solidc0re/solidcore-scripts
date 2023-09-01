@@ -200,13 +200,13 @@ read -p "Do you want to continue? (y/n): " solidcore_response
 case $solidcore_response in 
 	[Yy] ) solidcore_response="Y";
 		break;;
-	[Nn] ) short_msg "Aborting.
-
-"
-sleep 1
-clear;
+	[Nn] ) short_msg "Aborting."
+        space_2
+        sleep 
+        clear;
 		exit 1;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'.";
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo ">";
 esac
 done
 
@@ -365,7 +365,7 @@ fi
 
 # Run update-grub to update GRUB configuration
 if [[ "$test_mode" == false ]]; then
-    if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null ; then
+    if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null 2>&1 ; then
         conf_msg "GRUB configuration updated."
     else
         short_msg "Notice: Failed to update GRUB configuration."
@@ -512,12 +512,13 @@ echo "ExternalSizeMax=0" | tee -a /etc/systemd/coredump.conf > /dev/null
 systemctl daemon-reload
 
 conf_msg "Core dumps disabled"
+space_1
 
 
 # === PASSWORD POLICIES ===
 
 # Create a custom authselect profile called "solidcore"
-authselect create-profile solidcore -b sssd
+authselect create-profile solidcore -b sssd > /dev/null 2>&1
 
 # Increase password delay from 2 second default to 5 seconds
 new_delay="5000000"
@@ -537,9 +538,9 @@ for file in "${pwd_files[@]}"; do
     if [ -f "$file" ]; then
         # Use sed to replace the line with the new value
         sed -i "s/\(auth\s*required\s*pam_faildelay.so\s*delay=\).*$/\1$new_delay/" "$file"
-	# Remove nullok reference
- 	sed -i "s/$text_to_remove//" "$file"
-  	# Append minimum length of 12
+	    # Remove nullok reference
+ 	    sed -i "s/$text_to_remove//" "$file"
+  	    # Append minimum length of 12
         sed -i "/pam_pwquality.so/s/$/ minlen=12/" "$file"
     else
         echo "File not found: $file"
@@ -605,7 +606,7 @@ fi
 
 mkdir -p "$timer_dir"
 
-cat > "$timer_dir/$override_file" <<EOL
+cat > "$override_file" <<EOL
 [Unit]
 Description=Run rpm-ostree updates 10 minutes after boot and every 3 hours
 
@@ -633,7 +634,7 @@ flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.f
 flatpak remote-modify --no-filter --enable flathub
 
 # Change remotes of existing flathub apps
-short_msg "Replacing Fedora flatpaks with Flathub versions"
+short_msg "Replacing Fedora flatpaks with Flathub versions. This could take a while..."
 
 # Create undo script only if -server flag absent
 if [[ "$server_mode" == false ]]; then
@@ -649,13 +650,13 @@ done
 chmod +x /etc/solidcore/fedora_flatpak.sh
 fi # End of -server flag if statement
 
-# Reinstall fedora apps with 
-flatpak install -y --noninteractive --reinstall flathub "$(flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +1 )" > /dev/null
+# Replace Fedora flatpaks and install flathub versions
+flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +2 | while read -r flatpak_name; do
+    flatpak install -y --noninteractive --reinstall flathub "$flatpak_name" > /dev/null 2>&1
+done
 
 # Disable Fedora flatpak repo
 flatpak remote-modify --disable fedora
-
-
 
 # Create the service file for Flatpak update
 cat > /etc/systemd/system/flatpak-update.service <<EOL
@@ -707,11 +708,11 @@ chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 # === INSTALLS ===
 
 # Minisign
-rpm-ostree install minisign
+rpm-ostree install minisign > /dev/null
 conf_msg "Minisign installed (for dnscrypt-proxy installation & updates)"
 
 # Flatseal
-flatpak install -y flatseal > /dev/null
+flatpak install -y com.github.tchx84.Flatseal > /dev/null
 conf_msg "Flatseal installed (for managing Flatpak permissions)"
 
 
@@ -722,7 +723,7 @@ if [ -e "$PWD/solidcore-firstboot.sh" ]; then
     :
 else
     # Download solidcore-firstboot.sh
-    wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-firstboot.sh
+    wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-firstboot.sh > /dev/null
 fi
 
 # Make solidcore-firstboot.sh executable
@@ -748,6 +749,7 @@ else
     exit 1
 fi
 
+conf_msg "Set up first boot script"
 
 # === INSTALL UNINSTALL SCRIPT ===
 
@@ -757,14 +759,14 @@ if [[ "$server_mode" == false ]]; then
         :
     else
         # Download solidcore-uninstall.sh
-        wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-uninstall.sh
+        wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-uninstall.sh > /dev/null
     fi
 
     # Make solidcore-uninstall.sh executable
     chmod +x solidcore-uninstall.sh
 
     # Move the file to /etc/solidcore/
-    mv -f "solidcore-firstboot.sh" "/etc/solidcore/"
+    mv -f "solidcore-uninstall.sh" "/etc/solidcore/"
 
 # Create uninstall alias
 cat > /etc/profile.d/solidcore.sh << EOF
@@ -777,13 +779,14 @@ solidcore() {
     fi
 }
 EOF
-
 fi
 
+conf_msg "Downloaded uninstall script for future use"
 
 # === REBOOT ===
 if [[ "$test_mode" == false && "$server_mode" == false ]]; then
-	read -n 1 -s -r -p ">  Press any key to continue"
+	short_msg "Reboot required."
+    read -n 1 -s -r -p ">  Press any key to continue"
     short_msg ""
     short_msg ""
         for i in {5..1}; do

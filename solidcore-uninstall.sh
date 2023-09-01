@@ -90,14 +90,27 @@ normal=$(tput sgr0)
 
 # === SUDO CHECK ===
 if [ "$EUID" -ne 0 ]; then
-    echo "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-uninstall.sh"
+    short_msg "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-uninstall.sh"
     exit 1
 fi
 
 
 # === INFORM USER ===
-echo "You are about to uninstall all solidcore changes to your system."
-read -p "Do you want to continue (Y/n): " uninstall_response
+space_2
+short_msg "You are about to uninstall all solidcore changes to your system."
+space_1
+while true; do
+read -rp "${bold}Question: Do you want to continue?${normal} (y/n): " uninstall_response
+case $uninstall_response in
+	[Yy] ) hostname_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo ">";
+esac
+done
+space_2
 
 if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 
@@ -125,20 +138,18 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	    if [ "$backup_file" == "/var/lib/dbus/machine-id"]; then
 				# Restore the backup file
     	    	cp "$backup_file" "$source_file"
-    	    	echo "Backup restored for: $source_file"
+    	    	conf_msg "Backup restored for: $source_file"
     	    	# Remove the backup file
     	    	rm "$backup_file"
-    	    	echo "Machine ID restored."
+    	    	conf_msg "Machine ID restored"
 			else	
 				# Restore the backup file
     	    	cp "$backup_file" "$source_file"
-    	    	echo "Backup restored for: $source_file"
+    	    	conf_msg "Backup restored for: $source_file"
     	    	# Remove the backup file
     	    	rm "$backup_file"
-    	    	echo "Backup removed: $backup_file"
 			fi
     	else
-    	    echo "Backup file '$backup_file' does not exist."
 	    # Check if the source file exists
     	    if [ -e "$source_file" ]; then
     	        # Check if the source file should be deleted
@@ -146,22 +157,26 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	            *"/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"*)
     	                # Delete the source file
     	                rm -f "$source_file"
-    	                echo "Deleted: $source_file"
+    	                conf_msg "Deleted: $source_file"
     	                ;;
     	            *)
-    	                echo "No action needed for: $source_file"
     	                ;;
     	        esac
     	    fi
     	fi
 	done
+	space_2
+	space_1
 
 	# Run update-grub to update GRUB configuration
 	if grub2-mkconfig -o /boot/grub2/grub.cfg; then
-    	echo "GRUB configuration updated."
+    	conf_msg "GRUB configuration updated"
 	else
-    	echo "Failed to update GRUB configuration."
+    	short_msg "Failed to update GRUB configuration."
 	fi
+	space_2
+	space_1
+
 
 	# === UNMASK SERVICES ===
 	services=(
@@ -182,13 +197,17 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	# Stop the service/socket
     	systemctl unmask "$service"
     	# Echo a message
-    	echo "$service unmasked."
+    	conf_msg "$service unmasked"
 	done
+	space_2
+	space_1
 
 	# Stop dnscrypt-proxy
 	/usr/local/sbin/dnscrypt-proxy/dnscrypt-proxy -service stop
 	# Restart systemd-resolved
 	systemctl enable --now systemd-resolved
+	space_2
+	space_1
 
 	# === REMOVE SOLIDCORE SERVICES ===
 
@@ -211,8 +230,10 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	    rm /etc/systemd/system/"$service"
 		systemctl daemon-reload
 	    # Echo a message
-	    echo "$service disabled and deleted."
+	    conf_msg "$service disabled and deleted"
 	done
+	space_2
+	space_1
 
 	# === REMOVE SOLICORE CREATED SCRIPTS & CONFIGS ===
 
@@ -237,9 +258,12 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	    # Delete file
 	    rm "$file"
 		systemctl daemon-reload
-	    echo "Solidcore created file removed: $override_file"
+	    conf_msg "Solidcore created file removed: $override_file"
 		fi
 	done
+	space_2
+	space_1
+
 
 	# === RESTORE SYSCTL SETTINGS ===
 
@@ -247,15 +271,16 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	if [ -e "/etc/solidcore/defaults.sh" ]; then
 	    # Run the script
 	    /etc/solidcore/defaults.sh
-	    echo "Sysctl settings restored."
+	    conf_msg "Sysctl settings restored"
 	    # Reload sysctmctl
 	    systemctl daemon-reload
 	    # Remove old stored settings
 	    rm /etc/solidcore/defaults.sh
 	else
-	    echo "Script /etc/solidcore/defaults.sh does not exist."
+	    short_msg "Script /etc/solidcore/defaults.sh does not exist."
 	fi
-
+	space_2
+	space_1
 
      # === RESTORE FEDORA FLATPAK ===
 
@@ -263,25 +288,29 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	if [ -e "/etc/solidcore/fedora_flatpak.sh" ]; then
 	    # Run the script
 	    /etc/solidcore/fedora_flatpak.sh
-	    echo "Fedora Flatpaks restored."
+	    conf_msg "Fedora Flatpaks restored"
 	    # Remove flatpak undo script
 	    rm /etc/solidcore/fedora_flatpak.sh
 	else
-	    echo "Script /etc/solidcore/fedora_flatpak.sh does not exist."
+	    short_msg "Script /etc/solidcore/fedora_flatpak.sh does not exist."
 	fi
+	space_2
+	space_1
 
 
 	# === REVERT PASSWORD POLICIES ===
 	
 	authselect select sssd
-	echo "Default password policies applied."
+	conf_msg "Default password policies applied"
 	
 	rm -rf /etc/authselect/custom/solidcore*
-	echo "Solidcore password policies removed."
+	conf_msg "Solidcore password policies removed"
 
 	passwd -u root
-	echo "root account unlocked."
-
+	conf_msg "root account unlocked"
+	space_2
+	space_1
+	
 
 	# === REVERT HOSTNAME ===
 	# Check if the file exists
@@ -292,16 +321,19 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	hostnamectl hostname "$saved_hostname"
     	# Check if reverting hostname was successful
     	if [ $? -eq 0 ]; then
-        	echo "Hostname returned to: $saved_hostname"
+        	conf_msg "Hostname returned to: $saved_hostname"
     	else
-        	echo "Failed to return hostname to: $saved_hostname."
+        	short_msg "Failed to return hostname to: $saved_hostname."
     	fi
 		# Remove backup
 		rm /etc/solidcore/hostname_sc.bak
 	else
-    	echo "No hostname backup found. Skipping..."
+    	short_msg "No hostname backup found. Skipping..."
 	fi
-	
+	space_2
+	space_1
+
+
 	# === UNBLOCK DEVICES ===
 	
 	# Unblock wireless devices
@@ -311,15 +343,18 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	disabled_domains=$(boltctl list | awk '/authorized: no/ {print $1}')
 	
 	if [[ -z "$disabled_domains" ]]; then
-	    echo "No Thunderbolt domains are currently disabled."
+	    short_msg "No Thunderbolt domains are currently disabled."
 	else
 	    # Re-enable each disabled domain
 	    for domain in $disabled_domains; do
-	        echo "Re-enabling Thunderbolt domain: $domain"
+	        short_msg "Re-enabling Thunderbolt domain: $domain"
 	        boltctl authorize "$domain"
 	    done
 	fi
-	
+	space_2
+	space_1
+
+
 	# Unmute microphone
 	amixer set Capture cap
 	
@@ -334,24 +369,33 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	flatpak remove flatseal
 	rpm-ostree remove minisign usbguard
 	rm -rf /usr/local/sbin/dnscrypt-proxy*
-	echo "Flatseal, minisign & USBGuard (if installed) removed."
+	conf_msg "Flatseal, minisign & USBGuard (if installed) removed"
 	
 
 	# === FIREWALL D ===
 	firewall-cmd --set-default-zone public > /dev/null 2>&1
 	firewall-cmd --reload > /dev/null
-	echo "Firewalld zone reset to default (public)"
-
+	conf_msg "Firewalld zone reset to default (public)"
+	space_2
 
 	# === REBOOT ===
-	echo "Reboot required to implement all the changes."
-	sleep 1
-	for i in {5..1}; do
-	    echo -ne "\rRebooting in $i seconds..."
-	    sleep 1
-	done
-	echo -e "\rRebooting now!"
-	reboot
+	short_msg "Reboot required to implement all the changes."
+	space_2
+	read -n 1 -s -r -p ">  Press any key to continue"
+    space_1
+        for i in {5..1}; do
+            if [ "$i" -eq 1 ]; then
+                echo -ne "\r>  Rebooting in $i second... "
+            else
+                echo -ne "\r>  Rebooting in $i seconds..."
+            fi
+        sleep 1
+        done
+    echo -e "\r>  Rebooting now!            "
+    reboot
 else
-    echo "Exiting."
+    space_1
+	short_msg "Exiting."
+	space_2
+	sleep 2
 fi

@@ -287,8 +287,6 @@ cat > "$script_path" << EOF
 
 # === DISPLAY FUNCTIONS ===
 
-# === DISPLAY FUNCTIONS ===
-
 # Interruptable version for long texts
 long_msg() {
     local main_output="$1"
@@ -378,7 +376,7 @@ sh -c 'usbguard generate-policy > /etc/usbguard/rules.conf'
 # Reload usbguard service to apply the new rules
 systemctl enable --now usbguard.service > /dev/null
 conf_msg "USBGuard enabled and all connected USB devices whitelisted"
-sleep 1
+sleep 2
 space_2
 short_msg "To whitelist devices in future, run:"
 space_1
