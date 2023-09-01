@@ -53,8 +53,7 @@ What follows is a long list of the current features:
 - Updates scheduled for dnscrypt-proxy and DNS blocklists :heavy_check_mark:
 - Uninstall file (mostly working)
 
-> [!NOTE]
-> Tested on Fedora Silverblue 38.
+**Tested on Fedora Silverblue 38.**
 
 ## Planned features and future goals
 The long-term goal (probably for v1.0) is to have the hardening provided by this script work both client-side - i.e. manual running of the script on any existing immutable Fedora system - and server-side, so people can carry out an rpm-ostree rebase to a pre-hardened and constantly updated system.
