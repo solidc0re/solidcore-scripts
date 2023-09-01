@@ -1,15 +1,15 @@
 # solidcore-scripts
 **Hardening scripts for immutable Fedora.**
 
-[!WARNING]
-Work in progress... *Not currently ready for home use.*
+> [!WARNING]
+> Work in progress... *Not currently ready for home use.*
 
 - solidcore-install.sh is currently operational and functioning
 - solidcore-firstboot.sh is currently operational and functioning
 - solidcore-uninstall.sh currently undergoing active testing
 
-[!NOTE]
-Tested on Fedora Silverblue 38.
+> [!NOTE]
+> Tested on Fedora Silverblue 38.
 
 ## Current features
 Despite the lower version number, this script implements some serious hardening.
