@@ -106,22 +106,79 @@ To whitelist devices:
 `sudo usbguard list-devices`
 `sudo usbguard allow-device <device number>`
 
+### How to: add a domain to the DNS allowlist
+If you're happy with the blocklist set up but there's still the odd domain that you want to allow that's currently being blocked, then the allowlist is for you.
+
+The allowlist is located here: /usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt
+
+To edit:
+`sudo nano /usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt`
+
+Simply add a domain, such as `github.com`, with each domain on a new line.
+
+Once changes have been made to domains-allowlist.txt, run the following command to apply them:
+`sudo systemctl start dnscrypt-proxy-update`
+
+Refer to the (dnscrypt-proxy wiki)[https://github.com/DNSCrypt/dnscrypt-proxy/wiki] if you need further assistance.
+
 ### How to: change the DNS blocklists
 The blocklists are stored in /usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf.
 
 To edit:
 `sudo nano /usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf`
 
-Once changes have been made to domains-blocklist.conf:
+Once changes have been made to domains-blocklist.conf, run the following command to apply them:
 `sudo systemctl start dnscrypt-proxy-update`
+
+Refer to the (dnscrypt-proxy wiki)[https://github.com/DNSCrypt/dnscrypt-proxy/wiki] if you need further assistance.
+
+### How to: unblock bluetooth
+First:
+`sudo sed -i '/blacklist bluetooth/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf`
+`sudo sed -i '/blacklist btusb/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf`
+
+Then reboot. After reboot:
+`rkfill unblock bluetooth`
+`sudo systemctl unmask bluetooth.service`
+`sudo systemctl enable --now bluetooth.service`
+
+### How to: unblock Firewire
+First:
+`sudo sed -i '/blacklist firewire-core/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf`
+`sudo sed -i '/blacklist ohcil394/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf`
+`sudo sed -i '/blacklist sbp2/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf`
+
+Then reboot. After reboot:
+`sudo insmod firewire_core ohcil394 sbp2`
+
+### How to: unblock Thunderbolt
+`sudo sed -i '/blacklist thunderbolt/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf`
+
+Then reboot. After reboot:
+`sudo boltctl list`
+
+Then use `sudo boltctl enable <domain>` for the Thunderbolt domain you wish to enable.
+
+### How to: unblock USB
+First:
+`sudo sed -i '/blacklist usbcore/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf`
+`sudo sed -i '/blacklist usb_storage/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf`
+
+Then reboot. After reboot:
+`sudo insmod usbcore usb_storage`
+
+### How to: unblock webcam
+First:
+`sudo sed -i '/blacklist uvcvideo/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf`
+
+Then reboot. After reboot:
+`sudo insmod uvcvideo`
 
 ### How to: unblock Wi-Fi
 `rfkill unblock wifi`
 
-### How to: unblock bluetooth
-
-`sudo systemctl unmask bluetooth.service`
-`sudo systemctl enable --now bluetooth.service`
+### How to: stop mic being muted on login
+`sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop`
 
 ## Acknowledgements
 This project is made possible by the diligent and forward-thinking work of the Fedora and RedHat developers and community. A special shout out to the CoreOS and rpm-ostree developers for their excellent work.
