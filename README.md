@@ -14,7 +14,7 @@
 **This project aims to protect against a variety of attack vectors by:**
 - **Securing the bootloader**
 - **Hardening the kernel**
-- **Locking down root and implementing strong password policies**
+- **Locking down root and implementing stronger password policies**
 - **Blocking malicious domains**
 - **Disabling all unused ports and interfaces**
 - **Improving the firewall settings**
