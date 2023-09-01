@@ -78,7 +78,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - implement improvements to the USBGUard config
 - progress on getting the hardened malloc to work
 - create scripts to audit all relevant settings on new versions of Fedora to make keeping it up-to-date easier
-- research and possibly implement clam-tk and AID
+- research and possibly implement clam-tk and AIDE
 - research anti-forensic tools
 - improve user interations
 - develop the `-server` flag further to eliminate all user interaction
