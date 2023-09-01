@@ -141,6 +141,7 @@ Please report any issues and suggested improvements on [this Github page](https:
 
 <details>
 <summary>How to: whitelist a USB device</summary>
+  
 ### How to: whitelist a USB device
 
 If you notified the script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible. To whitelist devices:
@@ -154,37 +155,46 @@ sudo usbguard allow-device <device number>
 
 <details>
 <summary>How to: add a domain to the DNS allowlist</summary>
-If you're happy with the blocklist set up but there's still the odd domain that you want to allow that's currently being blocked, then the allowlist is for you. The allowlist is located here: `/usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt`
+
+### How to: add a domain to the DNS allowlist
+
+If you're happy with the blocklist set up but there's still the odd domain that you want to allow that's currently being blocked, then the allowlist is for you. The allowlist is located here: '/usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt'.
 
 To edit:
 ```
 sudo nano /usr/local/sbin/dnscrypt-proxy/domains-allowlist.txt
 ```
-Simply add a domain, such as `github.com`, with each domain on a new line. Once changes have been made to `domains-allowlist.txt`, run the following command to apply them:
+Simply add a domain, such as 'github.com', with each domain on a new line. Once changes have been made to 'domains-allowlist.txt', run the following command to apply them:
 ```
 sudo systemctl start dnscrypt-proxy-update
 ```
 
-Refer to the (dnscrypt-proxy wiki)[https://github.com/DNSCrypt/dnscrypt-proxy/wiki] if you need further assistance.
+Refer to the https://github.com/DNSCrypt/dnscrypt-proxy/wiki if you need further assistance.
 </details>
 
 <details>
 <summary>How to: change the DNS blocklists</summary>
-The blocklists are stored in `/usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf`. To edit:
+
+### How to: change the DNS blocklists
+  
+The blocklists are stored in '/usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf'. To edit:
 ```
 sudo nano /usr/local/sbin/dnscrypt-proxy/domains-blocklist.conf
 ```
 
-Once changes have been made to `domains-blocklist.conf`, run the following command to apply them:
+Once changes have been made to 'domains-blocklist.conf', run the following command to apply them:
 ```
 sudo systemctl start dnscrypt-proxy-update
 ```
 
-Refer to the (dnscrypt-proxy wiki)[https://github.com/DNSCrypt/dnscrypt-proxy/wiki] if you need further assistance.
+Refer to https://github.com/DNSCrypt/dnscrypt-proxy/wiki if you need further assistance.
 </details>
 
 <details>
 <summary>How to: unblock bluetooth</summary>
+
+### How to: unblock bluetooth
+  
 First:
 ```
 sudo sed -i '/blacklist bluetooth/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
@@ -207,6 +217,9 @@ sudo systemctl enable --now bluetooth.service
 
 <details>
 <summary>How to: unblock Firewire</summary>
+
+### How to: unblock Firewire
+  
 First:
 ```
 sudo sed -i '/blacklist firewire-core/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
@@ -226,6 +239,9 @@ sudo insmod firewire_core ohcil394 sbp2
 
 <details>
 <summary>How to: unblock Thunderbolt</summary>
+
+### How to: unblock Thunderbolt
+  
 ```
 sudo sed -i '/blacklist thunderbolt/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
@@ -245,6 +261,9 @@ sudo boltctl enable <domain>
 
 <details>
 <summary>How to: unblock USB</summary>
+
+### How to: unblock USB
+  
 First:
 ```
 sudo sed -i '/blacklist usbcore/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
@@ -261,6 +280,9 @@ sudo insmod usbcore usb_storage
 
 <details>
 <summary>How to: unblock webcam</summary>
+
+### How to: unblock webcam
+  
 First:
 ```
 sudo sed -i '/blacklist uvcvideo/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
@@ -273,13 +295,19 @@ sudo insmod uvcvideo
 </details>
 <details>
 <summary>How to: unblock Wi-Fi</summary>
+
+### How to: unblock Wi-Fi
+  
 ```
 rfkill unblock wifi
 ```
 </details>
 
 <details>
-<summary>How to: stop mic being muted on login</summary>
+<summary>How to: stop microphone being muted on login</summary>
+
+### How to: stop microphone being muted on login
+  
 ```
 sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop
 ```
