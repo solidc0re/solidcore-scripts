@@ -1,7 +1,7 @@
 # solidcore-scripts
 **Hardening scripts for immutable Fedora.**
 
-## Status
+### Status
 
 > [!WARNING]
 > Work in progress... *Not currently ready for home use.*
