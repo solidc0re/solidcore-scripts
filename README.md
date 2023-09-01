@@ -1,39 +1,41 @@
 # solidcore-scripts
-Hardening scripts for immutable Fedora.
+**Hardening scripts for immutable Fedora.**
 
+[!WARNING]
 Work in progress... *Not currently ready for home use.*
 
 - solidcore-install.sh is currently operational and functioning
 - solidcore-firstboot.sh is currently operational and functioning
 - solidcore-uninstall.sh currently undergoing active testing
 
+[!NOTE]
 Tested on Fedora Silverblue 38.
 
 ## Current features
 Despite the lower version number, this script implements some serious hardening.
 
-- Guided user interface :white_check_mark:
-- Auto-generate backups of important config files :white_check_mark:
-- Sysctl kernel, network and userspace hardening :white_check_mark:
-- Hardened GRUB boot parameters :white_check_mark:
-- Kernel module blacklist :white_check_mark: 
-- High risk and unused services disabled and masked :white_check_mark:
-- Process information hidden from users :white_check_mark:
-- Kernel information hidden from users :white_check_mark:
-- New files only viewable to owner/creator :white_check_mark:
-- Core dumps disabled (stops sensitive information about the system being available) :white_check_mark:
-- Improved password policies :white_check_mark:
-- Root account locked :white_check_mark:
-- Firewalld zone set to drop (drops all incoming connections) :white_check_mark:
-- Check yum repos for insecure HTTP URLs :white_check_mark:
-- Automatic updates for rpm-ostree and flatpaks :white_check_mark:
-- Fedora flatpaks replaced with Flathub flatpaks :white_check_mark:
-- Mute microphone by default on login :white_check_mark:
-- Flatseal installed :white_check_mark:
-- DNSCrypt-proxy installed :white_check_mark:
-- DNS blocklists added :white_check_mark:
-- Firstboot script installed to ensure: new password set, GRUB password set, unused ports are disabled and blacklisted, USBGuard installed (if required) :white_check_mark:
-- Uninstall file (mostly working, not tested recently)
+- [x] Guided user interface
+- [x] Auto-generate backups of important config files
+- [x] Sysctl kernel, network and userspace hardening
+- [x] Hardened GRUB boot parameters
+- [x] Kernel module blacklist 
+- [x] High risk and unused services disabled and masked
+- [x] Process information hidden from users
+- [x] Kernel information hidden from users
+- [x] New files only viewable to owner/creator
+- [x] Core dumps disabled (stops sensitive information about the system being available)
+- [x] Improved password policies
+- [x] Root account locked
+- [x] Firewalld zone set to drop (drops all incoming connections)
+- [x] Check yum repos for insecure HTTP URLs
+- [x] Automatic updates for rpm-ostree and flatpaks
+- [x] Fedora flatpaks replaced with Flathub flatpaks
+- [x] Mute microphone by default on login
+- [x] Flatseal installed
+- [x] DNSCrypt-proxy installed
+- [x] DNS blocklists added
+- [x] Firstboot script installed to ensure: new password set, GRUB password set, unused ports are disabled and blacklisted, USBGuard installed (if required)
+- [ ] Uninstall file (mostly working, not tested recently)
 
 ## Planned features and future goals
 The long-term goal (probably for v1.0) is to have the hardening provided by this script work on both client-side - i.e. manual running of the script on any existing immutable Fedora system - and server-side, so people can carry out an rpm-ostree rebase to a pre-hardened and constantly updated system.
@@ -99,12 +101,14 @@ Your system will automatically update the following:
 
 Please report any issues and suggested improvements on [this Github page](https://github.com/solidc0re/solidcore-scripts/issues).
 
-### How to: whitelist a USB device
+<details>
+<summary> ### How to: whitelist a USB device </summary>
 If you notified the script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible.
 
 To whitelist devices:
 `sudo usbguard list-devices`
 `sudo usbguard allow-device <device number>`
+</details>
 
 ### How to: add a domain to the DNS allowlist
 If you're happy with the blocklist set up but there's still the odd domain that you want to allow that's currently being blocked, then the allowlist is for you.
