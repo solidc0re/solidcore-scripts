@@ -66,7 +66,9 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is only possible during the installation process of the OS. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
 
 To install the solidcore-scripts:
-```wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-install.sh | sudo bash solidcore-install.sh```
+```
+wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-install.sh | sudo bash solidcore-install.sh
+```
 
 Then follow the on-screen instructions.
 
