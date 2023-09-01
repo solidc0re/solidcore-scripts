@@ -85,7 +85,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - write more documentation/start a Github wiki
 
 ## Instructions
-### Installing
+### - Installing
 It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is only possible during the installation process of the OS. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
 
 To install the solidcore-scripts:
@@ -95,7 +95,7 @@ wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcor
 
 Then follow the on-screen instructions.
 
-### Upgrading
+### - Upgrading
 
 Uninstall first, then re-install, just to be safe.
 
@@ -110,7 +110,7 @@ wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcor
 ```
 
 
-### Uninstalling
+### - Uninstalling
 Uninstalling reverts all changed system settings to how they previously were, along with uninstalling any solidcore-installed packages.
 ```
 sudo bash /etc/soldicore/uninstall
@@ -122,10 +122,10 @@ Congratulations! You have hardened your immutable Fedora installation.
 
 Your GRUB username is 'root' - you will need this if you want to change your GRUB entries. The password is what you set it as during the firstboot script.
 
-Most cybersecurity threats come from online sources. It is therefore strongly recommended that you install a more secure browser from Flathub, such as Brave (Chrome-based, boo!) or Librewolf (pre-hardened Firefox).
+Most cybersecurity threats come from online sources. It is therefore strongly recommended that you install a more secure browser from Flathub, such as [Brave](https://brave.com/) (Chrome-based, boo!) or [Librewolf](https://librewolf.net/) (pre-hardened Firefox).
 
 ```
-flatpak install librewolf
+flatpak install io.gitlab.librewolf-community
 ```
 
 If you are a [Mullvad](https://mullvad.net/) user then [Mullvad browser](https://flathub.org/apps/net.mullvad.MullvadBrowser) is by far the best browser option available, unless you want to use [Tor](https://flathub.org/apps/com.github.micahflee.torbrowser-launcher).
