@@ -54,7 +54,7 @@ What follows is a long list of the current features:
   - Unused ports are disabled and blacklisted :heavy_check_mark:
   - USBGuard installed (if required) :heavy_check_mark:
   - Enable hardware key support (optional) :heavy_check_mark:
-- DNSCrypt-proxy installed :heavy_check_mark:
+- DNSCrypt-proxy installed (no need to trust your ISP, nor your VPN) :heavy_check_mark:
 - DNS blocklists added :heavy_check_mark:
 - Updates scheduled for dnscrypt-proxy and DNS blocklists :heavy_check_mark:
 - Uninstall file (mostly working, not tested recently)
