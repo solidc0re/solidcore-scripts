@@ -122,7 +122,7 @@ Congratulations! You have hardened your immutable Fedora installation.
 
 Your GRUB username is 'root' - you will need this if you want to change your GRUB entries. The password is what you set it as during the firstboot script.
 
-Most cybersecurity threats come from online sources. It is therefore strongly recommended that you install a more secure browser from Flathub, such as [Brave](https://brave.com/) (Chrome-based, boo!) or [Librewolf](https://librewolf.net/) (pre-hardened Firefox).
+Most computer security threats come from online sources. It is therefore strongly recommended that you install a more secure browser, such as [Brave](https://brave.com/) (Chrome-based, boo!) or [Librewolf](https://librewolf.net/) (pre-hardened Firefox).
 
 ```
 flatpak install io.gitlab.librewolf-community
@@ -133,7 +133,7 @@ If you are a [Mullvad](https://mullvad.net/) user then [Mullvad browser](https:/
 Your system will automatically update the following:
 - dnscrypt-proxy and DNS blocklists, 20 seconds after boot and every 24 hours
 - rpm-ostree, 10 minutes after boot and every 3 hours
-- flatpak apps, 20 minutes after boot and every 3 hours 10 minutes
+- Flatpak apps, 20 minutes after boot and every 3 hours 10 minutes
 
 Please report any issues and suggested improvements on [this Github page](https://github.com/solidc0re/solidcore-scripts/issues).
 
