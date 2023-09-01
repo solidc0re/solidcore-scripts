@@ -469,12 +469,6 @@ conf_msg "hidepid enabled for /proc"
 
 # === FILE PERMISSIONS ===
 
-# Hide kernel modules from group and user (only root can access it)
-chmod -R go-rwx /usr/lib/modules 2> /dev/null
-chmod -R go-rwx /lib/modules 2> /dev/null
-
-conf_msg "Kernel information hidden from everyone, but root"
-
 # Ensure new files are only readable by the user who created them
 umask_script="/etc/profile.d/solidcore_umask.sh"
 
@@ -704,12 +698,12 @@ chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 # === INSTALLS ===
 
-short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This will also take a while..."
-space_1
+#short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This will also take a while..."
+#space_1
 
 # Minisign
-rpm-ostree install minisign > /dev/null
-conf_msg "Done"
+#rpm-ostree install minisign > /dev/null
+#conf_msg "Done"
 
 # Flatseal
 flatpak install -y com.github.tchx84.Flatseal > /dev/null 2>&1
@@ -756,97 +750,15 @@ cat > /etc/solidcore/solidcore-welcome.sh << EOF
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see https://www.gnu.org/licenses/.
 
-# First boot script
+# Welcome script
 
-
-# === DISPLAY FUNCTIONS ===
-
-# Interruptable version for long texts
-long_msg() {
-    local main_output="$1"
-    local idx=0
-    local char
-
-    while [ $idx -lt ${#main_output} ]; do
-        char="${main_output:$idx:1}"
-        echo -n "$char"
-        
-        # Check if a key was pressed
-        if read -r -s -n 1 -t 0.01 key; then
-            # Output the remaining portion of the main_output
-            echo -n "${main_output:idx+1}"
-            break
-        fi
-        
-        sleep 0.015
-        idx=$((idx + 1))
-    done
-}
-
-# Non-interruptable version for short messages
-short_msg() {
-    local main_output=">  $1"
-    echo
-    local idx=0
-    local char
-
-    while [ $idx -lt ${#main_output} ]; do
-        char="${main_output:$idx:1}"
-        echo -n "$char"
-        sleep 0.015
-        idx=$((idx + 1))
-    done
-}
-
-# Non-interruptable version for confirmation messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
-conf_msg() {
-    short_msg "$1"
-    echo -ne " ${GREEN}✓${NC}"
-}
-
-# Create two line gap
-space_2() {
-    long_msg "
->
->  "
-}
-
-
-# Create one line gap
-space_1() {
-    long_msg "
->  "
-}
-
-# Declare bold and normal
-bold=$(tput bold)
-normal=$(tput sgr0)
-
-
-# === VARIABLES ===
-firstboot="/etc/solidcore/solidcore-firstboot.sh"
-
-
-# === WELCOME ===
-
-clear
-long_msg ">
->
->  Welcome back!
->
->  You have part-completed the solidcore hardening process.
->
->  This script carries out the finishing touches which require your input."
-sleep 2
-space_2
-short_msg "We need to elevate to sudo privilges to continue."
 
 # === RUN FIRSTBOOT ===
-
-sudo bash $(firstboot)
+clear
+echo ">"
+echo ">"
+echo "> Please enter your sudo password to continue with the solidcore process."
+sudo bash /etc/solidcore/solidcore-firstboot.sh
 EOF
 
 # Make executable

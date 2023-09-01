@@ -96,6 +96,7 @@ fi
 
 
 # === INFORM USER ===
+clear
 space_2
 short_msg "You are about to uninstall all solidcore changes to your system."
 space_1
@@ -107,7 +108,7 @@ case $uninstall_response in
 	[Nn] )
         break;;
 	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
+        space_1;
 esac
 done
 space_2
@@ -135,7 +136,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	# Check if the backup file exists
     	backup_file="${source_file}_sc.bak"
     	if [ -e "$backup_file" ]; then
-    	    if [ "$backup_file" == "/var/lib/dbus/machine-id"]; then
+    	    if [ "$backup_file" == "/var/lib/dbus/machine-id" ]; then
 				# Restore the backup file
     	    	cp "$backup_file" "$source_file"
     	    	conf_msg "Backup restored for: $source_file"
@@ -309,8 +310,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 
 	passwd -u root
 	conf_msg "root account unlocked"
-	space_2
-	space_1
 	
 
 	# === REVERT HOSTNAME ===
@@ -331,8 +330,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	else
     	short_msg "No hostname backup found. Skipping..."
 	fi
-	space_2
-	space_1
+
 
 
 	# === UNBLOCK DEVICES ===
@@ -352,24 +350,15 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	        boltctl authorize "$domain"
 	    done
 	fi
-	space_2
-	space_1
-
 
 	# Unmute microphone
-	amixer set Capture cap
-	
-
-	# === REVERT FILE PERMISSIONS ===
-	chmod -R 755 /usr/lib/modules
-	chmod -R 755 /lib/modules
-	
+	amixer set Capture cap	
 
 
 	# === UNINSTALL APPS ===
-	flatpak remove flatseal
-	rpm-ostree remove minisign usbguard
-	rm -rf /usr/local/sbin/dnscrypt-proxy*
+	flatpak remove flatseal > /dev/null 2>&1
+	rpm-ostree remove minisign usbguard > /dev/null 2>&1
+	rm -rf /usr/local/sbin/dnscrypt-proxy* > /dev/null 2>&1
 	conf_msg "Flatseal, minisign & USBGuard (if installed) removed"
 	
 
@@ -382,7 +371,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	# === REBOOT ===
 	short_msg "Reboot required to implement all the changes."
 	space_2
-	read -n 1 -s -r -p ">  Press any key to continue"
+	read -n 1 -s -r -p "Press any key to continue"
     space_1
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
