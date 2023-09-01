@@ -18,10 +18,6 @@
 - **Improving the firewall settings**
 - :fire: ***... plus more!!*** :fire:
 
-> [!NOTE]
-> Currently in alpha stage. Only install for testing purposes or if you're really keen. The uninstall script is not fully tested, but all changes instigated by the script are reversible.
-
-
 ## Current features
 **Despite the low version number of v0.1, this script implements some serious hardening.**
 
@@ -90,6 +86,10 @@ For the next release v0.1.5 alpha:
 
 ## Instructions
 ### = Installing =
+
+> [!NOTE]
+> Currently in alpha stage. Only install for testing purposes or if you're really keen. The uninstall script is not fully tested, but all changes instigated by the script are reversible.
+
 It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is only possible during the installation process of the OS. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
 
 To install the solidcore-scripts:
