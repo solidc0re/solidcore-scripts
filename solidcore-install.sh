@@ -747,10 +747,6 @@ Exec=/etc/solidcore/solidcore-firstboot.sh
 Terminal=true
 Icon=utilities-terminal
 EOF
-else
-    short_msg "solidcore-firstboot.sh does not exist in the current directory. Aborting."
-    exit 1
-fi
 
 conf_msg "Set up first boot script"
 
