@@ -661,15 +661,24 @@ sed -i "s/blocked-names.txt/blocklist.txt/" "$config_file"
 curl --request GET -sL --url "$download_url2" --output "$INSTALL_DIR/$download_file2"
 
 # generate-domains-blocklist.py fails without this file
-curl --request GET -sL --url "$download_url3" --output "$INSTALL_DIR/$download_file3"
+cat > "${INSTALL_DIR}/domains-time-restricted.txt" << EOF
+## Rules to be applied at specific times
+##
+## This requires a time schedule to be defined in the
+## dnscrypt-proxy.toml configuration file.
+EOF
 
 # generate-domains-blocklist.py fails without this file, too
 cat > "${INSTALL_DIR}/domains-allowlist.txt" << EOF
-# Empty file
+## You can add domains here to allow. Allow list takes precendence over the blocklist.
 EOF
 
 # Add blocklist URLs to blocklist combining script config
 cat > "${INSTALL_DIR}/domains-blocklist.conf" << EOF
+## solidcore's dnscrypt-proxy blocklist config file
+## 
+## Add your own lists, or comment out (by adding # at the start of a line).
+
 # === AD BLOCKING ===
 # Green lists from firebog.net
 https://adaway.org/hosts.txt
@@ -681,6 +690,12 @@ https://v.firebog.net/hosts/Easylist.txt
 https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
 https://raw.githubusercontent.com/FadeMind/hosts.extras/master/UncheckyAds/hosts
 https://raw.githubusercontent.com/bigdargon/hostsVN/master/hosts
+
+
+# === ADULT CONTENT ===
+#https://raw.githubusercontent.com/chadmayfield/my-pihole-blocklists/master/lists/pi_blocklist_porn_top1m.list
+#https://v.firebog.net/hosts/Prigent-Adult.txt
+#https://nsfw.oisd.nl/domainswild
 
 # === MALICIOUS ===
 # Green lists from firebog.net
@@ -923,9 +938,8 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
 else
     short_msg "${bold}Thank you for running the solidcore script.${normal}"
 	space_1
-    short_msg "Please use the github page to report any issues and suggest improvements."
-    space_1
-    short_msg "https://github.com/solidc0re/solidcore-scripts"
+    short_msg "For some tips on what to do next. see:"
+    short_msg "https://github.com/solidc0re/solidcore-scripts/"
 	space_1
     short_msg "Enjoy your new hardened immutable Fedora :)"
     space_2
