@@ -320,6 +320,7 @@ for key in "${!sysctl_settings[@]}"; do
     sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
 done
 conf_msg "Hardened sysctl settings applied"
+space_1
 
 # === BOOTLOADER SETTINGS ===
 
