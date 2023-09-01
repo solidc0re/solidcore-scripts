@@ -12,7 +12,7 @@
 
 
 ## Current features
-Despite the lower version number, this script implements some serious hardening.
+Despite the low version number of v0.1, this script implements some serious hardening.
 
 - [x] Guided user interface
 - [x] Auto-generate backups of important config files
