@@ -105,7 +105,7 @@ Your system will automatically update the following:
 Please report any issues and suggested improvements on [this Github page](https://github.com/solidc0re/solidcore-scripts/issues).
 
 <details>
-<summary> ### How to: whitelist a USB device </summary>
+<summary> **How to: whitelist a USB device** </summary>
 If you notified the script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible.
 
 To whitelist devices:
