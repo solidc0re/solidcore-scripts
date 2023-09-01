@@ -218,13 +218,16 @@ sudo sed -i '/blacklist thunderbolt/s/^/#/' /etc/modprobe.d/solidcore-blacklist.
 ```
 
 Then reboot. After reboot:
+
 ```
 sudo boltctl list
 ```
 
-Then use ```
+Then use:
+```
 sudo boltctl enable <domain>
-``` for the Thunderbolt domain you wish to enable.
+```
+... for the Thunderbolt domain you wish to enable.
 
 ### How to: unblock USB
 First:
