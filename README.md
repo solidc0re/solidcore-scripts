@@ -3,7 +3,7 @@
 
 **:cupid: Love Fedora?**
 
-**:sparkling_heart: Love the immitable spins?**
+**:sparkling_heart: Love the immutable spins?**
 
 **:hushed: Thought you were safe?**
 
@@ -15,10 +15,10 @@
 - **Securing the bootloader**
 - **Hardening the kernel**
 - **Locking down root and implementing strong password policies**
-- **Encrypting DNS (DNSCrypt protocol) and blocking malicious domains**
+- **Blocking malicious domains**
 - **Disabling all unused ports and interfaces**
-- **Improved firewall settings**
-- ***... plus more!!*** :fire:
+- **Improving the firewall settings**
+- :fire: ***... plus more!!*** :fire:
 
 > [!WARNING]
 > Work in progress... *ALMOST READY!!*
@@ -26,6 +26,8 @@
 
 ## Current features
 **Despite the low version number of v0.1, this script implements some serious hardening.**
+
+What follows is a long list of the current features:
 
 - Guided user interface :heavy_check_mark:
 - Auto-generate backups of important config files :heavy_check_mark:
@@ -61,7 +63,7 @@
 > Tested on Fedora Silverblue 38.
 
 ## Planned features and future goals
-The long-term goal (probably for v1.0) is to have the hardening provided by this script work on both client-side - i.e. manual running of the script on any existing immutable Fedora system - and server-side, so people can carry out an rpm-ostree rebase to a pre-hardened and constantly updated system.
+The long-term goal (probably for v1.0) is to have the hardening provided by this script work both client-side - i.e. manual running of the script on any existing immutable Fedora system - and server-side, so people can carry out an rpm-ostree rebase to a pre-hardened and constantly updated system.
 
 In the meantime, there's plenty of work to do. Including the following, in no particular order:
 - start a testing branch
