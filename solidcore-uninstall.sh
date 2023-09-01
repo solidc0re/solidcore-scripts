@@ -1,9 +1,94 @@
 #!/bin/bash
 
-# Solidcore uninstall file
+## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
+## Version 0.1
+##
+## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see https://www.gnu.org/licenses/.
+
+# Uninstall script
+
+
+# === DISPLAY FUNCTIONS ===
+
+# Interruptable version for long texts
+long_msg() {
+    local main_output="$1"
+    local idx=0
+    local char
+
+    while [ $idx -lt ${#main_output} ]; do
+        char="${main_output:$idx:1}"
+        echo -n "$char"
+        
+        # Check if a key was pressed
+        if read -r -s -n 1 -t 0.01 key; then
+            # Output the remaining portion of the main_output
+            echo -n "${main_output:idx+1}"
+            break
+        fi
+        
+        sleep 0.015
+        idx=$((idx + 1))
+    done
+}
+
+# Non-interruptable version for short messages
+short_msg() {
+    local main_output=">  $1"
+    echo
+    local idx=0
+    local char
+
+    while [ $idx -lt ${#main_output} ]; do
+        char="${main_output:$idx:1}"
+        echo -n "$char"
+        sleep 0.015
+        idx=$((idx + 1))
+    done
+}
+
+# Non-interruptable version for confirmation messages
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+conf_msg() {
+    short_msg "$1"
+    echo -ne " ${GREEN}✓${NC}"
+}
+
+# Create two line gap
+space_2() {
+    long_msg "
+>
+>  "
+}
+
+
+# Create one line gap
+space_1() {
+    long_msg "
+>  "
+}
+
+# Declare bold and normal
+bold=$(tput bold)
+normal=$(tput sgr0)
+
 
 # === SUDO CHECK ===
-# Check if the script is being run with sudo privileges
 if [ "$EUID" -ne 0 ]; then
     echo "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-uninstall.sh"
     exit 1
@@ -21,12 +106,15 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	# Define an array of files to be restored
 	files_to_restore=(
 	    "/etc/default/grub"
-    	    "/etc/fstab"
+    	"/etc/fstab"
+		"/etc/machine-id"
+		"/etc/resolv.conf"
  	    "/etc/rpm-ostreed.conf"
-    	    "/etc/security/limits.conf"
-    	    "/etc/ssh/sshd_config"
-    	    "/etc/systemd/coredump.conf"
-    	    "/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
+    	"/etc/security/limits.conf"
+    	"/etc/ssh/sshd_config"
+    	"/etc/systemd/coredump.conf"
+    	"/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
+	    "/var/lib/dbus/machine-id"
 	)
 
 	# Loop through the array and restore backup copies
@@ -34,12 +122,21 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	# Check if the backup file exists
     	backup_file="${source_file}_sc.bak"
     	if [ -e "$backup_file" ]; then
-    	    # Restore the backup file
-    	    cp "$backup_file" "$source_file"
-    	    echo "Backup restored for: $source_file"
-    	    # Remove the backup file
-    	    rm "$backup_file"
-    	    echo "Backup removed: $backup_file"
+    	    if [ "$backup_file" == "/var/lib/dbus/machine-id"]; then
+				# Restore the backup file
+    	    	cp "$backup_file" "$source_file"
+    	    	echo "Backup restored for: $source_file"
+    	    	# Remove the backup file
+    	    	rm "$backup_file"
+    	    	echo "Machine ID restored."
+			else	
+				# Restore the backup file
+    	    	cp "$backup_file" "$source_file"
+    	    	echo "Backup restored for: $source_file"
+    	    	# Remove the backup file
+    	    	rm "$backup_file"
+    	    	echo "Backup removed: $backup_file"
+			fi
     	else
     	    echo "Backup file '$backup_file' does not exist."
 	    # Check if the source file exists
@@ -66,17 +163,17 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	echo "Failed to update GRUB configuration."
 	fi
 
-	# Update initramfs after removing kernel module blacklist file
-	dracut --regenerate-all
-
 	# === UNMASK SERVICES ===
 	services=(
     	avahi-daemon
     	cups
+		geoclue
     	httpd
+		network-online.target
     	nfs-server
+		remote-fs.target
     	rpcbind
-    	rpm-ostree-countme.service
+    	rpm-ostree-countme
     	sshd
 	)
 
@@ -88,10 +185,17 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	echo "$service unmasked."
 	done
 
+	# Stop dnscrypt-proxy
+	/usr/local/sbin/dnscrypt-proxy/dnscrypt-proxy -service stop
+	# Restart systemd-resolved
+	systemctl enable --now systemd-resolved
 
-	# === REMOVE SOLIDCORE SYSCTL SERVICES ===
+	# === REMOVE SOLIDCORE SERVICES ===
 
 	services_to_delete=(
+		"dnscrypt-proxy-update.service"
+		"dnscrypt-proxy-update.timer"
+		"flatpak-update.service"
 		"flatpak-update.timer"
 		"solidcore-first-boot.service"
 		"solidcore-second-boot.service"
@@ -105,6 +209,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	systemctl disable "$service"
 	    # Delete service/socket
 	    rm /etc/systemd/system/"$service"
+		systemctl daemon-reload
 	    # Echo a message
 	    echo "$service disabled and deleted."
 	done
@@ -116,11 +221,13 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 		"/etc/profile.d/solidcore_umask.sh"
 		"/etc/solidcore/firstboot.sh"
 		"/etc/solidcore/secondboot.sh"
+		#"/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf" -> deleted if exists, in 'restore backups'
 		"/etc/udev/rules.d/70-titan-key.rules"
 		"/etc/udev/rules.d/70-u2f.rules"
 		"/etc/udev/rules.d/41-nitrokey.rules"
 		"/etc/udev/rules.d/49-onlykey.rules"
-                "/etc/xdg/autostart/solidcore-firstboot.desktop"
+		"/etc/xdg/autostart/solidcore-mute-mic.desktop"
+        "/etc/xdg/autostart/solidcore-firstboot.desktop"
 		"/etc/xdg/autostart/solidcore-secondboot.desktop"
 	)
 
@@ -129,6 +236,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	    if [ -e "$file" ]; then
 	    # Delete file
 	    rm "$file"
+		systemctl daemon-reload
 	    echo "Solidcore created file removed: $override_file"
 		fi
 	done
@@ -149,7 +257,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	fi
 
 
-        # === RESTORE FEDORA FLATPAK ===
+     # === RESTORE FEDORA FLATPAK ===
 
  	# Check if the script exists
 	if [ -e "/etc/solidcore/fedora_flatpak.sh" ]; then
@@ -164,15 +272,35 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 
 
 	# === REVERT PASSWORD POLICIES ===
-
-	update-crypto-policies --set DEFAULT
-	echo "Default cryptographic policies applied."
 	
 	authselect select sssd
 	echo "Default password policies applied."
 	
+	rm -rf /etc/authselect/custom/solidcore*
+	echo "Solidcore password policies removed."
+
 	passwd -u root
 	echo "root account unlocked."
+
+
+	# === REVERT HOSTNAME ===
+	# Check if the file exists
+	if [ -f "/etc/solidcore/hostname_sc.bak" ]; then
+    	# Read the hostname from backup
+    	saved_hostname=$(cat "$hostname_file")
+	    # Revert hostname to original
+    	hostnamectl hostname "$saved_hostname"
+    	# Check if reverting hostname was successful
+    	if [ $? -eq 0 ]; then
+        	echo "Hostname returned to: $saved_hostname"
+    	else
+        	echo "Failed to return hostname to: $saved_hostname."
+    	fi
+		# Remove backup
+		rm /etc/solidcore/hostname_sc.bak
+	else
+    	echo "No hostname backup found. Skipping..."
+	fi
 	
 	# === UNBLOCK DEVICES ===
 	
@@ -195,16 +323,26 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	# Unmute microphone
 	amixer set Capture cap
 	
+
 	# === REVERT FILE PERMISSIONS ===
 	chmod -R 755 /usr/lib/modules
 	chmod -R 755 /lib/modules
 	
+
+
 	# === UNINSTALL APPS ===
 	flatpak remove flatseal
-	rpm-ostree remove dnscrypt-proxy usbguard
-	echo "Flatseal & dnscrypt-proxy removed."
+	rpm-ostree remove minisign usbguard
+	rm -rf /usr/local/sbin/dnscrypt-proxy*
+	echo "Flatseal, minisign & USBGuard (if installed) removed."
 	
-	
+
+	# === FIREWALL D ===
+	firewall-cmd --set-default-zone public > /dev/null 2>&1
+	firewall-cmd --reload > /dev/null
+	echo "Firewalld zone reset to default (public)"
+
+
 	# === REBOOT ===
 	echo "Reboot required to implement all the changes."
 	sleep 1

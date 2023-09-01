@@ -1,6 +1,8 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
+## Version 0.1
+##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
 ## This program is free software: you can redistribute it and/or modify
@@ -155,10 +157,12 @@ done
 space_2
 
 if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
+    # Create backup
+    echo hostnamectl hostname > /etc/solidcore/hostname_sc.bak
     # Prompt user for a new hostname
     read -r -p "Enter new hostname: " new_hostname
     # Update hostname
-    hostnamectl set-hostname "$new_hostname" 
+    hostnamectl hostname "$new_hostname" 
     conf_msg "Hostname is now $new_hostname"
 else
     short_msg "Skipping..."
@@ -261,6 +265,8 @@ cat > "$script_path" << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
+## Version 0.1
+##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
 ## This program is free software: you can redistribute it and/or modify
@@ -722,6 +728,9 @@ mv -f "${INSTALL_DIR}/example-dnscrypt-proxy.toml" "${INSTALL_DIR}/dnscrypt-prox
 
 config_file="${INSTALL_DIR}/dnscrypt-proxy.toml"
 
+# Add IPv6 support
+sed -i "s/listen_addresses = ['127.0.0.1:53']/listen_addresses = ['[::]:53']/" "$config_file"
+
 # Modify require_dnssec parameter
 sed -i 's/require_dnssec = false/require_dnssec = true/' "$config_file"
 
@@ -805,7 +814,7 @@ https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/
 https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
 EOF
 
-# Create dnscrypt-proxy update script
+# Create dnscrypt-proxy update script taken from https://github.com/DNSCrypt/dnscrypt-proxy/wiki/Updates
 cat > "$INSTALL_DIR"/dnscrypt-proxy-update.sh << EOF
 #! /bin/sh
 

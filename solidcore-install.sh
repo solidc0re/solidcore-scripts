@@ -1,6 +1,8 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
+## Version 0.1
+##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
 ## This program is free software: you can redistribute it and/or modify
@@ -18,72 +20,6 @@
 
 # Install script
 
-
-# === FLAGS ===
-
-# Server mode
-# Check if the -server flag is provided
-if [[ "$1" == "-server" ]]; then
-    server_mode=true
-    echo "Server mode: Some commands will not be executed."
-else
-    server_mode=false
-fi
-
-# Test mode
-# Check if the -test flag is provided
-if [[ "$1" == "-test" ]]; then
-    test_mode=true
-    echo "Test mode: Some commands will not be executed."
-else
-    test_mode=false
-fi
-
-# === INITIAL CHECKS ===
-
-# Enable error tracing on -server flag
-if [[ "$server_mode" == true ]]; then
-    set -ouex pipefail
-fi
-
-
-# Sudo check
-# Check if the script is being run with sudo privileges
-if [ "$EUID" -ne 0 ]; then
-    short_msg "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-install.sh'"
-    sleep 1
-    exit 1
-fi
-
-# Variant check
-# Check immutable variant
-# Define an array of immutable Fedora variants
-declare -a fedora_variants=("silverblue" "kinoite" "sericea" "vauxite" "onyx")
-
-# Initialize a variable to store the detected variant
-detected_variant=""
-
-# Run rpm-ostree status -b and capture the output
-ostree_status=$(rpm-ostree status -b)
-
-# Iterate through the array to check for a match
-for variant in "${fedora_variants[@]}"; do
-    if [[ "$ostree_status" == *"$variant"* ]]; then
-        detected_variant="$variant"
-        break  # Exit the loop after the first match
-    fi
-done
-
-# Use the detected_variant variable later in your script
-if [ -n "$detected_variant" ]; then
-    :
-else
-    echo "No supported immutable Fedora variant detected."
-    exit 1
-fi
-
-
-# === DISPLAY FUNCTIONS ===
 
 # === DISPLAY FUNCTIONS ===
 
@@ -150,6 +86,70 @@ space_1() {
 # Declare bold and normal
 bold=$(tput bold)
 normal=$(tput sgr0)
+
+
+# === FLAGS ===
+
+# Server mode
+# Check if the -server flag is provided
+if [[ "$1" == "-server" ]]; then
+    server_mode=true
+    short_msg "Server mode: Some commands will not be executed."
+else
+    server_mode=false
+fi
+
+# Test mode
+# Check if the -test flag is provided
+if [[ "$1" == "-test" ]]; then
+    test_mode=true
+    short_msg "Test mode: Some commands will not be executed."
+else
+    test_mode=false
+fi
+
+# === INITIAL CHECKS ===
+
+# Enable error tracing on -server flag
+if [[ "$server_mode" == true ]]; then
+    set -ouex pipefail
+fi
+
+
+# Sudo check
+# Check if the script is being run with sudo privileges
+if [ "$EUID" -ne 0 ]; then
+    short_msg "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-install.sh'"
+    sleep 1
+    exit 1
+fi
+
+# Variant check
+# Check immutable variant
+# Define an array of immutable Fedora variants
+declare -a fedora_variants=("silverblue" "kinoite" "sericea" "vauxite" "onyx")
+
+# Initialize a variable to store the detected variant
+detected_variant=""
+
+# Run rpm-ostree status -b and capture the output
+ostree_status=$(rpm-ostree status -b)
+
+# Iterate through the array to check for a match
+for variant in "${fedora_variants[@]}"; do
+    if [[ "$ostree_status" == *"$variant"* ]]; then
+        detected_variant="$variant"
+        break  # Exit the loop after the first match
+    fi
+done
+
+# Use the detected_variant variable later in your script
+if [ -n "$detected_variant" ]; then
+    :
+else
+    short_msg "No supported immutable Fedora variant detected."
+    exit 1
+fi
 
 
 # === WELCOME ===
@@ -290,12 +290,14 @@ chmod +x /etc/solidcore/defaults.sh
 files_to_backup=(
     "/etc/default/grub"
     "/etc/fstab"
+    "/etc/machine-id"
     "/etc/resolv.conf"
     "/etc/rpm-ostreed.conf"
     "/etc/security/limits.conf"
     "/etc/ssh/sshd_config"
     "/etc/systemd/coredump.conf"
     "/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
+    "/var/lib/dbus/machine-id"
 )
 
 # Loop through the array and create backup copies
@@ -366,7 +368,7 @@ if [[ "$test_mode" == false ]]; then
     if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null ; then
         conf_msg "GRUB configuration updated."
     else
-        echo "Notice: Failed to update GRUB configuration."
+        short_msg "Notice: Failed to update GRUB configuration."
     fi
 else
     conf_msg "Testing. Skipped updating of GRUB configuration."
@@ -603,7 +605,7 @@ fi
 
 mkdir -p "$timer_dir"
 
-cat > /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf <<EOL
+cat > "$timer_dir/$override_file" <<EOL
 [Unit]
 Description=Run rpm-ostree updates 10 minutes after boot and every 3 hours
 

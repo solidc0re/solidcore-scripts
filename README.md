@@ -7,7 +7,10 @@ Work in progress... *Not currently ready for home use.*
 - solidcore-firstboot.sh is currently operational and functioning
 - solidcore-uninstall.sh currently undergoing active testing
 
+Tested on Fedora Silverblue 38.
+
 ## Current features
+Despite the lower version number, this script implements some serious hardening.
 
 - Guided user interface :white_check_mark:
 - Auto-generate backups of important config files :white_check_mark:
@@ -33,7 +36,7 @@ Work in progress... *Not currently ready for home use.*
 - Uninstall file (mostly working, not tested recently)
 
 ## Planned features and future goals
-The long-term goal (probably for v1.0) is to have the hardening provided by this script work on both the client-side - i.e. manual running of the script on any existing immutable Fedora system - and server-side, so people can carry out an rpm-ostree rebase to a pre-hardened and constantly updated system.
+The long-term goal (probably for v1.0) is to have the hardening provided by this script work on both client-side - i.e. manual running of the script on any existing immutable Fedora system - and server-side, so people can carry out an rpm-ostree rebase to a pre-hardened and constantly updated system.
 
 In the meantime, there's plenty of work to do. Including the following, in no particular order:
 - start a testing branch
@@ -96,8 +99,6 @@ Your system will automatically update the following:
 
 Please report any issues and suggested improvements on [this Github page](https://github.com/solidc0re/solidcore-scripts/issues).
 
-Some useful 'How to' instructions follow.
-
 ### How to: whitelist a USB device
 If you notified the script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible.
 
@@ -113,6 +114,14 @@ To edit:
 
 Once changes have been made to domains-blocklist.conf:
 `sudo systemctl start dnscrypt-proxy-update`
+
+### How to: unblock Wi-Fi
+`rfkill unblock wifi`
+
+### How to: unblock bluetooth
+
+`sudo systemctl unmask bluetooth.service`
+`sudo systemctl enable --now bluetooth.service`
 
 ## Acknowledgements
 This project is made possible by the diligent and forward-thinking work of the Fedora and RedHat developers and community. A special shout out to the CoreOS and rpm-ostree developers for their excellent work.
