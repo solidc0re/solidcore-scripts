@@ -9,7 +9,9 @@
 
 Whilst it is true that a read-only (immutable) filesystem during run-time does reduce a lot of attack surface exploited by malware, security depends on much more than that.
 
-What if someone gains physical access to your device? What is someone else who uses your computer downloads malware? What if you are the target of malicious network activity? ... You get the picture.
+- **What if someone gains physical access to your device?**
+- **What is someone else who uses your computer downloads malware?**
+- **What if you are the target of malicious network activity?** ... You get the picture.
 
 These are just some of the issues that solidcore hardening aims to protect against.
 
