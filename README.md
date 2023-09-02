@@ -7,6 +7,11 @@
 
 **:hushed: Thought you were safe?**
 
+Whilst it is true that a read-only (immutable) filesystem during run-time does reduce a lot of attack surface exploited by malware, security depends on much more than that.
+
+What if someone gains physical access to your device? What is someone else who uses your computer downloads malware? What if you are the target of malicious network activity? ... You get the picture.
+
+These are just some of the issues that solidcore hardening aims to protect against.
 
 ## Aims
 **This project aims to protect immutable Fedora variants against a variety of attack vectors by:**
@@ -48,7 +53,7 @@ What follows is a long list of the current features:
   - Unused ports are disabled and blacklisted :heavy_check_mark:
   - USBGuard installed (if required) :heavy_check_mark:
   - Enable hardware key support (optional) :heavy_check_mark:
-- DNSCrypt-proxy installed (no need to trust your ISP, nor your VPN) :heavy_check_mark:
+- [DNSCrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy) installed (no need to trust your ISP, nor your VPN) :heavy_check_mark:
 - DNS blocklists added :heavy_check_mark:
 - Updates scheduled for dnscrypt-proxy and DNS blocklists :heavy_check_mark:
 - Uninstall file (mostly working)
@@ -76,6 +81,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - improve user interactions
 - develop the `-server` flag further to eliminate all user interaction
 - write more documentation/start a Github wiki
+- implement conditional conf_msg and error reporting
 
 For the next release v0.1.5 alpha:
 - create testing branch for the sake of your sanity and mine
@@ -88,7 +94,9 @@ For the next release v0.1.5 alpha:
 > **Currently in alpha stage.** Only install for testing purposes or if you're really keen. The uninstall script is not fully tested, but all changes instigated by the script are reversible.
 ### = Installing =
 
-It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is only possible during the installation process of the OS. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
+It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is only possible during the installation process of the OS, and not something solidcore-scripts can implement. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
+
+If you haven't added a password to your BIOS yet, either, then please do so and ensure that - in the boot order section - your device boots from the encrypted drive before any USB drives. Please also ensure that SecureBoot is enabled.
 
 To install the solidcore-scripts:
 ```
@@ -137,23 +145,18 @@ Your system will automatically update the following:
 - rpm-ostree, 10 minutes after boot and every 3 hours
 - Flatpak apps, 20 minutes after boot and every 3 hours 10 minutes
 
-Please report any issues and suggested improvements on [this Github page](https://github.com/solidc0re/solidcore-scripts/issues).
+If USBGuard was installed when running solidcore-scripts, then I recommend reviewing the allowed devices and blocking any you don't use (such as fingerprint readers):
 
-## 'How to' guides
-
-<details>
-<summary>How to: whitelist a USB device</summary>
-  
-### How to: whitelist a USB device
-
-If you notified the script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible. To whitelist devices:
 ```
 sudo usbguard list-devices
 ```
 ```
-sudo usbguard allow-device <device number>
+sudo usbguard block-device <device number>
 ```
-</details>
+
+Please report any issues and suggested improvements on [this Github page](https://github.com/solidc0re/solidcore-scripts/issues).
+
+## 'How to' guides
 
 <details>
 <summary>How to: add a domain to the DNS allowlist</summary>
@@ -265,8 +268,8 @@ sudo boltctl enable <domain>
 <summary>How to: unblock USB</summary>
 
 ### How to: unblock USB
-  
-First:
+
+This is for those who blacklisted the USB kernel module - NOT FOR THOSE WHO INSTALLED USBGUARD. To unblock the USB modules:
 ```
 sudo sed -i '/blacklist usbcore/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
@@ -282,6 +285,34 @@ sudo insmod usbcore usb_storage
 
 <details>
 <summary>How to: unblock webcam</summary>
+
+<details>
+<summary>How to: allow/unblock a USB device using USBGuard</summary>
+  
+### How to: allow/unblock a USB device using USBGuard
+
+If you notified solidcore-script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible. To whitelist devices:
+```
+sudo usbguard list-devices
+```
+```
+sudo usbguard allow-device <device number>
+```
+</details>
+
+<details>
+<summary>How to: block a USB device using USBGuard</summary>
+  
+### How to: block a USB device using USBGuard
+
+If you notified solidcore-script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible. To whitelist devices:
+```
+sudo usbguard list-devices
+```
+```
+sudo usbguard block-device <device number>
+```
+</details>
 
 ### How to: unblock webcam
   
@@ -315,6 +346,10 @@ sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop
 ```
 </details>
 
+### Notes
+
+This script is about OS hardening, not providing opinionated software choices. That said, some opinionated choices were made. Namely the installation of dnscrypt-proxy, the DNS blocklists used and switiching all Fedora project flatpaks to Flathub source flatpaks.
+
 ## Acknowledgements
 This project is made possible by the diligent and forward-thinking work of the Fedora and RedHat developers and community. A special shout out to the CoreOS and rpm-ostree developers for their excellent work.
 
@@ -326,3 +361,21 @@ Many of the hardening improvements implemented by the solidcore-scripts are reco
 - https://github.com/ComplianceAsCode/content
 - https://static.open-scap.org/ssg-guides/ssg-fedora-guide-index.html
 - https://github.com/a13xp0p0v/kconfig-hardened-check/
+
+## Introductory resouces
+If you're relatively new to the infosec (information security) world, then the following resources come recommended:
+
+🎥
+- [NBTV, with Naomi Brockwell](https://www.youtube.com/@NaomiBrockwellTV)
+- [Side of Burritos](https://www.youtube.com/@sideofburritos)
+- [The New Oil](https://www.youtube.com/channel/UCH5DsMZAgdx5Fkk9wwMNwCA)
+- [Techlore](https://www.youtube.com/@techlore)
+
+🎧
+- [Malwarebytes Podcast](https://www.malwarebytes.com/blog/category/podcast)
+- [Surveillance Report](https://surveillancereport.tech/)
+
+👀
+- [The New Oil](https://thenewoil.org/)
+- [National Cyber Security Centre (UK)](https://www.ncsc.gov.uk/section/advice-guidance/all-topics)
+- [Privacy Tools](https://www.privacytools.io/)
