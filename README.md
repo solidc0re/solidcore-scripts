@@ -351,9 +351,11 @@ sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop
 ```
 </details>
 
-## Notes
+## Comments
 
-This script is about OS hardening, not providing opinionated software choices. That said, some opinionated choices were made. Namely the installation of dnscrypt-proxy, the DNS blocklists used and switiching all Fedora project flatpaks to Flathub source flatpaks.
+This script is about OS hardening, not installing opinionated software choices such as browsers and other privacy or security tools.
+
+That said, some opinionated choices had to be made for providing a well-rounded security model. Namely the installation of dnscrypt-proxy, the DNS blocklists used and switiching all Fedora project flatpaks to Flathub source flatpaks.
 
 ## Acknowledgements
 This project is made possible by the diligent and forward-thinking work of the Fedora and RedHat developers and community. A special shout out to the CoreOS and rpm-ostree developers for their excellent work.
