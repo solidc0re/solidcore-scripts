@@ -286,9 +286,6 @@ sudo insmod usbcore usb_storage
 </details>
 
 <details>
-<summary>How to: unblock webcam</summary>
-
-<details>
 <summary>How to: allow/unblock a USB device using USBGuard</summary>
   
 ### How to: allow/unblock a USB device using USBGuard
@@ -316,6 +313,9 @@ sudo usbguard block-device <device number>
 ```
 </details>
 
+<details>
+<summary>How to: unblock webcam</summary>
+  
 ### How to: unblock webcam
   
 First:
@@ -328,6 +328,7 @@ Then reboot. After reboot:
 sudo insmod uvcvideo
 ```
 </details>
+
 <details>
 <summary>How to: unblock Wi-Fi</summary>
 
@@ -348,7 +349,7 @@ sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop
 ```
 </details>
 
-### Notes
+## Notes
 
 This script is about OS hardening, not providing opinionated software choices. That said, some opinionated choices were made. Namely the installation of dnscrypt-proxy, the DNS blocklists used and switiching all Fedora project flatpaks to Flathub source flatpaks.
 
