@@ -680,9 +680,10 @@ space_1
 
 # === DNSCRYPT-PROXY ===
 
-# Install dnscrypt-proxy
+# Install dnscrypt-proxy, inspired by update script available at https://github.com/DNSCrypt/dnscrypt-proxy/wiki/Updates
 INSTALL_DIR="/usr/local/sbin/dnscrypt-proxy"
 LATEST_URL="https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest"
+DNSCRYPT_PUBLIC_KEY="RWTk1xXqcTODeYttYMCMLo0YJHaFEHn7a3akqHlb/7QvIQXHVPxKbjB5"
 PLATFORM="linux"
 CPU_ARCH="x86_64"
 workdir="/usr/local/sbin/dnscrypt-proxy/tmp"

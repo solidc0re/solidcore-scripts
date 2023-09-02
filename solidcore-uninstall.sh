@@ -345,7 +345,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	flatpak remove flatseal > /dev/null 2>&1
 	rpm-ostree remove minisign usbguard > /dev/null 2>&1
 	rm -rf /usr/local/sbin/dnscrypt-proxy* > /dev/null 2>&1
-	conf_msg "Flatseal, minisign & USBGuard (if installed) removed"
+	conf_msg "DNSCrypt-Proxy, Flatseal, minisign & USBGuard (if installed) removed"
 	
 
 	# === FIREWALL D ===

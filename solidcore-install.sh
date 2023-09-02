@@ -469,7 +469,7 @@ conf_msg "hidepid enabled for /proc"
 
 # === FILE PERMISSIONS ===
 
-# Ensure new files are only readable by the user who created them
+# Ensure new files are only rwx by the user who created them
 umask_script="/etc/profile.d/solidcore_umask.sh"
 
 # Create the umask script
@@ -698,12 +698,12 @@ chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 # === INSTALLS ===
 
-#short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This will also take a while..."
-#space_1
+short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This will also take a while..."
+space_1
 
 # Minisign
-#rpm-ostree install minisign > /dev/null
-#conf_msg "Done"
+rpm-ostree install minisign > /dev/null
+conf_msg "Done"
 
 # Flatseal
 flatpak install -y com.github.tchx84.Flatseal > /dev/null 2>&1
