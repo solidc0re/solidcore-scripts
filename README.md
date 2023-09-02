@@ -351,7 +351,7 @@ sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop
 ```
 </details>
 
-## Notes
+## Comments
 
 This script is about OS hardening, not installing opinionated software choices such as browsers and other privacy or security tools.
 
