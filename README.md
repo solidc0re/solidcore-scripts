@@ -84,6 +84,8 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - develop the `-server` flag further to eliminate all user interaction
 - write more documentation/start a Github wiki
 - implement conditional conf_msg and error reporting
+- add SELinux enforcing check
+- add blank password check for all users, or have all users update their password on next login
 
 For the next release v0.1.5 alpha:
 - create testing branch for the sake of your sanity and mine
