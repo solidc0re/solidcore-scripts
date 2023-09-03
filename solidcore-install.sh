@@ -290,7 +290,9 @@ files_to_backup=(
     "/etc/machine-id"
     "/etc/resolv.conf"
     "/etc/rpm-ostreed.conf"
+    "/etc/security/faillock.conf"
     "/etc/security/limits.conf"
+    "/etc/security/pwquality.conf"
     "/etc/ssh/sshd_config"
     "/etc/systemd/coredump.conf"
     "/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
@@ -507,14 +509,44 @@ conf_msg "Core dumps disabled"
 
 # === PASSWORD POLICIES ===
 
+# Change defaults
+uncomment_and_modify() {
+    local file="$1"
+    local pattern="$2"
+    local replacement="$3"
+    
+    # Use sed to uncomment and modify the line
+    sed -i "s/^# \(.*$pattern.*\)/\1/g" "$file"
+    sed -i "s/$pattern.*/$pattern $replacement/g" "$file"
+}
+
+# Modify pwquality.conf
+pwquality_file="/etc/security/pwquality.conf"
+
+# Uncomment and modify the specified lines
+uncomment_and_modify "$pwquality_file" "minlen" "12"
+uncomment_and_modify "$pwquality_file" "ucredit" "-1"
+uncomment_and_modify "$pwquality_file" "lcredit" "-1"
+uncomment_and_modify "$pwquality_file" "maxrepeat" "3"
+uncomment_and_modify "$pwquality_file" "dictcheck" "1"
+uncomment_and_modify "$pwquality_file" "enforcing" "1"
+uncomment_and_modify "$pwquality_file" "retry" "5"
+uncomment_and_modify "$pwquality_file" "enforce_for_root" ""
+
+# Modify faillock.conf
+faillock_file="/etc/security/faillock.conf"
+
+# Uncomment and modify the specified lines
+uncomment_and_modify "$faillock_file" "deny" "10" # increase lock limit to 10 attempts, as root account is locked and no one can unlock you
+uncomment_and_modify "$faillock_file" "even_deny_root" "" # in case someone unlocks root
+
+conf_msg "Applied stronger password requirements"
+
 # Create a custom authselect profile called "solidcore"
 authselect create-profile solidcore -b sssd > /dev/null 2>&1
 
 # Increase password delay from 2 second default to 5 seconds
 new_delay="5000000"
-
-# Remove ability for someone to set an empty password
-text_to_remove=" {if not \"without-nullok\":nullok}"
 
 # Define the files to modify
 pwd_files=(
@@ -528,17 +560,13 @@ for file in "${pwd_files[@]}"; do
     if [ -f "$file" ]; then
         # Use sed to replace the line with the new value
         sed -i "s/\(auth\s*required\s*pam_faildelay.so\s*delay=\).*$/\1$new_delay/" "$file"
-	    # Remove nullok reference
- 	    sed -i "s/$text_to_remove//" "$file"
-  	    # Append minimum length of 12
-        sed -i "/pam_pwquality.so/s/$/ minlen=12/" "$file"
     else
         echo "File not found: $file"
     fi
 done
 
 # Apply the custom profile
-authselect select custom/solidcore --quiet
+authselect select custom/solidcore with-faillock without-nullok --quiet # with-pamaccess if access.conf is changed in future
 conf_msg "Custom password profile 'solidcore' created and applied"
 
 
