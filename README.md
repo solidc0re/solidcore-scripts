@@ -87,6 +87,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - add blank password check for all users, or have all users update their password on next login
 - add mitigations check
 - review and potentially implement chronyd (NTP) [improvements](https://chrony-project.org/faq.html#_how_can_i_make_the_system_clock_more_secure)
+- `/etc/security/access.conf` test disallowing console logins to non-wheel users
 
 For the next release:
 - [x] create testing branch for the sake of your sanity and mine
@@ -358,9 +359,9 @@ sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 # Comments
 
-This script is about OS hardening, not installing opinionated software choices such as browsers and other privacy or security tools.
+The focus of this project is OS hardening, not changing the default Fedora software choices.
 
-That said, some opinionated choices had to be made for providing a well-rounded security model. Namely the installation of dnscrypt-proxy, the DNS blocklists used and switiching all Fedora project flatpaks to Flathub source flatpaks.
+That said, some opinionated choices had to be made. These include the installation of dnscrypt-proxy, the DNS blocklists used, keeping IPv6 active and switiching all Fedora project flatpaks to Flathub source flatpaks. If you don't agree with these then feel free to contact me, donwload the scripts and manually undo the changes, or fork the repo and implement your own preferences.
 
 # Acknowledgements
 This project is made possible by the diligent and forward-thinking work of the Fedora and RedHat developers and community. A special shout out to the CoreOS and rpm-ostree developers for their excellent work.
