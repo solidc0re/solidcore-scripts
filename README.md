@@ -96,18 +96,22 @@ For the next release:
 # Instructions
 > [!NOTE]
 > **Currently in alpha stage.** Only install for testing purposes or if you're really keen. The uninstall script is not fully tested, but all changes instigated by the script are reversible.
-## Installing
 
-It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is only possible during the installation process of the OS, and not something solidcore-scripts can implement. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
+## Installation
 
-If you haven't added a password to your BIOS yet, either, then please do so and ensure that - in the boot order section - your device boots from the encrypted drive before any USB drives. Please also ensure that SecureBoot is enabled.
+### Pre-install recommendations
 
-To install the solidcore-scripts:
+1. It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is best done during the installation process of the OS, and not something solidcore-scripts will implement. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
+
+1. If you haven't added a password to your BIOS yet, either, then please do so and ensure that - in the boot order section - your device boots from the encrypted drive before any USB drives. Please also ensure that SecureBoot is enabled.
+
+### Installing
+
+To install the solidcore-scripts, type in the following command and follow the on-screen instructions:
 ```
 wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcore-install.sh && sudo bash solidcore-install.sh
 ```
 
-Then follow the on-screen instructions.
 
 ## Upgrading
 
