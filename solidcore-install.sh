@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1
+## Version 0.1.1
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -538,7 +538,7 @@ for file in "${pwd_files[@]}"; do
 done
 
 # Apply the custom profile
-authselect select custom/solidcore > /dev/null 2>&1
+authselect select custom/solidcore --quiet
 conf_msg "Custom password profile 'solidcore' created and applied"
 
 
@@ -733,7 +733,7 @@ mv -f "solidcore-firstboot.sh" "/etc/solidcore/"
 cat > /etc/solidcore/solidcore-welcome.sh << EOF
 #!/bin/bash
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1
+## Version 0.1.1
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##

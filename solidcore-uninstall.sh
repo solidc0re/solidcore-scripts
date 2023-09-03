@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1
+## Version 0.1.1
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
