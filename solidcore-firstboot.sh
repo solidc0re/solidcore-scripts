@@ -131,6 +131,8 @@ while true; do
     short_msg "  • the password must pass a dictionary test"
     space_1
     short_msg "Numbers and special characters are permitted, but not required."
+    space_1
+    short_msg "${bold}Password length is more important than complexity.${normal}"
     sleep 1
     space_1
     short_msg "Enter your new password below."
