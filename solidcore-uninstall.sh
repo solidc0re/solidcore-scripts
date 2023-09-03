@@ -124,6 +124,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 		"/etc/machine-id"
 		"/etc/resolv.conf"
  	    "/etc/rpm-ostreed.conf"
+		"/etc/security/access.conf"
 		"/etc/security/faillock.conf"
     	"/etc/security/limits.conf"
 		"/etc/security/pwquality.conf"
