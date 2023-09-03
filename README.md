@@ -379,17 +379,17 @@ Many of the hardening improvements implemented by the solidcore-scripts are reco
 # Introductory resources
 If you're relatively new to the infosec (information security) world, then the following resources come recommended:
 
-🎥
+🎥 YouTube channels
 - [NBTV, with Naomi Brockwell](https://www.youtube.com/@NaomiBrockwellTV)
 - [Side of Burritos](https://www.youtube.com/@sideofburritos)
 - [The New Oil](https://www.youtube.com/channel/UCH5DsMZAgdx5Fkk9wwMNwCA)
 - [Techlore](https://www.youtube.com/@techlore)
 
-🎧
+🎧 Podcasts
 - [Malwarebytes Podcast](https://www.malwarebytes.com/blog/category/podcast)
 - [Surveillance Report](https://surveillancereport.tech/)
 
-👀
+👀 Websites & guides
 - [The New Oil](https://thenewoil.org/)
 - [National Cyber Security Centre (UK)](https://www.ncsc.gov.uk/section/advice-guidance/all-topics)
 - [Privacy Tools](https://www.privacytools.io/)
