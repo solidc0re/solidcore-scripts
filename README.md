@@ -85,6 +85,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - implement conditional conf_msg and error reporting
 - add SELinux enforcing check
 - add blank password check for all users, or have all users update their password on next login
+- add mitigations check
 
 For the next release:
 - [x] create testing branch for the sake of your sanity and mine
