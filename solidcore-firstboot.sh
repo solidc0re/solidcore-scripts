@@ -120,10 +120,20 @@ short_msg "As part of solidcore's hardening, new password policies were implemen
 sleep 1
 space_1
 while true; do
-    short_msg "${bold}You are now required to set a new password. 12 characters minimum!${normal}"
+    short_msg "${bold}You are now required to set a new password.${normal}"
     sleep 1
     space_1
-    short_msg "Enter it below."
+    short_msg "The new password requirements are:"
+    short_msg "  • 12 character minimum"
+    short_msg "  • at least 1 UPPER case character"
+    short_msg "  • at least 1 lower case character"
+    short_msg "  • the same character can not be repeated 3+ times in a row"
+    short_msg "  • the password must pass a dictionary test"
+    space_1
+    short_msg "Numbers and special characters are permitted, but not required."
+    sleep 1
+    space_1
+    short_msg "Enter your new password below."
     space_1
     echo
     passwd > /dev/null
@@ -135,8 +145,40 @@ while true; do
         space_1
         short_msg "Password change failed. Please try again."
         space_1
+        short_msg "A reminder that the new password requirements are:"
+        short_msg "  • 12 character minimum"
+        short_msg "  • at least 1 UPPER case character"
+        short_msg "  • at least 1 lower case character"
+        short_msg "  • the same character can not be repeated 3+ times in a row"
+        short_msg "  • the password must pass a dictionary test"
+        space_1
     fi
 done
+conf_msg "Password updated"
+
+# Expire passwords of all other users
+short_msg "Expiring all user passwords except for user..."
+
+
+# Count the number of non-root users on the system
+num_users=$(getent passwd | grep -v '/bin/false' | grep -v '/sbin/nologin' | wc -l)
+
+# Check if there are other users besides the current user and root
+if [ "$num_users" -gt 2 ]; then
+    # Loop through all user accounts and exclude the current user and root
+    for username in $(getent passwd | cut -d: -f1); do
+        if [ "$username" != "$current_user" ] && [ "$username" != "root" ]; then
+            echo "Expiring password for user: $username"
+            chage -E 0 "$username"
+        fi
+    done
+    space_1
+    short_msg "${bold}All other users' passwords have now expired${normal}."
+    short_msg "They will be prompted to update their password on the next login."
+    sleep 1
+
+fi
+
 space_2
 space_1
 
