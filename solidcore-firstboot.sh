@@ -85,6 +85,8 @@ space_1() {
 
 # Declare bold and normal
 bold=$(tput bold)
+italicon=$(tput sitm)
+italicoff=$(tput ritm)
 normal=$(tput sgr0)
 
 
@@ -133,6 +135,8 @@ while true; do
     short_msg "Numbers and special characters are permitted, but not required."
     space_1
     short_msg "${bold}Password length is more important than complexity.${normal}"
+    space_1
+    short_msg "For example, ${italicon}TwoClownsWalkedintoaBar${italicoff} is better than ${italicon}dVc78#!_sjdRa${italicoff}."
     sleep 1
     space_1
     short_msg "Enter your new password below."
