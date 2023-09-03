@@ -81,6 +81,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - research and possibly implement clam-tk and AIDE
 - research anti-forensic tools
 - improve user interactions
+- set up full installation of hardware keys, i.e. creation of U2F pam module key and required modification to solidcore pam profile
 - develop the `-server` flag further to eliminate all user interaction
 - write more documentation/start a Github wiki
 - implement conditional conf_msg and error reporting
