@@ -15,7 +15,7 @@ Whilst it is true that a read-only (immutable) filesystem during run-time does r
 
 These are just some of the issues that solidcore hardening aims to protect against.
 
-## Aims
+# Aims
 **This project aims to protect immutable Fedora variants against a variety of attack vectors by:**
 - **Securing the bootloader**
 - **Hardening the kernel**
@@ -25,7 +25,7 @@ These are just some of the issues that solidcore hardening aims to protect again
 - **Improving the firewall settings**
 - :fire: ***... plus more!!*** :fire:
 
-## Current features
+# Current features
 **Despite the low version number of v0.1.1, this script implements some serious hardening.**
 
 What follows is a long list of the current features:
@@ -62,7 +62,7 @@ What follows is a long list of the current features:
 
 **Tested on Fedora Silverblue 38.**
 
-## Planned features and future goals
+# Planned features and future goals
 The long-term goal (probably for v1.0) is to have the hardening provided by this script work both client-side - i.e. manual running of the script on any existing immutable Fedora system - and server-side, so people can carry out an rpm-ostree rebase to a pre-hardened and constantly updated system.
 
 In the meantime, there's plenty of work to do. Including the following, in no particular order:
@@ -93,10 +93,10 @@ For the next release:
 - user-testing and implement feedback
 - test uninstall process thoroughly
 
-## Instructions
+# Instructions
 > [!NOTE]
 > **Currently in alpha stage.** Only install for testing purposes or if you're really keen. The uninstall script is not fully tested, but all changes instigated by the script are reversible.
-### = Installing =
+## Installing
 
 It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is only possible during the installation process of the OS, and not something solidcore-scripts can implement. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
 
@@ -109,7 +109,7 @@ wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcor
 
 Then follow the on-screen instructions.
 
-### = Upgrading =
+## Upgrading
 
 Uninstall first, then re-install, just to be safe.
 
@@ -124,14 +124,14 @@ wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcor
 ```
 
 
-### = Uninstalling =
+## Uninstalling
 Uninstalling reverts all changed system settings to how they previously were, along with uninstalling any solidcore-installed packages.
 ```
 sudo bash /etc/soldicore/uninstall
 ```
 
 
-## Post-install information
+# Post-install information
 Congratulations! You have hardened your immutable Fedora installation.
 
 Your GRUB username is 'root' - you will need this if you want to change your GRUB entries. The password is what you set it as during the firstboot script.
@@ -160,7 +160,7 @@ sudo usbguard block-device <device number>
 
 Please report any issues and suggested improvements on [this Github page](https://github.com/solidc0re/solidcore-scripts/issues).
 
-## 'How to' guides
+# 'How to' guides
 
 <details>
 <summary>How to: add a domain to the DNS allowlist</summary>
@@ -351,13 +351,13 @@ sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop
 ```
 </details>
 
-## Comments
+# Comments
 
 This script is about OS hardening, not installing opinionated software choices such as browsers and other privacy or security tools.
 
 That said, some opinionated choices had to be made for providing a well-rounded security model. Namely the installation of dnscrypt-proxy, the DNS blocklists used and switiching all Fedora project flatpaks to Flathub source flatpaks.
 
-## Acknowledgements
+# Acknowledgements
 This project is made possible by the diligent and forward-thinking work of the Fedora and RedHat developers and community. A special shout out to the CoreOS and rpm-ostree developers for their excellent work.
 
 Many of the hardening improvements implemented by the solidcore-scripts are recommendations from these sources:
@@ -369,7 +369,7 @@ Many of the hardening improvements implemented by the solidcore-scripts are reco
 - https://static.open-scap.org/ssg-guides/ssg-fedora-guide-index.html
 - https://github.com/a13xp0p0v/kconfig-hardened-check/
 
-## Introductory resources
+# Introductory resources
 If you're relatively new to the infosec (information security) world, then the following resources come recommended:
 
 🎥
