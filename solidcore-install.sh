@@ -542,6 +542,11 @@ uncomment_and_modify "$faillock_file" "even_deny_root" "" # in case someone unlo
 
 conf_msg "Applied stronger password requirements"
 
+# Tighten access to console
+echo "-:ALL EXCEPT (wheel):LOCAL" | sudo tee -a /etc/security/access.conf > /dev/null
+
+conf_msg "Only non-remote 'wheel' group members can access the console"
+
 # Create a custom authselect profile called "solidcore"
 authselect create-profile solidcore -b sssd > /dev/null 2>&1
 
@@ -566,7 +571,7 @@ for file in "${pwd_files[@]}"; do
 done
 
 # Apply the custom profile
-authselect select custom/solidcore with-faillock without-nullok --quiet # with-pamaccess if access.conf is changed in future
+authselect select custom/solidcore with-pamaccess with-faillock without-nullok --quiet
 conf_msg "Custom password profile 'solidcore' created and applied"
 
 
