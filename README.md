@@ -1,9 +1,9 @@
 # solidcore-scripts
 ### Hardening scripts for immutable Fedora.
 
-**:cupid: Love Fedora?**
+**:cupid: Love [Fedora](https://fedoraproject.org/)?**
 
-**:sparkling_heart: Love the immutable spins?**
+**:sparkling_heart: Love the immutable desktops?**
 
 **:hushed: Thought you were safe?**
 
@@ -69,7 +69,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - create testing VMs of all official immutable Fedora variants
 - create solidcore aliases for common post-install actions
 - develop the `-test` flag further for more verbosity
-- align as much as immutable Fedora will allow with CIS RHEL 9 Workstation Level 1 & Level 2 hardening
+- align as much as immutable Fedora will allow with the Center for Internet Security's RHEL 9 Workstation Level 1 & Level 2 benchmark
 - research and improve sysctl and bootloader hardening
 - install and sign hardened kernel (removing any currently implemented kernel hardening)
 - implement pam.d overwrites with stronger defaults
