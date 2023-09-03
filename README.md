@@ -101,7 +101,7 @@ For the next release:
 
 ### Pre-install recommendations
 
-1. It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. This option is best done during the installation process of the OS, and not something solidcore-scripts will implement. See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for more info.
+1. It is strongly recommended to install your favourite immutable Fedora variant on an encrypted drive. Drive encryption is best done during the installation process of the OS, [although may be possible after](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/security_hardening/encrypting-block-devices-using-luks_security-hardening#encrypting-existing-data-on-a-block-device-using-luks2_encrypting-block-devices-using-luks). See the [Fedora docs](https://docs.fedoraproject.org/en-US/quick-docs/encrypting-drives-using-LUKS/#_creating_encrypted_block_devices_in_anaconda) for information on how to encrypt the drive during the installation process.
 
 1. If you haven't added a password to your BIOS yet, either, then please do so and ensure that - in the boot order section - your device boots from the encrypted drive before any USB drives. Please also ensure that SecureBoot is enabled.
 
