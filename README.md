@@ -88,6 +88,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - add mitigations check
 - review and potentially implement chronyd (NTP) [improvements](https://chrony-project.org/faq.html#_how_can_i_make_the_system_clock_more_secure)
 - `/etc/security/access.conf` test disallowing console logins to non-wheel users
+- further harden SSHD in case someone activates it
 
 For the next release:
 - [x] create testing branch for the sake of your sanity and mine
