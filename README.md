@@ -26,7 +26,7 @@ These are just some of the issues that solidcore hardening aims to protect again
 - :fire: ***... plus more!!*** :fire:
 
 ## Current features
-**Despite the low version number of v0.1, this script implements some serious hardening.**
+**Despite the low version number of v0.1.1, this script implements some serious hardening.**
 
 What follows is a long list of the current features:
 
@@ -66,7 +66,6 @@ What follows is a long list of the current features:
 The long-term goal (probably for v1.0) is to have the hardening provided by this script work both client-side - i.e. manual running of the script on any existing immutable Fedora system - and server-side, so people can carry out an rpm-ostree rebase to a pre-hardened and constantly updated system.
 
 In the meantime, there's plenty of work to do. Including the following, in no particular order:
-- start a testing branch
 - create testing VMs of all official immutable Fedora variants
 - create solidcore aliases for common post-install actions
 - develop the `-test` flag further for more verbosity
@@ -74,7 +73,6 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - research and improve sysctl and bootloader hardening
 - install and sign hardened kernel (removing any currently implemented kernel hardening)
 - implement pam.d overwrites with stronger defaults
-- add check for users with blank passwords
 - implement improvements to the USBGuard config
 - progress on getting the hardened malloc to work
 - create scripts to audit all relevant settings on new versions of Fedora to make keeping it up-to-date easier
@@ -88,9 +86,9 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - add SELinux enforcing check
 - add blank password check for all users, or have all users update their password on next login
 
-For the next release v0.1.5 alpha:
-- create testing branch for the sake of your sanity and mine
-- get minisign to work properly (dnscrypt-proxy install and updates)
+For the next release:
+- [x] create testing branch for the sake of your sanity and mine
+- [x] get minisign to work properly (dnscrypt-proxy install and updates)
 - user-testing and implement feedback
 - test uninstall process thoroughly
 
