@@ -573,7 +573,8 @@ conf_msg "Custom password profile 'solidcore' created and applied"
 # === LOCK ROOT ===
 
 # Uncomment the PermitRootLogin line in sshd_config, should someone ever enable it on their desktop
-sed -i 's/^#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
+sed -i 's/^#PermitEmptyPasswords no/PermitEmptyPasswords no/' /etc/ssh/sshd_config
 
 # Lock root account
 passwd -l root > /dev/null
