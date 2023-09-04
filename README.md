@@ -72,7 +72,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - align as much as immutable Fedora will allow with the Center for Internet Security's RHEL 9 Workstation Level 1 & Level 2 benchmark
 - research and improve sysctl and bootloader hardening
 - install and sign hardened kernel (removing any currently implemented kernel hardening)
-- [x] implement pam.d overwrites with stronger defaults
+- [x] ~~implement pam.d overwrites with stronger defaults~~
 - implement improvements to the USBGuard config
 - progress on getting the hardened malloc to work
 - create scripts to audit all relevant settings on new versions of Fedora to make keeping it up-to-date easier
@@ -81,19 +81,19 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - improve user interactions
 - set up full installation of hardware keys, i.e. creation of U2F pam module key and required modification to solidcore pam profile
 - develop the `-server` flag further to eliminate all user interaction
-- [x] write more documentation
+- [x] ~~write more documentation~~
 - implement conditional conf_msg and error reporting
 - add SELinux enforcing check
-- [x] have all other users update their password on next login
+- [x] ~~have all other users update their password on next login~~
 - add mitigations check
 - review and potentially implement chronyd (NTP) [improvements](https://chrony-project.org/faq.html#_how_can_i_make_the_system_clock_more_secure)
 - establish blocklist review process
-- [x] `/etc/security/access.conf` test disallowing console logins to non-wheel users
+- [x] ~~`/etc/security/access.conf` test disallowing console logins to non-wheel users~~
 - [x] ensure comprehensive malicious blocklist section
 
 For the next release:
-- [x] create testing branch for the sake of your sanity and mine
-- [x] get minisign to work properly (dnscrypt-proxy install and updates)
+- [x] ~~create testing branch for the sake of your sanity and mine~~
+- [x] ~~get minisign to work properly (dnscrypt-proxy install and updates)~~
 - user-testing and implement feedback
 - test uninstall process thoroughly
 
