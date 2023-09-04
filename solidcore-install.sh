@@ -23,6 +23,12 @@
 
 # === DISPLAY FUNCTIONS ===
 
+# Declare bold and normal
+bold=$(tput bold)
+green=$(tput setaf 2)
+italics=$(tput sitm)
+normal=$(tput sgr0)
+
 # Interruptable version for long texts
 long_msg() {
     local main_output="$1"
@@ -66,7 +72,7 @@ NC='\033[0m' # No Color
 
 conf_msg() {
     short_msg "$1"
-    echo -ne " ${GREEN}✓${NC}"
+    echo -ne " ${bold}${green}✓${normal}"
 }
 
 # Create two line gap
@@ -82,10 +88,6 @@ space_1() {
     long_msg "
 >  "
 }
-
-# Declare bold and normal
-bold=$(tput bold)
-normal=$(tput sgr0)
 
 
 # === FLAGS ===

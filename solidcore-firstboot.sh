@@ -23,6 +23,12 @@
 
 # === DISPLAY FUNCTIONS ===
 
+# Declare bold and normal
+bold=$(tput bold)
+green=$(tput setaf 2)
+italics=$(tput sitm)
+normal=$(tput sgr0)
+
 # Interruptable version for long texts
 long_msg() {
     local main_output="$1"
@@ -66,7 +72,7 @@ NC='\033[0m' # No Color
 
 conf_msg() {
     short_msg "$1"
-    echo -ne " ${GREEN}✓${NC}"
+    echo -ne " ${bold}${green}✓${normal}"
 }
 
 # Create two line gap
@@ -82,12 +88,6 @@ space_1() {
     long_msg "
 >  "
 }
-
-# Declare bold and normal
-bold=$(tput bold)
-italicon=$(tput sitm)
-italicoff=$(tput ritm)
-normal=$(tput sgr0)
 
 
 # === VARIABLES ===
@@ -136,7 +136,7 @@ while true; do
     space_1
     short_msg "${bold}Password length is more important than complexity.${normal}"
     space_1
-    short_msg "For example, ${italicon}TwoClownsWalkedintoaBar${italicoff} is better than ${italicon}dVc78#!_sjdRa${italicoff}."
+    short_msg "For example, ${italics}TwoClownsWalkedintoaBar${normal} is better than ${italics}dVc78#!_sjdRa${normal}."
     sleep 1
     space_1
     short_msg "Enter your new password below."
@@ -335,6 +335,12 @@ cat > "$script_path" << EOF
 
 # === DISPLAY FUNCTIONS ===
 
+# Declare bold and normal
+bold=$(tput bold)
+green=$(tput setaf 2)
+italics=$(tput sitm)
+normal=$(tput sgr0)
+
 # Interruptable version for long texts
 long_msg() {
     local main_output="$1"
@@ -378,7 +384,7 @@ NC='\033[0m' # No Color
 
 conf_msg() {
     short_msg "$1"
-    echo -ne " ${GREEN}✓${NC}"
+    echo -ne " ${bold}${green}✓${normal}"
 }
 
 # Create two line gap
@@ -394,10 +400,6 @@ space_1() {
     long_msg "
 >  "
 }
-
-# Declare bold and normal
-bold=$(tput bold)
-normal=$(tput sgr0)
 
 
 # === WELCOME ===
