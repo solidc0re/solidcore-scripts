@@ -55,7 +55,7 @@ What follows is a long list of the current features:
   - Unused ports are disabled and blacklisted :heavy_check_mark:
   - USBGuard installed (if required) :heavy_check_mark:
   - Enable hardware key support (optional) :heavy_check_mark:
-- [DNSCrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy) installed (no need to trust your ISP, nor your VPN) :heavy_check_mark:
+- [DNSCrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy) installed (using the encrypted, more secure [DNSCrypt protocol](https://dnscrypt.info/)) :heavy_check_mark:
 - DNS blocklists added :heavy_check_mark:
 - Updates scheduled for dnscrypt-proxy and DNS blocklists :heavy_check_mark:
 - Uninstall file (mostly working)
@@ -123,7 +123,7 @@ Uninstall first, then re-install, just to be safe.
 
 Uninstall:
 ```
-sudo bash /etc/soldicore/uninstall
+sudo bash /etc/soldicore/solidcore-uninstall.sh
 ```
 
 Re-install:
@@ -135,7 +135,7 @@ wget https://raw.githubusercontent.com/solidc0re/solidcore-scripts/main/solidcor
 ## Uninstalling
 Uninstalling reverts all changed system settings to how they previously were, along with uninstalling any solidcore-installed packages.
 ```
-sudo bash /etc/soldicore/uninstall
+sudo bash /etc/soldicore/solidcore-uninstall.sh
 ```
 
 
@@ -363,7 +363,7 @@ sudo rm /etc/xdg/autostart/solidcore-mute-mic.desktop
 
 The focus of this project is OS hardening, not changing the default Fedora software choices.
 
-That said, some opinionated choices had to be made. These include the installation of dnscrypt-proxy, the DNS blocklists used, keeping IPv6 active and switiching all Fedora project flatpaks to Flathub source flatpaks. If you don't agree with these then feel free to contact me, donwload the scripts and manually undo the changes, or fork the repo and implement your own preferences.
+That said, some opinionated choices had to be made. These include the installation of dnscrypt-proxy, the DNS blocklists used, keeping IPv6 active and switiching all Fedora project flatpaks to Flathub source flatpaks. If you don't agree with these then feel free to contact me, or download the scripts and manually undo the changes, or fork the repo and implement your own preferences.
 
 # Acknowledgements
 This project is made possible by the diligent and forward-thinking work of the Fedora and RedHat developers and community. A special shout out to the CoreOS and rpm-ostree developers for their excellent work.
@@ -382,8 +382,8 @@ If you're relatively new to the infosec (information security) world, then the f
 
 🎥 **YouTube channels**
 - [NBTV, with Naomi Brockwell](https://www.youtube.com/@NaomiBrockwellTV)
-- [Side of Burritos](https://www.youtube.com/@sideofburritos)
 - [The New Oil](https://www.youtube.com/channel/UCH5DsMZAgdx5Fkk9wwMNwCA)
+- [Side of Burritos](https://www.youtube.com/@sideofburritos)
 - [Techlore](https://www.youtube.com/@techlore)
 
 🎧 **Podcasts**
@@ -391,6 +391,6 @@ If you're relatively new to the infosec (information security) world, then the f
 - [Surveillance Report](https://surveillancereport.tech/)
 
 👀 **Websites & guides**
-- [The New Oil](https://thenewoil.org/)
 - [National Cyber Security Centre (UK)](https://www.ncsc.gov.uk/section/advice-guidance/all-topics)
-- [Privacy Tools](https://www.privacytools.io/)
+- [The New Oil](https://thenewoil.org/)
+- [Privacy Guides](https://www.privacyguides.org/en/)
