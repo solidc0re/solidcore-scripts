@@ -55,8 +55,8 @@ What follows is a long list of the current features:
   - Unused ports are disabled and blacklisted :heavy_check_mark:
   - USBGuard installed (if required) :heavy_check_mark:
   - Enable hardware key support (optional) :heavy_check_mark:
-- [DNSCrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy) installed (using the encrypted, more secure [DNSCrypt protocol](https://dnscrypt.info/)) :heavy_check_mark:
-- DNS blocklists added :heavy_check_mark:
+- [DNSCrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy) installed (uses the encrypted, more secure [DNSCrypt protocol](https://dnscrypt.info/) for all your DNS lookups) :heavy_check_mark:
+- DNS blocklists added (blocks ad, malicious and tracking domains by default; adult content optional) :heavy_check_mark:
 - Updates scheduled for dnscrypt-proxy and DNS blocklists :heavy_check_mark:
 - Uninstall file (mostly working)
 
