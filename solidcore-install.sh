@@ -464,12 +464,12 @@ conf_msg "High risk and unnecessary services disabled"
 
 # === HIDEPID ===
 
-# Add line to /etc/fstab
-fstab_line="proc /proc proc nosuid,nodev,noexec,hidepid=2 0 0"
-echo "$fstab_line" | tee -a /etc/fstab > /dev/null
-systemctl daemon-reload
+# Add line to /etc/fstab - don't think this works on immutable Fedora
+#fstab_line="proc /proc proc nosuid,nodev,noexec,hidepid=2 0 0"
+#echo "$fstab_line" | tee -a /etc/fstab > /dev/null
+#systemctl daemon-reload
 
-conf_msg "hidepid enabled for /proc"
+#conf_msg "hidepid enabled for /proc"
 
 
 # === FILE PERMISSIONS ===
