@@ -160,10 +160,10 @@ Your system will automatically update the following:
 If USBGuard was installed when running solidcore-scripts, then I recommend reviewing the allowed devices and blocking any you don't use (such as fingerprint readers):
 
 ```
-sudo usbguard list-devices
+usbguard list-devices
 ```
 ```
-sudo usbguard block-device <device number>
+usbguard block-device <device number>
 ```
 
 Please report any issues and suggested improvements on [this Github page](https://github.com/solidc0re/solidcore-scripts/issues).
@@ -302,10 +302,10 @@ sudo insmod usbcore usb_storage
 
 If you notified solidcore-script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible. To whitelist devices:
 ```
-sudo usbguard list-devices
+usbguard list-devices
 ```
 ```
-sudo usbguard allow-device <device number>
+usbguard allow-device <device number>
 ```
 </details>
 
@@ -316,10 +316,10 @@ sudo usbguard allow-device <device number>
 
 If you notified solidcore-script that you use USB ports, it will have installed USBGuard to protect these ports. This means that all unknown USB devices will not be accessible. To whitelist devices:
 ```
-sudo usbguard list-devices
+usbguard list-devices
 ```
 ```
-sudo usbguard block-device <device number>
+usbguard block-device <device number>
 ```
 </details>
 
