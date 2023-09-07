@@ -248,7 +248,6 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 		"/etc/udev/rules.d/49-onlykey.rules"
 		"/etc/xdg/autostart/solidcore-mute-mic.desktop"
         "/etc/xdg/autostart/solidcore-welcome.desktop"
-		"/etc/xdg/autostart/solidcore-secondboot.desktop"
 	)
 
 	for file in "${files_to_delete[@]}"; do

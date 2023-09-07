@@ -850,7 +850,7 @@ if [[ "$server_mode" == false ]]; then
     fi
 
     # Make solidcore-uninstall.sh executable
-    chmod +x solidcore-uninstall.sh
+    chmod u+x solidcore-uninstall.sh
 
     # Move the file to /etc/solidcore/
     mv -f "solidcore-uninstall.sh" "/etc/solidcore/"
