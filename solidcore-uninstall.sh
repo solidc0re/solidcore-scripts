@@ -89,6 +89,16 @@ space_1() {
 >  "
 }
 
+# === FLAGS ===
+
+# Test mode
+# Check if the -test flag is provided
+if [[ "$1" == "-test" ]]; then
+    test_mode=true
+    short_msg "Test mode."
+else
+    test_mode=false
+fi
 
 # === SUDO CHECK ===
 if [ "$EUID" -ne 0 ]; then

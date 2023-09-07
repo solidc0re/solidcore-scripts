@@ -105,7 +105,7 @@ fi
 # Check if the -test flag is provided
 if [[ "$1" == "-test" ]]; then
     test_mode=true
-    short_msg "Test mode: Some commands will not be executed."
+    short_msg "Test mode."
 else
     test_mode=false
 fi
