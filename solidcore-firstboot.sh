@@ -301,14 +301,16 @@ esac
 done
 
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
-    
-    space_1
-    short_msg "Installing USBGaurd. This may take a while."
-    echo
-    rpm-ostree install usbguard
-    script_path="/etc/solidcore/solidcore-secondboot.sh"
+    if rpm -q usbguard > /dev/null 2>&1; then
+        short_msg "USBGuard already installed. Skipping..."
+    else
+        space_1
+        short_msg "Installing USBGaurd. This may take a while."
+        echo
+        rpm-ostree install usbguard
+        script_path="/etc/solidcore/solidcore-secondboot.sh"
 
-    # Write secondboot.sh script
+        # Write secondboot.sh script
 cat > "$script_path" << EOF
 #!/bin/bash
         
@@ -430,17 +432,17 @@ sleep 2
 space_2
 short_msg "To whitelist devices in future, run:"
 space_1
-short_msg "$ sudo usbguard list-devices"
+short_msg "$ usbguard list-devices"
 space_1
 short_msg "Followed by:
 space_1
-short_msg "$ sudo usbguard allow-device <device number>
+short_msg "$ usbguard allow-device <device number>
 sleep 2
 
 
 # === TIDY UP & FINISH ===
 
-rm /etc/xdg/autostart/solidcore-secondboot.desktop
+rm /etc/exg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
 space_2
 short_msg "${bold}Thank you for running the solidcore script.${normal}"
 space_1
@@ -453,22 +455,15 @@ sleep 2
 echo
 EOF
 
-    chmod +x "$script_path"
+        chmod +x "$script_path"
     
-    # Create a xdg autostart file
-    cat > /etc/xdg/autostart/solidcore-secondboot.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=Solidcore Script to Run on Second Boot
-Exec=bash /etc/solidcore/solidcore-secondboot.sh
-Terminal=true
-Icon=utilities-terminal
-EOF
-
-    space_1
-    conf_msg "USBGuard staged for deployment on next reboot"
-    space_2
-    space_1
+        # Update solidcore-welcome.sh to run secondboot script
+        sed -i 's|firstboot.sh|secondboot.sh|' /etc/solidcore/solidcore-welcome.sh
+        space_1
+        conf_msg "USBGuard staged for deployment on next reboot"
+        space_2
+        space_1
+    fi
     
     while true; do
     
@@ -1056,10 +1051,6 @@ space_2
 
 # === TiDY UP & FINISH ===
 
-# Remove first boot autostart
-rm /etc/exg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
-sleep 1
-
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard."
@@ -1080,6 +1071,10 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     echo -e "\r>  Rebooting now!            "
     reboot
 else
+    # Remove first boot autostart
+    rm /etc/exg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
+    sleep 1
+    # End
     short_msg "${bold}Thank you for running the solidcore script.${normal}"
 	space_1
     short_msg "For some suggestions on what to do next, see:"
