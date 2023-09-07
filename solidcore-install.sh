@@ -127,11 +127,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Variant check
-# Check immutable variant
-# Define an array of immutable Fedora variants
 declare -a fedora_variants=("silverblue" "kinoite" "sericea" "vauxite" "onyx")
-
-# Initialize a variable to store the detected variant
 detected_variant=""
 
 # Run rpm-ostree status -b and capture the output
@@ -319,7 +315,11 @@ fi # End of -server flag if statement
 
 # Apply new sysctl settings
 for key in "${!sysctl_settings[@]}"; do
-    sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
+    if [ "$test_mode" == true ]; then
+        sysctl -w "$key=${sysctl_settings[$key]}"
+    else
+        sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
+    fi
 done
 conf_msg "Hardened sysctl settings applied"
 
@@ -431,9 +431,9 @@ conf_msg "Kernel modules blacklisted"
 
 # High risk and unused services/sockets
 services=(
-    #abrt-journal-core.service # Not found in F38
-    #abrt-oops.service # Fedora crash reporting
-    #abrtd.service # Fedora crashing reporting
+    #abrt-journal-core.service # Not found in Silverblue 38
+    #abrt-oops.service # Fedora crash reporting, not in Silverblue 38
+    #abrtd.service # Fedora crash reporting, not in Silverblue 38
     avahi-daemon # Recommended by CIS
     geoclue.service # Location service
     httpd # Recommended by CIS
@@ -551,7 +551,11 @@ echo "-:ALL EXCEPT (wheel):LOCAL" | sudo tee -a /etc/security/access.conf > /dev
 conf_msg "Only non-remote 'wheel' group members can access the console"
 
 # Create a custom authselect profile called "solidcore"
-authselect create-profile solidcore -b sssd > /dev/null 2>&1
+if [ "$test_mode" == true ]; then
+    authselect create-profile solidcore -b sssd
+else
+    authselect create-profile solidcore -b sssd > /dev/null 2>&1
+fi
 
 # Increase password delay from 2 second default to 5 seconds
 new_delay="5000000"
@@ -585,15 +589,24 @@ sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd
 sed -i 's/^#PermitEmptyPasswords no/PermitEmptyPasswords no/' /etc/ssh/sshd_config
 
 # Lock root account
-passwd -l root > /dev/null
+if [ "$test_mode" == true ]; then
+    passwd -l root
+else
+    passwd -l root > /dev/null
+fi
 conf_msg "Root account locked"
 
 
 # === FIREWALL D ===
 
 # Drop all incoming connections
-firewall-cmd --set-default-zone drop > /dev/null 2>&1
-firewall-cmd --reload > /dev/null
+if [ "$test_mode" == true ]; then
+    firewall-cmd --set-default-zone drop
+    firewall-cmd --reload
+else
+    firewall-cmd --set-default-zone drop > /dev/null 2>&1
+    firewall-cmd --reload > /dev/null
+fi
 conf_msg "Firewalld updated so only outgoing connections are permitted"
 
 
@@ -679,7 +692,11 @@ fi # End of -server flag if statement
 
 # Replace Fedora flatpaks and install flathub versions
 flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +2 | while read -r flatpak_name; do
-    flatpak install -y --noninteractive --reinstall flathub "$flatpak_name" > /dev/null 2>&1
+    if [ "$test_mode" == true ]; then
+        flatpak install -y --noninteractive --reinstall flathub "$flatpak_name"
+    else
+        flatpak install -y --noninteractive --reinstall flathub "$flatpak_name" > /dev/null 2>&1
+    fi
 done
 conf_msg "Done"
 
@@ -739,11 +756,19 @@ short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This
 space_1
 
 # Minisign
-rpm-ostree install minisign > /dev/null
+if [ "$test_mode" == true ]; then
+    rpm-ostree install minisign
+else
+    rpm-ostree install minisign > /dev/null 2>&1
+fi
 conf_msg "Done"
 
 # Flatseal
-flatpak install -y com.github.tchx84.Flatseal > /dev/null 2>&1
+if [ "$test_mode" == true ]; then
+    flatpak install -y com.github.tchx84.Flatseal
+else
+    flatpak install -y com.github.tchx84.Flatseal > /dev/null 2>&1
+fi
 conf_msg "Flatseal installed (for managing Flatpak permissions)"
 
 
