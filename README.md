@@ -67,7 +67,7 @@ The long-term goal (probably for v1.0) is to have the hardening provided by this
 
 In the meantime, there's plenty of work to do. Including the following, in no particular order:
 - create testing VMs of all official immutable Fedora variants
-- create solidcore aliases for common post-install actions (e.g. solidcore uninstall, solidcore add-blocklist, solidcore allow <domain>, solidcore status [to check whether settings are still valid & active])
+- create solidcore aliases for common post-install actions (e.g. `solidcore uninstall`, `solidcore add-blocklist`, `solidcore allow [domain]`, `solidcore status` [to check whether settings are still valid & active])
 - develop the `-test` flag further for more verbosity
 - align as much as immutable Fedora will allow with the Center for Internet Security's RHEL 9 Workstation Level 1 & Level 2 benchmark
 - research and improve sysctl and bootloader hardening
