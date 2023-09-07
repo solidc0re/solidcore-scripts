@@ -101,6 +101,7 @@ else
     test_mode=false
 fi
 
+
 # === VARIABLES ===
 blacklist_file="/etc/modprobe.d/solidcore-blacklist.conf"
 
@@ -457,7 +458,7 @@ sleep 2
 
 # === TIDY UP & FINISH ===
 
-rm /etc/exg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
+rm /etc/xdg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
 space_2
 short_msg "${bold}Thank you for running the solidcore script.${normal}"
 space_1
@@ -1087,7 +1088,7 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     reboot
 else
     # Remove first boot autostart
-    rm /etc/exg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
+    rm /etc/xdg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
     sleep 1
     # End
     short_msg "${bold}Thank you for running the solidcore script.${normal}"
