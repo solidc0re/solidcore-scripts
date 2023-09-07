@@ -90,6 +90,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - establish blocklist review process
 - [x] ~~`/etc/security/access.conf` test disallowing console logins to non-wheel users~~
 - [x] ensure comprehensive malicious blocklist section
+- research and implement MAC randomization
 
 For the next release:
 - [x] ~~create testing branch for the sake of your sanity and mine~~
