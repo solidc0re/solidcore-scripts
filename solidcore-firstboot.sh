@@ -221,6 +221,8 @@ space_1
 # === GRUB ===
 
 # Ask the user if they want to set a GRUB password
+short_msg "Setting a GRUB password prevents an attacker from accessing the bootloader configuration menus and terminal."
+space_1
 while true; do
 read -rp "${bold}Question: Do you want to set a GRUB password [recommended]?${normal} (y/n): " grub_response
 case $grub_response in 
@@ -302,6 +304,8 @@ done
 
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     if rpm -q usbguard > /dev/null 2>&1; then
+        # Cancel USB-enabled reboot sequence by setting usb_response to N
+        usb_response="N"
         short_msg "USBGuard already installed. Skipping..."
     else
         space_1
