@@ -554,8 +554,8 @@ EOF
 
 else
     rmmod usbcore usb_storage > /dev/null 2>&1
-    echo "blacklist usb_storage" | tee -a "$blacklist_file" > /dev/null
-    echo "blacklist usbcore" | tee -a "$blacklist_file" > /dev/null
+    echo "install usb_storage /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install usbcore /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "USB has been disabled and added to the kernel module blacklist"
 fi
@@ -586,7 +586,7 @@ if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
     conf_msg "Webcam remains enabled"
 else
     rmmod uvcvideo > /dev/null 2>&1
-    echo "blacklist uvcvideo" | tee -a "$blacklist_file" > /dev/null
+    echo "install uvcvideo /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "Webcam has been disabled and added to the kernel module blacklist"
 fi
@@ -656,8 +656,8 @@ else
     systemctl disable bluetooth.service > /dev/null 2>&1
     systemctl --now mask bluetooth.service > /dev/null 2>&1
     systemctl daemon-reload
-    echo "blacklist bluetooth" | tee -a "$blacklist_file" > /dev/null
-    echo "blacklist btusb" | tee -a "$blacklist_file" > /dev/null
+    echo "install bluetooth /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install btusb /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "Bluetooth has been disabled and added to the kernel module blacklist"
 fi
@@ -689,9 +689,9 @@ if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
     conf_msg "Firewire remains enabled"
 else
     rmmod ohci1394 sbp2 firewire_core > /dev/null 2>&1
-    echo "blacklist firewire-core" | tee -a "$blacklist_file" > /dev/null
-    echo "blacklist ohcil394" | tee -a "$blacklist_file" > /dev/null
-    echo "blacklist sbp2" | tee -a "$blacklist_file" > /dev/null
+    echo "install firewire-core /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install ohcil394 /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install sbp2 /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "Firewire has been disabled and added to the kernel module blacklist"
 fi
@@ -731,7 +731,7 @@ else
         short_msg "Disabling Thunderbolt domain: $domain"
         boltctl disable "$domain"
     done
-    echo "blacklist thunderbolt" | tee -a "$blacklist_file" > /dev/null
+    echo "install thunderbolt /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "Thunderbolt has been disabled and added to the kernel module blacklist"
 fi

@@ -338,7 +338,7 @@ boot_parameters=(
     "randomize_kstack_offset=on" # Randomises kernel stack offset on each syscall
     "vsyscall=none" # Disables obsolete vsyscalls
     "debugfs=off" # Disables debugfs to stop sensitive information being exposed
-    "lockdown=confidentiality" # Makes it harder to load malicious kernel modules; mplies module.sig_enforce=1 so could break unsigned drivers (NVIDIA, etc.)
+    "lockdown=confidentiality" # Makes it harder to load malicious kernel modules; implies module.sig_enforce=1 so could break unsigned drivers (NVIDIA, etc.)
     "quiet loglevel=0" # Prevents information leaks on boot; must be used in conjuction with kernel.printk sysctl
     #"ipv6.disable=1"
     "random.trust_cpu=off" # Do not trust proprietary code on CPU for random number generation
@@ -421,7 +421,7 @@ modules_to_blacklist=(
 # Add module names to the blacklist configuration file
 echo "# Blacklisted kernel modules to prevent loading. Created by solidcore script." | tee "$blacklist_file" > /dev/null
 for module in "${modules_to_blacklist[@]}"; do
-    echo "blacklist $module" | tee -a "$blacklist_file" > /dev/null
+    echo "install $module /bin/true" | tee -a "$blacklist_file" > /dev/null
 done
 
 conf_msg "Kernel modules blacklisted"
