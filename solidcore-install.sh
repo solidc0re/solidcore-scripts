@@ -283,6 +283,7 @@ chmod +x /etc/solidcore/defaults.sh
 
 # Define an array of files to be backed up
 files_to_backup=(
+    "/etc/chrony.conf"
     "/etc/default/grub"
     "/etc/fstab"
     "/etc/machine-id"
@@ -293,6 +294,7 @@ files_to_backup=(
     "/etc/security/limits.conf"
     "/etc/security/pwquality.conf"
     "/etc/ssh/sshd_config"
+    "/etc/sysconfig/chronyd"
     "/etc/systemd/coredump.conf"
     "/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
     "/var/lib/dbus/machine-id"
@@ -625,23 +627,31 @@ EOF
 systemctl restart NetworkManager
 
 
-# === HTTPS REPO CHECK ===
+# === CHRONY CONF ===
 
-# Define an array of patterns to search for
-patterns=("^baseurl=http:" "^metalink=http:")
+# Borrowed from GrapheneOS, keeping license intact
+license_url="https://raw.githubusercontent.com/GrapheneOS/infrastructure/main/LICENSE"
+chrony_url="https://raw.githubusercontent.com/GrapheneOS/infrastructure/main/chrony.conf"
 
-# Loop through the patterns and perform checks
-for pattern in "${patterns[@]}"; do
-    output=$(grep -r "$pattern" /etc/yum.repos.d/)
-    if [ -n "$output" ]; then
-        echo "Warning: HTTP link found in yum repository configuration."
-        echo "Output:"
-        echo "$output"
-        echo "Please investigate whether you can manually edit the repo to use HTTPS instead."
-    fi
-done
+mkdir -p ./tmp
+wget -q -O ./tmp/LICENSE "$license_url"
+sed 's/^/# /' ./tmp/LICENSE > ./tmp/LICENSE_temp
+wget -q -O ./tmp/chrony.conf "$chrony_url"
 
-conf_msg "No insecure repos found in yum repository directory"
+systemctl stop chronyd.service
+rm -rf /etc/chrony.conf
+
+# Build new chrony.conf
+cat ./tmp/LICENSE_temp >> /etc/chrony.conf
+cat ./tmp/chrony.conf >> /etc/chrony.conf
+
+# Update chronyd
+sed -i 's/^OPTIONS=.*$/OPTIONS='"-F 1"'/' /etc/sysconfig/chronyd
+
+# Clean up
+systemctl start chronyd.service
+rm -rf ./tmp
+conf_msg "Chrony configuration updated (thanks GrapheneOS!)"
 
 
 # === AUTOMATIC UPDATES ===

@@ -132,7 +132,8 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	
 	# Define an array of files to be restored
 	files_to_restore=(
-	    "/etc/default/grub"
+	    "/etc/chrony.conf"
+		"/etc/default/grub"
     	"/etc/fstab"
 		"/etc/machine-id"
 		"/etc/resolv.conf"
@@ -142,6 +143,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	"/etc/security/limits.conf"
 		"/etc/security/pwquality.conf"
     	"/etc/ssh/sshd_config"
+		"/etc/sysconfig/chronyd"
     	"/etc/systemd/coredump.conf"
     	"/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
 	    "/var/lib/dbus/machine-id"
@@ -154,7 +156,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	if [ -e "$backup_file" ]; then
     	    if [ "$backup_file" == "/var/lib/dbus/machine-id" ]; then
 				# Restore the backup file
-    	    	cp "$backup_file" "$source_file"
+    	    	cp -f "$backup_file" "$source_file"
     	    	conf_msg "Backup restored for: $source_file"
     	    	# Remove the backup file
     	    	rm "$backup_file"
