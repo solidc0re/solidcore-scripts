@@ -88,10 +88,9 @@ For the next release:
 - implement improvements to the USBGuard config
 - add SELinux enforcing check
 - add CPU vulnerability mitigations check
-- review and potentially implement chronyd (NTP) [improvements](https://chrony-project.org/faq.html#_how_can_i_make_the_system_clock_more_secure)
-- implement improvements to the USBGuard config
+- [x] ~~review and potentially implement chronyd (NTP) improvements~~
 - continue work on developing `-test` flag
-- consider switch from updating GRUB paramters to using `rpm-ostree kargs`
+- consider switch from updating GRUB parameters to using `rpm-ostree kargs`
 
 # Instructions
 > [!NOTE]
