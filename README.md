@@ -369,6 +369,7 @@ Many of the hardening improvements implemented by the solidcore-scripts are reco
 - https://github.com/ComplianceAsCode/content
 - https://static.open-scap.org/ssg-guides/ssg-fedora-guide-index.html
 - https://github.com/a13xp0p0v/kconfig-hardened-check/
+- https://privsec.dev/posts/linux/desktop-linux-hardening/
 
 # Introductory resources
 If you're relatively new to the infosec (information security) world, then the following resources come recommended:
