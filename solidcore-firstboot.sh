@@ -980,7 +980,7 @@ Description=Automatically update dnscrypt-proxy blocklist and application
 
 [Service]
 Type=oneshot
-ExecStart=python3 ${INSTALL_DIR}/${download_file2} -c ${INSTALL_DIR}/domains-blocklist.conf -a ${INSTALL_DIR}/domains-allowlist.txt -r ${INSTALL_DIR}/${download_file3} -i -o blocklist.txt
+ExecStart=python3 ${INSTALL_DIR}/${download_file2} -c ${INSTALL_DIR}/domains-blocklist.conf -a ${INSTALL_DIR}/domains-allowlist.txt -r ${INSTALL_DIR}/${download_file3} -o ${INSTALL_DIR}/blocklist.txt.tmp && mv -f ${INSTALL_DIR}/blocklist.txt.tmp ${INSTALL_DIR}/blocklist.txt
 ExecStart=${INSTALL_DIR}/dnscrypt-proxy-update.sh
 EOL
 
