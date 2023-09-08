@@ -610,6 +610,21 @@ fi
 conf_msg "Firewalld updated so only outgoing connections are permitted"
 
 
+# === MAC RANDOMIZATION ===
+
+cat > /etc/NetworkManager/conf.d/00-solidcore.conf << EOF
+[device]
+wifi.scan-rand-mac-address=yes
+
+[connection]
+wifi.cloned-mac-address=random
+ethernet.cloned-mac-address=random
+EOF
+
+# Restart NetworkManager
+systemctl restart NetworkManager
+
+
 # === HTTPS REPO CHECK ===
 
 # Define an array of patterns to search for

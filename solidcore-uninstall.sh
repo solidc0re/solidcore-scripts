@@ -248,6 +248,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 
 	files_to_delete=(
 		"/etc/modprobe.d/solidcore-blacklist.conf"
+		"/etc/NetworkManager/conf.d/00-solidcore.conf"
 		"/etc/profile.d/solidcore_umask.sh"
 		"/etc/solidcore/solidcore-firstboot.sh"
 		"/etc/solidcore/solidcore-secondboot.sh"
