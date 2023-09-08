@@ -23,6 +23,12 @@
 
 # === DISPLAY FUNCTIONS ===
 
+# Declare bold and normal
+bold=$(tput bold)
+green=$(tput setaf 2)
+italics=$(tput sitm)
+normal=$(tput sgr0)
+
 # Interruptable version for long texts
 long_msg() {
     local main_output="$1"
@@ -66,7 +72,7 @@ NC='\033[0m' # No Color
 
 conf_msg() {
     short_msg "$1"
-    echo -ne " ${GREEN}✓${NC}"
+    echo -ne " ${bold}${green}✓${normal}"
 }
 
 # Create two line gap
@@ -82,10 +88,6 @@ space_1() {
     long_msg "
 >  "
 }
-
-# Declare bold and normal
-bold=$(tput bold)
-normal=$(tput sgr0)
 
 
 # === FLAGS ===
@@ -103,7 +105,7 @@ fi
 # Check if the -test flag is provided
 if [[ "$1" == "-test" ]]; then
     test_mode=true
-    short_msg "Test mode: Some commands will not be executed."
+    short_msg "Test mode."
 else
     test_mode=false
 fi
@@ -125,11 +127,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Variant check
-# Check immutable variant
-# Define an array of immutable Fedora variants
 declare -a fedora_variants=("silverblue" "kinoite" "sericea" "vauxite" "onyx")
-
-# Initialize a variable to store the detected variant
 detected_variant=""
 
 # Run rpm-ostree status -b and capture the output
@@ -290,7 +288,10 @@ files_to_backup=(
     "/etc/machine-id"
     "/etc/resolv.conf"
     "/etc/rpm-ostreed.conf"
+    "/etc/security/access.conf"
+    "/etc/security/faillock.conf"
     "/etc/security/limits.conf"
+    "/etc/security/pwquality.conf"
     "/etc/ssh/sshd_config"
     "/etc/systemd/coredump.conf"
     "/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
@@ -314,7 +315,11 @@ fi # End of -server flag if statement
 
 # Apply new sysctl settings
 for key in "${!sysctl_settings[@]}"; do
-    sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
+    if [ "$test_mode" == true ]; then
+        sysctl -w "$key=${sysctl_settings[$key]}"
+    else
+        sysctl -w "$key=${sysctl_settings[$key]}" > /dev/null
+    fi
 done
 conf_msg "Hardened sysctl settings applied"
 
@@ -333,7 +338,7 @@ boot_parameters=(
     "randomize_kstack_offset=on" # Randomises kernel stack offset on each syscall
     "vsyscall=none" # Disables obsolete vsyscalls
     "debugfs=off" # Disables debugfs to stop sensitive information being exposed
-    "lockdown=confidentiality" # Makes it harder to load malicious kernel modules; mplies module.sig_enforce=1 so could break unsigned drivers (NVIDIA, etc.)
+    "lockdown=confidentiality" # Makes it harder to load malicious kernel modules; implies module.sig_enforce=1 so could break unsigned drivers (NVIDIA, etc.)
     "quiet loglevel=0" # Prevents information leaks on boot; must be used in conjuction with kernel.printk sysctl
     #"ipv6.disable=1"
     "random.trust_cpu=off" # Do not trust proprietary code on CPU for random number generation
@@ -379,9 +384,9 @@ blacklist_file="/etc/modprobe.d/solidcore-blacklist.conf"
 # List of module names to be blacklisted
 modules_to_blacklist=(    
     "af_802154"
-    #"appletalk" # Already blacklisted in Fedora
-    #"atm" # Already backlisted in Fedora 
-    #"ax25" # Already blacklisted in Fedora
+    "appletalk" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "atm" # Already backlisted in Fedora, adding install <module> /bin/true to block re-loading
+    "ax25" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "can"
     "cifs"
     "cramfs"
@@ -396,16 +401,16 @@ modules_to_blacklist=(
     "jffs2"
     "ksmbd"
     "n-hdlc"
-    #"netrom" # Already blacklisted in Fedora
+    "netrom" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "nfsv3"
     "nfsv4"
     "nfs"
     "p8022"
     "p8023"
     "psnap"
-    #"rds" # Already blacklisted in Fedora
-    #"rose" # Already blacklisted in Fedora
-    #"sctp" # Already blacklisted in Fedora
+    "rds" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "rose" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "sctp" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "squashfs"
     "tipc"
     "udf"
@@ -416,7 +421,7 @@ modules_to_blacklist=(
 # Add module names to the blacklist configuration file
 echo "# Blacklisted kernel modules to prevent loading. Created by solidcore script." | tee "$blacklist_file" > /dev/null
 for module in "${modules_to_blacklist[@]}"; do
-    echo "blacklist $module" | tee -a "$blacklist_file" > /dev/null
+    echo "install $module /bin/true" | tee -a "$blacklist_file" > /dev/null
 done
 
 conf_msg "Kernel modules blacklisted"
@@ -426,9 +431,9 @@ conf_msg "Kernel modules blacklisted"
 
 # High risk and unused services/sockets
 services=(
-    #abrt-journal-core.service # Not found in F38
-    #abrt-oops.service # Fedora crash reporting
-    #abrtd.service # Fedora crashing reporting
+    #abrt-journal-core.service # Not found in Silverblue 38
+    #abrt-oops.service # Fedora crash reporting, not in Silverblue 38
+    #abrtd.service # Fedora crash reporting, not in Silverblue 38
     avahi-daemon # Recommended by CIS
     geoclue.service # Location service
     httpd # Recommended by CIS
@@ -459,12 +464,12 @@ conf_msg "High risk and unnecessary services disabled"
 
 # === HIDEPID ===
 
-# Add line to /etc/fstab
-fstab_line="proc /proc proc nosuid,nodev,noexec,hidepid=2 0 0"
-echo "$fstab_line" | tee -a /etc/fstab > /dev/null
-systemctl daemon-reload
+# Add line to /etc/fstab - don't think this works on immutable Fedora
+#fstab_line="proc /proc proc nosuid,nodev,noexec,hidepid=2 0 0"
+#echo "$fstab_line" | tee -a /etc/fstab > /dev/null
+#systemctl daemon-reload
 
-conf_msg "hidepid enabled for /proc"
+#conf_msg "hidepid enabled for /proc"
 
 
 # === FILE PERMISSIONS ===
@@ -507,14 +512,53 @@ conf_msg "Core dumps disabled"
 
 # === PASSWORD POLICIES ===
 
+# Change defaults
+uncomment_and_modify() {
+    local file="$1"
+    local pattern="$2"
+    local replacement="$3"
+    
+    # Use sed to uncomment and modify the line
+    sed -i "s/^# \(.*$pattern.*\)/\1/g" "$file"
+    sed -i "s/$pattern.*/$pattern $replacement/g" "$file"
+}
+
+# Modify pwquality.conf
+pwquality_file="/etc/security/pwquality.conf"
+
+# Uncomment and modify the specified lines
+uncomment_and_modify "$pwquality_file" "minlen" "12"
+uncomment_and_modify "$pwquality_file" "ucredit" "-1"
+uncomment_and_modify "$pwquality_file" "lcredit" "-1"
+uncomment_and_modify "$pwquality_file" "maxrepeat" "3"
+uncomment_and_modify "$pwquality_file" "dictcheck" "1"
+uncomment_and_modify "$pwquality_file" "enforcing" "1"
+uncomment_and_modify "$pwquality_file" "retry" "5"
+uncomment_and_modify "$pwquality_file" "enforce_for_root" ""
+
+# Modify faillock.conf
+faillock_file="/etc/security/faillock.conf"
+
+# Uncomment and modify the specified lines
+uncomment_and_modify "$faillock_file" "deny" "10" # increase lock limit to 10 attempts, as root account is locked and no one can unlock you
+uncomment_and_modify "$faillock_file" "even_deny_root" "" # in case someone unlocks root
+
+conf_msg "Applied stronger password requirements"
+
+# Tighten access to console
+echo "-:ALL EXCEPT (wheel):LOCAL" | sudo tee -a /etc/security/access.conf > /dev/null
+
+conf_msg "Only non-remote 'wheel' group members can access the console"
+
 # Create a custom authselect profile called "solidcore"
-authselect create-profile solidcore -b sssd > /dev/null 2>&1
+if [ "$test_mode" == true ]; then
+    authselect create-profile solidcore -b sssd
+else
+    authselect create-profile solidcore -b sssd > /dev/null 2>&1
+fi
 
 # Increase password delay from 2 second default to 5 seconds
 new_delay="5000000"
-
-# Remove ability for someone to set an empty password
-text_to_remove=" {if not \"without-nullok\":nullok}"
 
 # Define the files to modify
 pwd_files=(
@@ -528,36 +572,57 @@ for file in "${pwd_files[@]}"; do
     if [ -f "$file" ]; then
         # Use sed to replace the line with the new value
         sed -i "s/\(auth\s*required\s*pam_faildelay.so\s*delay=\).*$/\1$new_delay/" "$file"
-	    # Remove nullok reference
- 	    sed -i "s/$text_to_remove//" "$file"
-  	    # Append minimum length of 12
-        sed -i "/pam_pwquality.so/s/$/ minlen=12/" "$file"
     else
         echo "File not found: $file"
     fi
 done
 
 # Apply the custom profile
-authselect select custom/solidcore --quiet
+authselect select custom/solidcore with-pamaccess with-faillock without-nullok --quiet
 conf_msg "Custom password profile 'solidcore' created and applied"
 
 
 # === LOCK ROOT ===
 
 # Uncomment the PermitRootLogin line in sshd_config, should someone ever enable it on their desktop
-sed -i 's/^#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
+sed -i 's/^#PermitEmptyPasswords no/PermitEmptyPasswords no/' /etc/ssh/sshd_config
 
 # Lock root account
-passwd -l root > /dev/null
+if [ "$test_mode" == true ]; then
+    passwd -l root
+else
+    passwd -l root > /dev/null
+fi
 conf_msg "Root account locked"
 
 
 # === FIREWALL D ===
 
 # Drop all incoming connections
-firewall-cmd --set-default-zone drop > /dev/null 2>&1
-firewall-cmd --reload > /dev/null
+if [ "$test_mode" == true ]; then
+    firewall-cmd --set-default-zone drop
+    firewall-cmd --reload
+else
+    firewall-cmd --set-default-zone drop > /dev/null 2>&1
+    firewall-cmd --reload > /dev/null
+fi
 conf_msg "Firewalld updated so only outgoing connections are permitted"
+
+
+# === MAC RANDOMIZATION ===
+
+cat > /etc/NetworkManager/conf.d/00-solidcore.conf << EOF
+[device]
+wifi.scan-rand-mac-address=yes
+
+[connection]
+wifi.cloned-mac-address=random
+ethernet.cloned-mac-address=random
+EOF
+
+# Restart NetworkManager
+systemctl restart NetworkManager
 
 
 # === HTTPS REPO CHECK ===
@@ -642,7 +707,11 @@ fi # End of -server flag if statement
 
 # Replace Fedora flatpaks and install flathub versions
 flatpak list --app-runtime=org.fedoraproject.Platform --columns=application | tail -n +2 | while read -r flatpak_name; do
-    flatpak install -y --noninteractive --reinstall flathub "$flatpak_name" > /dev/null 2>&1
+    if [ "$test_mode" == true ]; then
+        flatpak install -y --noninteractive --reinstall flathub "$flatpak_name"
+    else
+        flatpak install -y --noninteractive --reinstall flathub "$flatpak_name" > /dev/null 2>&1
+    fi
 done
 conf_msg "Done"
 
@@ -702,11 +771,19 @@ short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This
 space_1
 
 # Minisign
-rpm-ostree install minisign > /dev/null
+if [ "$test_mode" == true ]; then
+    rpm-ostree install minisign
+else
+    rpm-ostree install minisign > /dev/null 2>&1
+fi
 conf_msg "Done"
 
 # Flatseal
-flatpak install -y com.github.tchx84.Flatseal > /dev/null 2>&1
+if [ "$test_mode" == true ]; then
+    flatpak install -y com.github.tchx84.Flatseal
+else
+    flatpak install -y com.github.tchx84.Flatseal > /dev/null 2>&1
+fi
 conf_msg "Flatseal installed (for managing Flatpak permissions)"
 
 
@@ -788,7 +865,7 @@ if [[ "$server_mode" == false ]]; then
     fi
 
     # Make solidcore-uninstall.sh executable
-    chmod +x solidcore-uninstall.sh
+    chmod u+x solidcore-uninstall.sh
 
     # Move the file to /etc/solidcore/
     mv -f "solidcore-uninstall.sh" "/etc/solidcore/"

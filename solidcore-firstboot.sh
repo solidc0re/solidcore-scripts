@@ -23,6 +23,12 @@
 
 # === DISPLAY FUNCTIONS ===
 
+# Declare bold and normal
+bold=$(tput bold)
+green=$(tput setaf 2)
+italics=$(tput sitm)
+normal=$(tput sgr0)
+
 # Interruptable version for long texts
 long_msg() {
     local main_output="$1"
@@ -66,7 +72,7 @@ NC='\033[0m' # No Color
 
 conf_msg() {
     short_msg "$1"
-    echo -ne " ${GREEN}✓${NC}"
+    echo -ne " ${bold}${green}✓${normal}"
 }
 
 # Create two line gap
@@ -83,9 +89,17 @@ space_1() {
 >  "
 }
 
-# Declare bold and normal
-bold=$(tput bold)
-normal=$(tput sgr0)
+
+# === FLAGS ===
+
+# Test mode
+# Check if the -test flag is provided
+if [[ "$1" == "-test" ]]; then
+    test_mode=true
+    short_msg "Test mode."
+else
+    test_mode=false
+fi
 
 
 # === VARIABLES ===
@@ -120,10 +134,24 @@ short_msg "As part of solidcore's hardening, new password policies were implemen
 sleep 1
 space_1
 while true; do
-    short_msg "${bold}You are now required to set a new password. 12 characters minimum!${normal}"
+    short_msg "${bold}You are now required to set a new password.${normal}"
     sleep 1
     space_1
-    short_msg "Enter it below."
+    short_msg "The new password requirements are:"
+    short_msg "  • 12 character minimum"
+    short_msg "  • at least 1 UPPER case character"
+    short_msg "  • at least 1 lower case character"
+    short_msg "  • the same character can not be repeated 3+ times in a row"
+    short_msg "  • the password must pass a dictionary test"
+    space_1
+    short_msg "Numbers and special characters are permitted, but not required."
+    space_1
+    short_msg "${bold}Password length is more important than complexity.${normal}"
+    space_1
+    short_msg "For example, ${italics}TwoClownsWalkedintoaBar${normal} is better than ${italics}dVc78#!_sjdRa${normal}."
+    sleep 1
+    space_1
+    short_msg "Enter your new password below."
     space_1
     echo
     passwd > /dev/null
@@ -135,8 +163,40 @@ while true; do
         space_1
         short_msg "Password change failed. Please try again."
         space_1
+        short_msg "A reminder that the new password requirements are:"
+        short_msg "  • 12 character minimum"
+        short_msg "  • at least 1 UPPER case character"
+        short_msg "  • at least 1 lower case character"
+        short_msg "  • the same character can not be repeated 3+ times in a row"
+        short_msg "  • the password must pass a dictionary test"
+        space_1
     fi
 done
+conf_msg "Password updated"
+
+# Expire passwords of all other users
+short_msg "Expiring all user passwords except for user..."
+
+
+# Count the number of non-root users on the system
+num_users=$(getent passwd | grep -v '/bin/false' | grep -v '/sbin/nologin' | wc -l)
+
+# Check if there are other users besides the current user and root
+if [ "$num_users" -gt 2 ]; then
+    # Loop through all user accounts and exclude the current user and root
+    for username in $(getent passwd | cut -d: -f1); do
+        if [ "$username" != "$current_user" ] && [ "$username" != "root" ]; then
+            echo "Expiring password for user: $username"
+            chage -E 0 "$username"
+        fi
+    done
+    space_1
+    short_msg "${bold}All other users' passwords have now expired${normal}."
+    short_msg "They will be prompted to update their password on the next login."
+    sleep 1
+
+fi
+
 space_2
 space_1
 
@@ -173,6 +233,8 @@ space_1
 # === GRUB ===
 
 # Ask the user if they want to set a GRUB password
+short_msg "Setting a GRUB password prevents an attacker from accessing the bootloader configuration menus and terminal."
+space_1
 while true; do
 read -rp "${bold}Question: Do you want to set a GRUB password [recommended]?${normal} (y/n): " grub_response
 case $grub_response in 
@@ -253,14 +315,18 @@ esac
 done
 
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
-    
-    space_1
-    short_msg "Installing USBGaurd. This may take a while."
-    echo
-    rpm-ostree install usbguard
-    script_path="/etc/solidcore/solidcore-secondboot.sh"
+    if rpm -q usbguard > /dev/null 2>&1; then
+        # Cancel USB-enabled reboot sequence by setting usb_response to N
+        usb_response="N"
+        short_msg "USBGuard already installed. Skipping..."
+    else
+        space_1
+        short_msg "Installing USBGaurd. This may take a while."
+        echo
+        rpm-ostree install usbguard
+        script_path="/etc/solidcore/solidcore-secondboot.sh"
 
-    # Write secondboot.sh script
+        # Write secondboot.sh script
 cat > "$script_path" << EOF
 #!/bin/bash
         
@@ -286,6 +352,12 @@ cat > "$script_path" << EOF
 
 
 # === DISPLAY FUNCTIONS ===
+
+# Declare bold and normal
+bold=$(tput bold)
+green=$(tput setaf 2)
+italics=$(tput sitm)
+normal=$(tput sgr0)
 
 # Interruptable version for long texts
 long_msg() {
@@ -330,7 +402,7 @@ NC='\033[0m' # No Color
 
 conf_msg() {
     short_msg "$1"
-    echo -ne " ${GREEN}✓${NC}"
+    echo -ne " ${bold}${green}✓${normal}"
 }
 
 # Create two line gap
@@ -346,10 +418,6 @@ space_1() {
     long_msg "
 >  "
 }
-
-# Declare bold and normal
-bold=$(tput bold)
-normal=$(tput sgr0)
 
 
 # === WELCOME ===
@@ -380,17 +448,17 @@ sleep 2
 space_2
 short_msg "To whitelist devices in future, run:"
 space_1
-short_msg "$ sudo usbguard list-devices"
+short_msg "$ usbguard list-devices"
 space_1
 short_msg "Followed by:
 space_1
-short_msg "$ sudo usbguard allow-device <device number>
+short_msg "$ usbguard allow-device <device number>
 sleep 2
 
 
 # === TIDY UP & FINISH ===
 
-rm /etc/xdg/autostart/solidcore-secondboot.desktop
+rm /etc/xdg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
 space_2
 short_msg "${bold}Thank you for running the solidcore script.${normal}"
 space_1
@@ -403,22 +471,15 @@ sleep 2
 echo
 EOF
 
-    chmod +x "$script_path"
+        chmod +x "$script_path"
     
-    # Create a xdg autostart file
-    cat > /etc/xdg/autostart/solidcore-secondboot.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=Solidcore Script to Run on Second Boot
-Exec=bash /etc/solidcore/solidcore-secondboot.sh
-Terminal=true
-Icon=utilities-terminal
-EOF
-
-    space_1
-    conf_msg "USBGuard staged for deployment on next reboot"
-    space_2
-    space_1
+        # Update solidcore-welcome.sh to run secondboot script
+        sed -i 's|firstboot.sh|secondboot.sh|' /etc/solidcore/solidcore-welcome.sh
+        space_1
+        conf_msg "USBGuard staged for deployment on next reboot"
+        space_2
+        space_1
+    fi
     
     while true; do
     
@@ -493,8 +554,8 @@ EOF
 
 else
     rmmod usbcore usb_storage > /dev/null 2>&1
-    echo "blacklist usb_storage" | tee -a "$blacklist_file" > /dev/null
-    echo "blacklist usbcore" | tee -a "$blacklist_file" > /dev/null
+    echo "install usb_storage /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install usbcore /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "USB has been disabled and added to the kernel module blacklist"
 fi
@@ -525,7 +586,7 @@ if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
     conf_msg "Webcam remains enabled"
 else
     rmmod uvcvideo > /dev/null 2>&1
-    echo "blacklist uvcvideo" | tee -a "$blacklist_file" > /dev/null
+    echo "install uvcvideo /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "Webcam has been disabled and added to the kernel module blacklist"
 fi
@@ -595,8 +656,8 @@ else
     systemctl disable bluetooth.service > /dev/null 2>&1
     systemctl --now mask bluetooth.service > /dev/null 2>&1
     systemctl daemon-reload
-    echo "blacklist bluetooth" | tee -a "$blacklist_file" > /dev/null
-    echo "blacklist btusb" | tee -a "$blacklist_file" > /dev/null
+    echo "install bluetooth /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install btusb /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "Bluetooth has been disabled and added to the kernel module blacklist"
 fi
@@ -628,9 +689,9 @@ if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
     conf_msg "Firewire remains enabled"
 else
     rmmod ohci1394 sbp2 firewire_core > /dev/null 2>&1
-    echo "blacklist firewire-core" | tee -a "$blacklist_file" > /dev/null
-    echo "blacklist ohcil394" | tee -a "$blacklist_file" > /dev/null
-    echo "blacklist sbp2" | tee -a "$blacklist_file" > /dev/null
+    echo "install firewire-core /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install ohcil394 /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install sbp2 /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "Firewire has been disabled and added to the kernel module blacklist"
 fi
@@ -670,7 +731,7 @@ else
         short_msg "Disabling Thunderbolt domain: $domain"
         boltctl disable "$domain"
     done
-    echo "blacklist thunderbolt" | tee -a "$blacklist_file" > /dev/null
+    echo "install thunderbolt /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "Thunderbolt has been disabled and added to the kernel module blacklist"
 fi
@@ -778,20 +839,34 @@ https://raw.githubusercontent.com/bigdargon/hostsVN/master/hosts
 #https://nsfw.oisd.nl/domainswild
 
 # === MALICIOUS ===
-# Green lists from firebog.net
-https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareHosts.txt
-https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt
-https://s3.amazonaws.com/lists.disconnect.me/simple_malvertising.txt
-https://v.firebog.net/hosts/Prigent-Crypto.txt
-https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Risk/hosts
+# Green lists from firebog.net, the rest from https://github.com/PeterDaveHello/threat-hostlist and https://github.com/hagezi/dns-blocklists#tif
+https://azorult-tracker.net/api/list/domain?format=plain
 https://bitbucket.org/ethanr/dns-blacklists/raw/8575c9f96e5b4a1308f2f12394abd86d0927a4a0/bad_lists/Mandiant_APT1_Report_Appendix_D.txt
-https://phishing.army/download/phishing_army_blocklist_extended.txt
+https://blocklistproject.github.io/Lists/alt-version/fraud-nl.txt
+https://blocklistproject.github.io/Lists/alt-version/phishing-nl.txt
+https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt
+https://blocklistproject.github.io/Lists/alt-version/scam-nl.txt
+https://github.com/DandelionSprout/adfilt/raw/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareHosts.txt
+https://gitlab.com/hagezi/mirror/-/raw/main/dns-blocklists/wildcard/tif-onlydomains.txt
 https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-malware.txt
+https://hole.cert.pl/domains/domains.txt
+https://malware-filter.gitlab.io/malware-filter/phishing-filter-hosts.txt
+https://openphish.com/feed.txt
+https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts
+https://raw.githubusercontent.com/durablenapkin/scamblocklist/master/hosts.txt
+https://raw.githubusercontent.com/elliotwutingfeng/GlobalAntiScamOrg-blocklist/main/global-anti-scam-org-scam-urls-pihole.txt
+https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Dead/hosts
+https://raw.githubusercontent.com/FiltersHeroes/KADhosts/master/KADhosts.txt
+https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt
+https://raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/hosts.txt
+https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt
+https://s3.amazonaws.com/lists.disconnect.me/simple_malvertising.txt
+https://securereload.tech/Phishing/Lists/Latest/
+https://v.firebog.net/hosts/Prigent-Crypto.txt
 https://v.firebog.net/hosts/RPiList-Malware.txt
 https://v.firebog.net/hosts/RPiList-Phishing.txt
-https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt
-https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts
-https://urlhaus.abuse.ch/downloads/hostfile/
+https://www.usom.gov.tr/url-list.txt
+
 
 # === MEGA LISTS ===
 # DNSCrypt List by Frank Denis
@@ -905,7 +980,7 @@ Description=Automatically update dnscrypt-proxy blocklist and application
 
 [Service]
 Type=oneshot
-ExecStart=python3 ${INSTALL_DIR}/${download_file2} -c ${INSTALL_DIR}/domains-blocklist.conf -a ${INSTALL_DIR}/domains-allowlist.txt -r ${INSTALL_DIR}/${download_file3} -i -o blocklist.txt
+ExecStart=python3 ${INSTALL_DIR}/${download_file2} -c ${INSTALL_DIR}/domains-blocklist.conf -a ${INSTALL_DIR}/domains-allowlist.txt -r ${INSTALL_DIR}/${download_file3} -o ${INSTALL_DIR}/blocklist.txt.tmp && mv -f ${INSTALL_DIR}/blocklist.txt.tmp ${INSTALL_DIR}/blocklist.txt
 ExecStart=${INSTALL_DIR}/dnscrypt-proxy-update.sh
 EOL
 
@@ -992,10 +1067,6 @@ space_2
 
 # === TiDY UP & FINISH ===
 
-# Remove first boot autostart
-rm /etc/exg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
-sleep 1
-
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard."
@@ -1016,6 +1087,10 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     echo -e "\r>  Rebooting now!            "
     reboot
 else
+    # Remove first boot autostart
+    rm /etc/xdg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
+    sleep 1
+    # End
     short_msg "${bold}Thank you for running the solidcore script.${normal}"
 	space_1
     short_msg "For some suggestions on what to do next, see:"
