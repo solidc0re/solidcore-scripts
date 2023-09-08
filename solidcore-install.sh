@@ -654,25 +654,6 @@ rm -rf ./tmp
 conf_msg "Chrony configuration updated (thanks GrapheneOS!)"
 
 
-# === HTTPS REPO CHECK ===
-
-# Define an array of patterns to search for
-patterns=("^baseurl=http:" "^metalink=http:")
-
-# Loop through the patterns and perform checks
-for pattern in "${patterns[@]}"; do
-    output=$(grep -r "$pattern" /etc/yum.repos.d/)
-    if [ -n "$output" ]; then
-        echo "Warning: HTTP link found in yum repository configuration."
-        echo "Output:"
-        echo "$output"
-        echo "Please investigate whether you can manually edit the repo to use HTTPS instead."
-    fi
-done
-
-conf_msg "No insecure repos found in yum repository directory"
-
-
 # === AUTOMATIC UPDATES ===
 
 # RPM-OSTREE 

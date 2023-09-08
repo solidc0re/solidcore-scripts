@@ -1065,6 +1065,74 @@ space_1
 conf_msg "Automatic update timers initiated"
 space_2
 
+
+# === FINAL CHECKS ===
+
+clear
+long_msg ">
+>
+>  Running some final checks..."
+sleep 2
+space_2
+
+# Check the current SELinux status and enable enforcing if required
+short_msg "[1 of 3] Checking SELinux..."
+space_1
+sleep 1
+current_status=$(sestatus | awk '/Current mode:/ {print $3}')
+desired_status="enforcing"
+
+if [ "$current_status" = "$desired_status" ]; then
+    conf_msg "SELinux already set to enforcing"
+else
+    setenforce 1
+    conf_msg "SELinux now set to enforcing"
+fi
+space_2
+
+# HTTP check for the repos
+short_msg "[2 of 3] Checking insecure URLs in the repo directory..."
+space_1
+sleep 1
+patterns=("^baseurl=http:" "^metalink=http:")
+for pattern in "${patterns[@]}"; do
+    output=$(grep -r "$pattern" /etc/yum.repos.d/)
+    if [ -n "$output" ]; then
+        short_msg "${bold}[WARNING]${normal} HTTP link found in the repository directory (/etc/yum.repos.d/)."
+        short_msg "Output:"
+        short_msg "$output"
+        short_msg "Please investigate. You may be able to manually edit the repo to use HTTPS. Failing that, contact the repo maintainer to report the security issue."
+        sleep 2
+    else
+        conf_msg "No insecure repos found in the repository directory"
+    fi
+done
+space_2
+
+# CPU vulnerability check
+short_msg "[3 of 3] Checking CPU Vulnerabilities..."
+space_1
+sleep 1
+
+short_msg "Vulnerability      | Status"
+short_msg "------------------ | --------------"
+
+vulnerabilities=$(grep . /sys/devices/system/cpu/vulnerabilities/*)
+
+while read -r line; do
+    # Extract vulnerability and status using awk
+    vulnerability=$(short_msg "$line" | awk -F ':' '{print $1}')
+    status=$(short_msg "$line" | awk -F ':' '{print $2}')
+
+    # Print the vulnerability and its status in a table format
+    printf "%-18s | %s\n" "$vulnerability" "$status"
+done <<< "$vulnerabilities"
+sleep 1
+space_1
+short_msg "Please take a note of the vulnerability if there is no mitigation in place and your device is listed as affected."
+sleep 3
+space_2
+
 # === TiDY UP & FINISH ===
 
 # Reboot if USB Guard installed, otherwise farewell
