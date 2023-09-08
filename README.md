@@ -210,10 +210,10 @@ Refer to https://github.com/DNSCrypt/dnscrypt-proxy/wiki if you need further ass
   
 First:
 ```
-sudo sed -i '/blacklist bluetooth/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
+sudo sed -i 's/^install bluetooth /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
 ```
-sudo sed -i '/blacklist btusb/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
+sudo sed -i 's/^install btusb /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
 
 Then reboot. After reboot:
@@ -235,13 +235,13 @@ sudo systemctl enable --now bluetooth.service
   
 First:
 ```
-sudo sed -i '/blacklist firewire-core/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
+sudo sed -i 's/^install firewire-core /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
 ```
-sudo sed -i '/blacklist ohcil394/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
+sudo sed -i 's/^install ohcil394 /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
 ```
-sudo sed -i '/blacklist sbp2/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
+sudo sed -i 's/^install sbp2 /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
 
 Then reboot. After reboot:
@@ -256,7 +256,7 @@ sudo insmod firewire_core ohcil394 sbp2
 ### How to: unblock Thunderbolt
   
 ```
-sudo sed -i '/blacklist thunderbolt/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
+sudo sed -i 's/^install thunderbolt /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
 
 Then reboot. After reboot:
@@ -279,10 +279,10 @@ sudo boltctl enable <domain>
 
 This is for those who blacklisted the USB kernel module - NOT FOR THOSE WHO INSTALLED USBGUARD. To unblock the USB modules:
 ```
-sudo sed -i '/blacklist usbcore/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
+sudo sed -i 's/^install usbcore /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
 ```
-sudo sed -i '/blacklist usb_storage/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
+sudo sed -i 's/^install usb_storage /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
 
 Then reboot. After reboot:
@@ -326,7 +326,7 @@ usbguard block-device <device number>
   
 First:
 ```
-sudo sed -i '/blacklist uvcvideo/s/^/#/' /etc/modprobe.d/solidcore-blacklist.conf
+sudo sed -i 's/^install uvcvideo /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
 
 Then reboot. After reboot:
