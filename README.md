@@ -28,7 +28,7 @@ These are just some of the issues that solidcore hardening aims to protect again
 # Current features
 **v0.2 alpha released September 8th 2023.**
 
-**Despite the low version number of v0.2, this script implements some serious hardening:**
+**Despite the low version number of v0.2.1, this script implements some serious hardening:**
 
 - Guided user interface :heavy_check_mark:
 - Auto-generate backups of important config files :heavy_check_mark:
@@ -42,7 +42,6 @@ These are just some of the issues that solidcore hardening aims to protect again
 - Root account locked :heavy_check_mark:
 - All user passwords have to be updated to new password standards :heavy_check_mark:
 - Firewalld zone set to drop (drops all incoming connections) :heavy_check_mark:
-- Check yum repos for insecure HTTP URLs :heavy_check_mark:
 - Automatic updates for rpm-ostree and flatpaks :heavy_check_mark:
 - Fedora flatpaks replaced with Flathub flatpaks :heavy_check_mark:
 - Mute microphone by default on login :heavy_check_mark:
@@ -58,6 +57,8 @@ These are just some of the issues that solidcore hardening aims to protect again
 - DNS blocklists added (blocks ad, malicious and tracking domains by default; adult content optional) :heavy_check_mark:
 - Updates scheduled for dnscrypt-proxy and DNS blocklists :heavy_check_mark:
 - MAC randomization :heavy_check_mark:
+- Checks in place for SELinux mode, known CPU vulnerabilities and insecure HTTP URLs in the repos :heavy_check_mark:
+- Chrony (NTP) config updated to match GrapheneOS configuration :heavy_check_mark:
 - Uninstall file (untested in current version - may throw out unexpected errors, but should be operational)
 
 **Tested on Fedora Silverblue 38.**
@@ -86,9 +87,6 @@ For the next release:
 - user-testing and implement feedback
 - test uninstall process thoroughly
 - implement improvements to the USBGuard config
-- add SELinux enforcing check
-- add CPU vulnerability mitigations check
-- [x] ~~review and potentially implement chronyd (NTP) improvements~~
 - continue work on developing `-test` flag
 - consider switch from updating GRUB parameters to using `rpm-ostree kargs`
 
