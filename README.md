@@ -26,7 +26,7 @@ These are just some of the issues that solidcore hardening aims to protect again
 - :fire: ***... plus more!!*** :fire:
 
 # Current features
-**v0.2 alpha released September 8th 2023.**
+**v0.2.1 alpha released September 8th 2023.**
 
 **Despite the low version number of v0.2.1, this script implements some serious hardening:**
 
