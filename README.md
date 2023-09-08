@@ -26,7 +26,9 @@ These are just some of the issues that solidcore hardening aims to protect again
 - :fire: ***... plus more!!*** :fire:
 
 # Current features
-**Despite the low version number of v0.1.1, this script implements some serious hardening.**
+**v0.2 alpha released September 8th 2023.**
+
+**Despite the low version number of v0.2, this script implements some serious hardening.**
 
 What follows is a long list of the current features:
 
@@ -36,12 +38,11 @@ What follows is a long list of the current features:
 - Hardened GRUB boot parameters :heavy_check_mark:
 - Kernel module blacklist :heavy_check_mark:
 - High risk and unused services disabled and masked :heavy_check_mark:
-- Process information hidden from users :heavy_check_mark:
-- Kernel information hidden from users :heavy_check_mark:
 - New files only viewable to owner/creator :heavy_check_mark:
 - Core dumps disabled (stops sensitive information about the system being available) :heavy_check_mark:
 - Improved password policies :heavy_check_mark:
 - Root account locked :heavy_check_mark:
+- All user passwords have to be updated to new password standards :heavy_check_mark:
 - Firewalld zone set to drop (drops all incoming connections) :heavy_check_mark:
 - Check yum repos for insecure HTTP URLs :heavy_check_mark:
 - Automatic updates for rpm-ostree and flatpaks :heavy_check_mark:
@@ -58,7 +59,8 @@ What follows is a long list of the current features:
 - [DNSCrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy) installed (uses the encrypted, more secure [DNSCrypt protocol](https://dnscrypt.info/) for all your DNS lookups) :heavy_check_mark:
 - DNS blocklists added (blocks ad, malicious and tracking domains by default; adult content optional) :heavy_check_mark:
 - Updates scheduled for dnscrypt-proxy and DNS blocklists :heavy_check_mark:
-- Uninstall file (mostly working)
+- MAC randomization :heavy_check_mark:
+- Uninstall file (untested in current version - may throw out unexpected errors, but should be operational)
 
 **Tested on Fedora Silverblue 38.**
 
@@ -70,10 +72,8 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - create solidcore aliases for common post-install actions (e.g. `solidcore uninstall`, `solidcore add-blocklist`, `solidcore allow [domain]`, `solidcore status` [to check whether settings are still valid & active])
 - develop the `-test` flag further for more verbosity
 - align as much as immutable Fedora will allow with the Center for Internet Security's RHEL 9 Workstation Level 1 & Level 2 benchmark
-- research and improve sysctl and bootloader hardening
+- research and improve sysctl, kernel module and bootloader hardening
 - install and sign hardened kernel (removing any currently implemented kernel hardening)
-- [x] ~~implement pam.d overwrites with stronger defaults~~
-- implement improvements to the USBGuard config
 - progress on getting the hardened malloc to work
 - create scripts to audit all relevant settings on new versions of Fedora to make keeping it up-to-date easier
 - research and possibly implement clam-tk and AIDE
@@ -81,22 +81,19 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - improve user interactions
 - set up full installation of hardware keys, i.e. creation of U2F pam module key and required modification to solidcore pam profile
 - develop the `-server` flag further to eliminate all user interaction
-- [x] ~~write more documentation~~
 - implement conditional conf_msg and error reporting
-- add SELinux enforcing check
-- [x] ~~have all other users update their password on next login~~
-- add mitigations check
-- review and potentially implement chronyd (NTP) [improvements](https://chrony-project.org/faq.html#_how_can_i_make_the_system_clock_more_secure)
 - establish blocklist review process
-- [x] ~~`/etc/security/access.conf` test disallowing console logins to non-wheel users~~
-- [x] ~~ensure comprehensive malicious blocklist section~~
-- [x] ~~implement MAC randomization~~
 
 For the next release:
-- [x] ~~create testing branch for the sake of your sanity and mine~~
-- [x] ~~get minisign to work properly (dnscrypt-proxy install and updates)~~
 - user-testing and implement feedback
 - test uninstall process thoroughly
+- implement improvements to the USBGuard config
+- add SELinux enforcing check
+- add CPU vulnerability mitigations check
+- review and potentially implement chronyd (NTP) [improvements](https://chrony-project.org/faq.html#_how_can_i_make_the_system_clock_more_secure)
+- implement improvements to the USBGuard config
+- continue work on developing `-test` flag
+- consider switch from updating GRUB paramters to using `rpm-ostree kargs`
 
 # Instructions
 > [!NOTE]
