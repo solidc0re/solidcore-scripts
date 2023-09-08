@@ -384,9 +384,9 @@ blacklist_file="/etc/modprobe.d/solidcore-blacklist.conf"
 # List of module names to be blacklisted
 modules_to_blacklist=(    
     "af_802154"
-    #"appletalk" # Already blacklisted in Fedora
-    #"atm" # Already backlisted in Fedora 
-    #"ax25" # Already blacklisted in Fedora
+    "appletalk" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "atm" # Already backlisted in Fedora, adding install <module> /bin/true to block re-loading
+    "ax25" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "can"
     "cifs"
     "cramfs"
@@ -401,16 +401,16 @@ modules_to_blacklist=(
     "jffs2"
     "ksmbd"
     "n-hdlc"
-    #"netrom" # Already blacklisted in Fedora
+    "netrom" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "nfsv3"
     "nfsv4"
     "nfs"
     "p8022"
     "p8023"
     "psnap"
-    #"rds" # Already blacklisted in Fedora
-    #"rose" # Already blacklisted in Fedora
-    #"sctp" # Already blacklisted in Fedora
+    "rds" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "rose" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "sctp" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "squashfs"
     "tipc"
     "udf"
