@@ -26,9 +26,9 @@ These are just some of the issues that solidcore hardening aims to protect again
 - :fire: ***... plus more!!*** :fire:
 
 # Current features
-**v0.2.1 alpha released September 8th 2023.**
+**v0.2.5 alpha released September 9th 2023.**
 
-**Despite the low version number of v0.2.1, this script implements some serious hardening:**
+**Despite the low version number of v0.2.5, this script implements some serious hardening:**
 
 - Guided user interface :heavy_check_mark:
 - Auto-generate backups of important config files :heavy_check_mark:
@@ -88,7 +88,6 @@ For the next release:
 - test uninstall process thoroughly
 - implement improvements to the USBGuard config
 - continue work on developing `-test` flag
-- consider switch from updating GRUB parameters to using `rpm-ostree kargs`
 
 # Instructions
 > [!NOTE]
