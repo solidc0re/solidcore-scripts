@@ -184,13 +184,6 @@ while true; do
         space_1
         short_msg "Password change failed. Please try again."
         space_1
-        short_msg "A reminder that the new password requirements are:"
-        short_msg "  • 12 character minimum"
-        short_msg "  • at least 1 UPPER case character"
-        short_msg "  • at least 1 lower case character"
-        short_msg "  • the same character can not be repeated 3+ times in a row"
-        short_msg "  • the password must pass a dictionary test"
-        space_1
     fi
 done
 conf_msg "Password updated"
@@ -467,7 +460,7 @@ echo
 
 while true; do
     
-    read -rp "${bold}Question: Do you use any hardware security keys?${normal} (y/n): " token_response
+    read -rp ">  ${bold}Question: Do you use any hardware security keys?${normal} (y/n): " token_response
     
     case $token_response in 
 	[Yy] ) token_response="Y";
@@ -493,35 +486,35 @@ if [[ "$token_response" =~ ^[Yy]$ ]]; then
                 # Create the udev rules file and add the rule content
                 echo "$RULE_CONTENT" | tee /etc/udev/rules.d/70-titan-key.rules > /dev/null
                 udevadm control --reload-rules && udevadm trigger
-                space_1
                 conf_msg "Google Titan Security Key udev rules installed"
+                sleep 1
                 break
                 ;;
             "Yubico's YubiKey")
                 # Download and move YubiKey udev rules
-                wget https://github.com/Yubico/libfido2/raw/main/udev/70-u2f.rules
+                wget -q https://github.com/Yubico/libfido2/raw/main/udev/70-u2f.rules
                 mv 70-u2f.rules /etc/udev/rules.d/
                 udevadm control --reload-rules && udevadm trigger
-                space_1
                 conf_msg "Yubico's YubiKey udev rules installed"
+                sleep 1
                 break
                 ;;
             "Nitrokey")
                 # Download and move Nitrokey udev rules
-                wget https://raw.githubusercontent.com/Nitrokey/libnitrokey/master/data/41-nitrokey.rules
+                wget -q https://raw.githubusercontent.com/Nitrokey/libnitrokey/master/data/41-nitrokey.rules
                 mv 41-nitrokey.rules /etc/udev/rules.d/
                 udevadm control --reload-rules && udevadm trigger
-                space_1
                 conf_msg "Nitrokey udev rules installed"
+                sleep 1
                 break
                 ;;
             "OnlyKey")
                 # Download and move OnlyKey udev rules
-                wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/pages/49-onlykey.rules
+                wget -q https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/pages/49-onlykey.rules
                 mv 49-onlykey.rules /etc/udev/rules.d/
                 udevadm control --reload-rules && udevadm trigger
-                space_1
                 conf_msg "OnlyKey udev rules installed"
+                sleep 1
                 break
                 ;;
             "Other")
@@ -536,14 +529,18 @@ if [[ "$token_response" =~ ^[Yy]$ ]]; then
     done
 fi
 
+short_msg "Thank you for your responses."
+sleep 1
+space_1
+
 
 # === ACTION CHOICES ===
 
 clear
 space_2
-short_msg "Thank you for your responses."
+short_msg "Applying settings..."
 sleep 1
-space_1
+
 
 # === CUPS ===
 
@@ -580,7 +577,6 @@ fi
 # Enable or disable Bluetooth based on user response
 if [[ "$bluetooth_response" =~ ^[Yy]$ ]]; then
     rfkill unblock bluetooth
-    space_1
     conf_msg "Bluetooth has been re-enabled"
 else
     systemctl stop bluetooth.service
@@ -589,7 +585,6 @@ else
     systemctl daemon-reload
     echo "install bluetooth /bin/true" | tee -a "$block_file" > /dev/null
     echo "install btusb /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
     conf_msg "Bluetooth has been disabled and added to the kernel module blacklist"
 fi
 
@@ -602,11 +597,9 @@ if [[ "$wifi_response" =~ ^[Yy]$ ]]; then
     rfkill block all
     sleep 1
     rfkill unblock wifi
-    space_1
     conf_msg "All wireless devices, except Wi-Fi have been disabled"
 else
     rfkill block all
-    space_1
     conf_msg "All wireless devices have been disabled"
 fi
 
@@ -615,7 +608,6 @@ fi
 
 # Enable or disable Firewire based on user response
 if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
-    space_1
     conf_msg "Firewire remains enabled"
 else
     rmmod dv1394 firewire-core firewire_core firewire-ohci firewire_ohci firewire-sbp2 firewire_sbp2 ohci1394 sbp2 raw1394 video1394 > /dev/null 2>&1
@@ -631,7 +623,6 @@ else
     echo "install sbp2 /bin/true" | tee -a "$block_file" > /dev/null
     echo "install raw1394 /bin/true" | tee -a "$block_file" > /dev/null
     echo "install video1394 /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
     conf_msg "Firewire has been disabled and added to the kernel module blacklist"
 fi
 
@@ -641,7 +632,6 @@ fi
 # Enable or disable thunderbolt based on user response
 
 if [[ "$thunderbolt_response" =~ ^[Yy]$ ]]; then
-    space_1
     conf_msg "Thunderbolt remains enabled"
     
 else
@@ -654,7 +644,6 @@ else
         boltctl disable "$domain"
     done
     echo "install thunderbolt /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
     conf_msg "Thunderbolt has been disabled and added to the kernel module blacklist"
 fi
 
@@ -667,10 +656,10 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
         usb_response="N"
         short_msg "USBGuard already installed. Skipping..."
     else
-        space_1
         short_msg "Installing USBGaurd. This may take a while."
         echo
         rpm-ostree install -q usbguard
+        mkdir -p /etc/solidcore/
         script_path="/etc/solidcore/solidcore-secondboot.sh"
 
         # Write secondboot.sh script
@@ -1206,34 +1195,23 @@ short_msg "[3 of 3] Checking CPU Vulnerabilities..."
 space_1
 sleep 1
 
-short_msg "Vulnerability      | Status"
-short_msg "------------------ | --------------"
+grep . /sys/devices/system/cpu/vulnerabilities/*
 
-vulnerabilities=$(grep . /sys/devices/system/cpu/vulnerabilities/*)
-
-while read -r line; do
-    # Extract vulnerability and status using awk
-    vulnerability=$(short_msg "$line" | awk -F ':' '{print $1}')
-    status=$(short_msg "$line" | awk -F ':' '{print $2}')
-
-    # Print the vulnerability and its status in a table format
-    printf "%-18s | %s\n" "$vulnerability" "$status"
-done <<< "$vulnerabilities"
 sleep 1
 space_1
-short_msg "Please take a note of the vulnerability if there is no mitigation (Migitation: None)."
+short_msg "${bold}Please take a note of the vulnerability if there is no mitigation (Migitation: None).{$normal}"
 sleep 1
 space_1
 short_msg "Raise this vulnerability as an issue on the solidcore-script Github repo:"
 short_msg "https://github.com/solidc0re/solidcore-scripts"
 sleep 3
-space_2
+space_1
 
 # === TiDY UP & FINISH ===
 
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
-    short_msg "Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard."
+    short_msg "${bold}Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard.{$normal}"
     space_1
     short_msg "Another script will guide you through whitelisting your USB devices."
 	sleep 2
