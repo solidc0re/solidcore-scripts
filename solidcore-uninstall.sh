@@ -278,7 +278,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	# === REMOVE SOLICORE CREATED SCRIPTS & CONFIGS ===
 
 	files_to_delete=(
-		"/etc/modprobe.d/solidcore-blacklist.conf"
+		"/etc/modprobe.d/solidcore-blocklist.conf"
 		"/etc/NetworkManager/conf.d/00-solidcore.conf"
 		"/etc/profile.d/solidcore_umask.sh"
 		"/etc/solidcore/solidcore-firstboot.sh"
