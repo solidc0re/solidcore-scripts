@@ -191,24 +191,23 @@ conf_msg "Password updated"
 # Expire passwords of all other users
 short_msg "Expiring all user passwords except for user..."
 
-# Count the number of non-root users on the system
-num_users=$(getent passwd | grep -v '/bin/false' | grep -v '/sbin/nologin' | wc -l)
-current_user=$(whoami)
+# Get the UID of the current user
+current_user_uid=$(id -u)
 
-# Check if there are other users besides the current user and root
-if [ "$num_users" -gt 2 ]; then
-    # Loop through all user accounts and exclude the current user and root
-    for username in $(getent passwd | cut -d: -f1); do
-        if [ "$username" != "$current_user" ] && [ "$username" != "root" ]; then
-            echo "Expiring password for user: $username"
-            chage -E 0 "$username"
-        fi
+# Count the number of non-root human users on the system
+num_users=$(getent passwd | awk -F: '$3 >= 1000 && $3 != '$current_user_uid' {print $1}' | wc -l)
+
+# Check if there are other human users besides the current user
+if [ "$num_users" -gt 0 ]; then
+    # Loop through all user accounts and exclude the current user
+    getent passwd | awk -F: '$3 >= 1000 && $3 != '$current_user_uid' {print $1}' | while read -r username; do
+        short_msg "Expiring password for user: $username"
+        chage -E 0 "$username"
     done
     space_1
-    short_msg "${bold}All other users' passwords have now expired${normal}."
+    short_msg "${bold}Passwords for other human users have now expired.${normal}"
     short_msg "They will be prompted to update their password on the next login."
     sleep 1
-
 fi
 
 space_2
