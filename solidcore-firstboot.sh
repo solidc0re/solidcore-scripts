@@ -422,13 +422,13 @@ short_msg "Use the up and down arrows to cycle through the options, and use the 
 space_1
 short_msg "Once you have selected your choices you can press enter to continue to the next question."
 space_1
-Short_msg "Let's begin..."
+short_msg "Let's begin..."
 sleep 2
 space_1
 short_msg "${bold}[1 of 3] Do you use any of the following devices?${normal}"
 
 echo
-prompt_for_multiselect user_input "$(IFS=';'; echo "${options_1[]}")" "$(IFS=';'; echo "${defaults_1[]}")"
+prompt_for_multiselect user_input "$(IFS=';'; echo "${options_1[*]}")" "$(IFS=';'; echo "${defaults_1[*]}")"
 
 for i in "${!user_input[@]}"; do
     case $i in
@@ -441,7 +441,7 @@ echo
 short_msg "${bold}[2 of 3] Do you use any of the following wireless connections on this device?${normal}"
 
 echo
-prompt_for_multiselect user_input "$(IFS=';'; echo "${options_2[]}")" "$(IFS=';'; echo "${defaults_2[]}")"
+prompt_for_multiselect user_input "$(IFS=';'; echo "${options_2[*]}")" "$(IFS=';'; echo "${defaults_2[*]}")"
 
 for i in "${!user_input[@]}"; do
     case $i in
@@ -454,7 +454,7 @@ echo
 short_msg "${bold}[3 of 3] Which of the following ports do you use on this device?${normal}"
 
 echo
-prompt_for_multiselect user_input "$(IFS=';'; echo "${options_3[]}")" "$(IFS=';'; echo "${defaults_3[]}")"
+prompt_for_multiselect user_input "$(IFS=';'; echo "${options_3[*]}")" "$(IFS=';'; echo "${defaults_3[*]}")"
 
 for i in "${!user_input[@]}"; do
     case $i in

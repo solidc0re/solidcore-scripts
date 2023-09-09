@@ -573,9 +573,9 @@ WantedBy=sysinit.target
 EOF
 
 systemctl daemon-reload
-systemctl enable solidcore-remount.service > /dev/null
+systemctl enable solidcore-remount.service > /dev/null 2>&1
 
-#conf_msg "hidepid enabled for /proc"
+conf_msg "hidepid enabled for /proc"
 
 
 # === FILE PERMISSIONS ===
