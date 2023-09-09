@@ -688,10 +688,19 @@ if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
     space_1
     conf_msg "Firewire remains enabled"
 else
-    rmmod ohci1394 sbp2 firewire_core > /dev/null 2>&1
+    rmmod dv1394 firewire-core firewire_core firewire-ohci firewire_ohci firewire-sbp2 firewire_sbp2 ohci1394 sbp2 raw1394 video1394 > /dev/null 2>&1
+    echo "install dv1394 /bin/true" | tee -a "$blacklist_file" > /dev/null
     echo "install firewire-core /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install ohcil394 /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install firewire_core /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install firewire-ohci /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install firewire_ohci /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install firewire-sbp2 /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install firewire_sbp2 /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install firewire-core /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install ohci1394 /bin/true" | tee -a "$blacklist_file" > /dev/null
     echo "install sbp2 /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install raw1394 /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install video1394 /bin/true" | tee -a "$blacklist_file" > /dev/null
     space_1
     conf_msg "Firewire has been disabled and added to the kernel module blacklist"
 fi
@@ -1129,7 +1138,11 @@ while read -r line; do
 done <<< "$vulnerabilities"
 sleep 1
 space_1
-short_msg "Please take a note of the vulnerability if there is no mitigation in place and your device is listed as affected."
+short_msg "Please take a note of the vulnerability if there is no mitigation (Migitation: None)."
+sleep 1
+space_1
+short_msg "Raise this vulnerability as an issue on the solidcore-script Github repo:"
+short_msg "https://github.com/solidc0re/solidcore-scripts"
 sleep 3
 space_2
 

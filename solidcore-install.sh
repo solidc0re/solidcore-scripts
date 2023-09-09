@@ -340,12 +340,15 @@ boot_parameters=(
     "randomize_kstack_offset=on" # Randomises kernel stack offset on each syscall
     "vsyscall=none" # Disables obsolete vsyscalls
     "debugfs=off" # Disables debugfs to stop sensitive information being exposed
-    "lockdown=confidentiality" # Makes it harder to load malicious kernel modules; implies module.sig_enforce=1 so could break unsigned drivers (NVIDIA, etc.)
+    #"lockdown=confidentiality" # Makes it harder to load malicious kernel modules; implies module.sig_enforce=1 so could break unsigned drivers (NVIDIA, etc.)
     "quiet loglevel=0" # Prevents information leaks on boot; must be used in conjuction with kernel.printk sysctl
     #"ipv6.disable=1"
     "random.trust_cpu=off" # Do not trust proprietary code on CPU for random number generation
+    "random.trust_bootloader=off"
     "efi=disable_early_pci_dma" # Fixes hole in IOMMU
     "mitigations=auto" # Ensures mitigations against known CPU vulnerabilities
+    "iommu.passthrough=0"
+    "iommu.strict=1"
 )
 
 # Add IOMMU parameter based on CPU vendor
@@ -383,6 +386,7 @@ modules_to_blacklist=(
     "atm" # Already backlisted in Fedora, adding install <module> /bin/true to block re-loading
     "ax25" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "can"
+    "cdrom"
     "cifs"
     "cramfs"
     "decnet"
@@ -395,17 +399,21 @@ modules_to_blacklist=(
     "ipx"
     "jffs2"
     "ksmbd"
+    "mei" # Intel Management Engine
+    "mei-me" # Intel Management Engine
+    "msr"
     "n-hdlc"
     "netrom" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "nfs"
     "nfsv3"
     "nfsv4"
-    "nfs"
     "p8022"
     "p8023"
     "psnap"
     "rds" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "rose" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "sctp" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "sr_mod"
     "squashfs"
     "tipc"
     "udf"

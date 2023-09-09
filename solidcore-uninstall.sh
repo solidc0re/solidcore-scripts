@@ -543,7 +543,7 @@ done
 systemctl daemon-reload
 
 # Re-insert Firewire, USB & webcam modules
-insmod firewire_core ohcil394 sbp2 usbcore usb_storage uvcvideo
+insmod dv1394 firewire-core firewire_core firewire-ohci firewire_ohci firewire-sbp2 firewire_sbp2 ohci1394 sbp2 raw1394 video1394 usbcore usb_storage uvcvideo
 
 # Unblock Thunderbolt
 disabled_domains=$(boltctl list | awk '/authorized: no/ {print $1}')
