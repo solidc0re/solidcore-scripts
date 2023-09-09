@@ -233,7 +233,7 @@ fi
 if [[ "$solidcore_response" =~ ^[Yy]$ ]]; then
 long_msg ">
 >
->  Your system will reboot once the first round of hardening is completed.
+>  Your system need to reboot once the first round of hardening is completed.
 >  You will be presented with another script on first boot.
 >  Be sure to complete all the stages to finish the hardening process.
 >
@@ -241,6 +241,8 @@ long_msg ">
 >
 >"
 sleep 3
+clear
+space_2
 
 # === SYSCTL PARAMETERS ===
 
@@ -870,7 +872,7 @@ cat > /etc/xdg/autostart/solidcore-mute-mic.desktop << EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Mute Microphone on Boot
-Exec=amixer set Capture nocap
+Exec=/usr/bin/amixer set Capture nocap
 Icon=utilities-terminal
 EOF
 
@@ -958,7 +960,7 @@ cat > /etc/xdg/autostart/solidcore-welcome.desktop << EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Run on First Boot
-Exec=/etc/solidcore/solidcore-welcome.sh
+Exec=bash /etc/solidcore/solidcore-welcome.sh
 Terminal=true
 Icon=utilities-terminal
 EOF
