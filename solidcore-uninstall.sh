@@ -128,6 +128,35 @@ space_2
 
 if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 
+
+	# === RESTORE BOOT PARAMETERS ===
+	# Add all added parameters to kargs_added string
+	kargs_added=""
+	while IFS= read -r line; do
+    	kargs_added+="--delete-if-present=$line "
+	done < /etc/solidcore/kargs-added_sc.bak
+
+	# Remove the trailing space
+	kargs_added="${kargs_added%" "}"
+
+	# Remove all added parameters saved in kargs-added_sc.bak
+	rpm-ostree kargs "$kargs_added"
+	conf_msg "solidcore added boot parameters removed"
+
+	# Add all original parameters to kargs_orig string
+	kargs_orig=""
+	while IFS= read -r line; do
+    	kargs_orig+="--append-if-missing=$line "
+	done < /etc/solidcore/kargs-orig_sc.bak
+
+	# Remove the trailing space
+	kargs_orig="${kargs_orig%" "}"
+
+	# Append all added parameters saved in kargs-orig_sc.bak
+	rpm-ostree kargs "$kargs_orig"
+	conf_msg "Original boot parameters restored"
+
+
 	# === RESTORE BACKUPS ===
 	
 	# Define an array of files to be restored

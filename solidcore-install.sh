@@ -352,31 +352,24 @@ boot_parameters=(
 case "$cpu_vendor" in
     GenuineIntel*) boot_parameters+=("intel_iommu=on") ;;
     AuthenticAMD*) boot_parameters+=("amd_iommu=on") ;;
-    *) echo "Notice: CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor" ;;
+    *) short_msg "${bold}[Notice]${normal} CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor" ;;
 esac
 
-# Construct the new GRUB_CMDLINE_LINUX_DEFAULT value
-new_cmdline="GRUB_CMDLINE_LINUX_DEFAULT=\"${boot_parameters[*]}\""
+# Backup existing kargs and keep new kargs for uninstall process
+rpm-ostree kargs > /etc/solidcore/kargs-orig_sc.bak
+printf "%s\n" "${boot_parameters[@]}" > /etc/solidcore/kargs-added_sc.bak
 
-# Update the /etc/default/grub file
-if grep -q "^GRUB_CMDLINE_LINUX_DEFAULT=" /etc/default/grub; then
-    # If the line already exists, replace it
-    sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|$new_cmdline|" /etc/default/grub
-else
-    # If the line doesn't exist, add it at the end of the file
-    echo "$new_cmdline" >> /etc/default/grub
-fi
+# Construct a single string with all the parameters
+param_string=""
+for param in "${boot_parameters[@]}"; do
+    param_string+="--append-if-missing=$param "
+done
 
-# Run update-grub to update GRUB configuration
-if [[ "$test_mode" == false ]]; then
-    if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null 2>&1 ; then
-        conf_msg "GRUB configuration updated"
-    else
-        short_msg "Notice: Failed to update GRUB configuration."
-    fi
-else
-    conf_msg "Testing. Skipped updating of GRUB configuration."
-fi
+# Remove the trailing space
+param_string="${param_string%" "}"
+
+# Append all boot parameters to the system configuration in one command
+rpm-ostree kargs $param_string
 
 
 # === BLACKLIST KERNEL MODULES === 
