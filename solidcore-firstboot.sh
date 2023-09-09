@@ -776,7 +776,7 @@ space_2
 
 # Ask user to plugin all used USB devices
 short_msg "${bold}USBGuard setup: plug in the USB devices you wish to use on this device.${normal}"
-read -n 1 -s -r -p "  Once you've plugged them in, press any key to continue."
+read -n 1 -s -r -p "  Once you've plugged them in, press any key to continue..."
         
 # Get USB device IDs and create whitelist rules
 sh -c 'usbguard generate-policy > /etc/usbguard/rules.conf'

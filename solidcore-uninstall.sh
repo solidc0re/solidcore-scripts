@@ -598,7 +598,7 @@ EOF
 	# === REBOOT ===
 	short_msg "${bold}Reboot required to implement all the changes.${normal}"
 	space_2
-	read -n 1 -s -r -p "Press any key to continue"
+	read -n 1 -s -r -p "Press any key to continue..."
 	# remove uninstall script
 	rm -rf /etc/solidcore/solidcore-uninstall.sh
     space_1

@@ -347,6 +347,8 @@ for key in "${!sysctl_settings[@]}"; do
     fi
 done
 conf_msg "Hardened sysctl settings applied"
+sleep 1
+short_msg "Changing the bootloader parameters. This may take several minutes..."
 
 # === BOOTLOADER SETTINGS ===
 
@@ -396,7 +398,7 @@ done
 param_string="${param_string%" "}"
 
 # Append all boot parameters to the system configuration in one command
-rpm-ostree kargs -q "$param_string"
+rpm-ostree kargs -q "$param_string" > /dev/null
 
 
 # === BLOCK KERNEL MODULES === 
@@ -569,7 +571,7 @@ WantedBy=sysinit.target
 EOF
 
 systemctl daemon-reload
-systemctl enable solidcore-remount.service
+systemctl enable solidcore-remount.service > /dev/null
 
 #conf_msg "hidepid enabled for /proc"
 
@@ -648,7 +650,7 @@ uncomment_and_modify "$faillock_file" "even_deny_root" "" # in case someone unlo
 conf_msg "Applied stronger password requirements"
 
 # Tighten access to console
-echo "-:ALL EXCEPT (wheel):LOCAL" | sudo tee -a /etc/security/access.conf > /dev/null
+echo "-:ALL EXCEPT (wheel):LOCAL" | tee -a /etc/security/access.conf > /dev/null
 
 conf_msg "Only non-remote 'wheel' group members can access the console"
 
@@ -1001,7 +1003,7 @@ if [[ "$test_mode" == false && "$server_mode" == false ]]; then
     short_msg "${bold}Reboot required.${normal}"
     sleep 2
     space_2
-    read -n 1 -s -r -p "Press any key to continue"
+    read -n 1 -s -r -p "Press any key to continue..."
     space_1
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
