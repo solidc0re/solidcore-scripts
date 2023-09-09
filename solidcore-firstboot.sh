@@ -323,7 +323,7 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
         space_1
         short_msg "Installing USBGaurd. This may take a while."
         echo
-        rpm-ostree install usbguard
+        rpm-ostree install -q usbguard
         script_path="/etc/solidcore/solidcore-secondboot.sh"
 
         # Write secondboot.sh script
@@ -983,7 +983,7 @@ fi
 EOF
 
 # Create the service file for dnscrypt-proxy update
-cat > /etc/systemd/system/dnscrypt-proxy-update.service <<EOL
+cat > /etc/systemd/system/dnscrypt-proxy-update.service << EOF
 [Unit]
 Description=Automatically update dnscrypt-proxy blocklist and application
 
@@ -991,10 +991,10 @@ Description=Automatically update dnscrypt-proxy blocklist and application
 Type=oneshot
 ExecStart=python3 ${INSTALL_DIR}/${download_file2} -c ${INSTALL_DIR}/domains-blocklist.conf -a ${INSTALL_DIR}/domains-allowlist.txt -r ${INSTALL_DIR}/${download_file3} -o ${INSTALL_DIR}/blocklist.txt.tmp && mv -f ${INSTALL_DIR}/blocklist.txt.tmp ${INSTALL_DIR}/blocklist.txt
 ExecStart=${INSTALL_DIR}/dnscrypt-proxy-update.sh
-EOL
+EOF
 
 # Create the timer file for dnscrypt-proxy update
-cat > /etc/systemd/system/dnscrypt-proxy-update.timer <<EOL
+cat > /etc/systemd/system/dnscrypt-proxy-update.timer << EOF
 [Unit]
 Description=Run dnscrypt-proxy updates 20 seconds after boot and every day thereafter
 
@@ -1006,7 +1006,7 @@ OnCalendar=*-*-* 00:00:00
 
 [Install]
 WantedBy=timers.target
-EOL
+EOF
 
 # Reload systemd configuration after creating the files
 systemctl daemon-reload

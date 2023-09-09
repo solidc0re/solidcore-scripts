@@ -342,13 +342,14 @@ boot_parameters=(
     "debugfs=off" # Disables debugfs to stop sensitive information being exposed
     #"lockdown=confidentiality" # Makes it harder to load malicious kernel modules; implies module.sig_enforce=1 so could break unsigned drivers (NVIDIA, etc.)
     "quiet loglevel=0" # Prevents information leaks on boot; must be used in conjuction with kernel.printk sysctl
-    #"ipv6.disable=1"
+    #"ipv6.disable=1" # Not disabling IPv6 in solidcore
     "random.trust_cpu=off" # Do not trust proprietary code on CPU for random number generation
-    "random.trust_bootloader=off"
+    "random.trust_bootloader=off" # Recommended by privsec.dev
     "efi=disable_early_pci_dma" # Fixes hole in IOMMU
     "mitigations=auto" # Ensures mitigations against known CPU vulnerabilities
-    "iommu.passthrough=0"
-    "iommu.strict=1"
+    "iommu.passthrough=0" # Recommended by privsec.dev
+    "iommu.strict=1" # Recommended by privsec.dev
+    "extra_latent_entropy" # Recommended by privsec.dev
 )
 
 # Add IOMMU parameter based on CPU vendor
@@ -372,7 +373,7 @@ done
 param_string="${param_string%" "}"
 
 # Append all boot parameters to the system configuration in one command
-rpm-ostree kargs $param_string
+rpm-ostree kargs -q $param_string
 
 
 # === BLACKLIST KERNEL MODULES === 
@@ -520,10 +521,32 @@ conf_msg "High risk and unnecessary services disabled"
 
 # === HIDEPID ===
 
-# Add line to /etc/fstab - don't think this works on immutable Fedora
-#fstab_line="proc /proc proc nosuid,nodev,noexec,hidepid=2 0 0"
-#echo "$fstab_line" | tee -a /etc/fstab > /dev/null
-#systemctl daemon-reload
+# Create service to remount /proc, /dev/shm and /tmp
+
+cat > /etc/systemd/system/solidcore-remount.service << EOF
+# Inspired by Kicksecure's proc-hidepid.service
+# https://raw.githubusercontent.com/Kicksecure/security-misc/master/lib/systemd/system/proc-hidepid.service
+
+[Unit]
+Description=Remounts existing /proc, /dev/shm and /tmp
+DefaultDependencies=no
+Before=sysinit.target
+Requires=local-fs.target
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/mount -o remount,hidepid=2 /proc
+ExecStart=/bin/mount -o remount,noexec /dev/shm
+ExecStart=/bin/mount -o remount,noexec /tmp
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target
+EOF
+
+systemctl daemon-reload
+systemctl enable solidcore-remount.service
 
 #conf_msg "hidepid enabled for /proc"
 
@@ -725,7 +748,7 @@ fi
 
 mkdir -p "$timer_dir"
 
-cat > "$override_file" <<EOL
+cat > "$override_file" << EOF
 [Unit]
 Description=Run rpm-ostree updates 10 minutes after boot and every 3 hours
 
@@ -736,7 +759,7 @@ OnCalendar=*-*-* *:0/3
 
 [Install]
 WantedBy=timers.target
-EOL
+EOF
 
 # Update AutomaticUpdatePolicy to automatically stage updates
 sed -i 's/^AutomaticUpdatePolicy=.*/AutomaticUpdatePolicy=stage/' /etc/rpm-ostreed.conf
@@ -783,7 +806,7 @@ conf_msg "Done"
 flatpak remote-modify --disable fedora
 
 # Create the service file for Flatpak update
-cat > /etc/systemd/system/flatpak-update.service <<EOL
+cat > /etc/systemd/system/flatpak-update.service << EOF
 [Unit]
 Description=Automatically update Flatpak applications
 
@@ -792,10 +815,10 @@ Type=oneshot
 ExecStart=/usr/bin/flatpak uninstall --unused -y --noninteractive && \
           /usr/bin/flatpak update -y --noninteractive && \
           /usr/bin/flatpak repair
-EOL
+EOF
 
 # Create the timer file for Flatpak update
-cat > /etc/systemd/system/flatpak-update.timer <<EOL
+cat > /etc/systemd/system/flatpak-update.timer << EOF
 [Unit]
 Description=Run Flatpak updates 20 minutes after boot and every 3 hours and 10 minute
 
@@ -807,7 +830,7 @@ OnCalendar=*-*-* *:10/3
 
 [Install]
 WantedBy=timers.target
-EOL
+EOF
 
 # Reload systemd configuration after creating the files
 systemctl daemon-reload
@@ -818,7 +841,7 @@ conf_msg "Automatic Flatpak update timer installed"
 # === MISC ===
 
 # Create a xdg autostart file to mute microphone on boot
-cat > /etc/xdg/autostart/solidcore-mute-mic.desktop <<EOF
+cat > /etc/xdg/autostart/solidcore-mute-mic.desktop << EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Mute Microphone on Boot
@@ -836,9 +859,9 @@ space_1
 
 # Minisign
 if [ "$test_mode" == true ]; then
-    rpm-ostree install minisign
+    rpm-ostree install -q minisign
 else
-    rpm-ostree install minisign > /dev/null 2>&1
+    rpm-ostree install -q minisign > /dev/null 2>&1
 fi
 conf_msg "Done"
 
