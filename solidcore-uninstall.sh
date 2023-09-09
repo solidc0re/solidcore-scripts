@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -19,6 +19,25 @@
 ## along with this program.  If not, see https://www.gnu.org/licenses/.
 
 # Uninstall script
+
+# Running order
+# - Display functions
+# - Flags
+# - Sudo check
+# - Inform user they are about to uninstall (y/n), if yes...
+# - Undo rpm-ostree kargs
+# - Restore backup files
+# - Unmask masked serviecs
+# - Delete install services
+# - Delete installed files and configurations
+# - Restore sysctl defaults
+# - Restore Fedora flatpaks
+# - Revert password policies
+# - Revert hostname
+# - Uninstall flatseal, minisign, USBGuard and dnscrypt-proxy
+# - Return Firewalld to previous default
+# - Create farewell and uninstall2 scripts to run on reboot (re-enables bluetooth, re-inserts removed modules [is this needed?], unblocks Thunderbolt domains and wireless devices, unmutes microphone)
+# - Reboot
 
 
 # === DISPLAY FUNCTIONS ===
@@ -67,9 +86,6 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
 conf_msg() {
     short_msg "$1"
     echo -ne " ${bold}${green}✓${normal}"
@@ -116,7 +132,7 @@ space_1
 while true; do
 read -rp "${bold}Question: Do you want to continue?${normal} (y/n): " uninstall_response
 case $uninstall_response in
-	[Yy] ) hostname_response="Y";
+	[Yy] ) uninstall_response="Y";
 		break;;
 	[Nn] )
         break;;
@@ -127,6 +143,35 @@ done
 space_2
 
 if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
+
+
+	# === RESTORE BOOT PARAMETERS ===
+	# Add all added parameters to kargs_added string
+	kargs_added=""
+	while IFS= read -r line; do
+    	kargs_added+="--delete-if-present=$line "
+	done < /etc/solidcore/kargs-added_sc.bak
+
+	# Remove the trailing space
+	kargs_added="${kargs_added%" "}"
+
+	# Remove all added parameters saved in kargs-added_sc.bak
+	rpm-ostree kargs -q "$kargs_added"
+	conf_msg "solidcore added boot parameters removed"
+
+	# Add all original parameters to kargs_orig string
+	kargs_orig=""
+	while IFS= read -r line; do
+    	kargs_orig+="--append-if-missing=$line "
+	done < /etc/solidcore/kargs-orig_sc.bak
+
+	# Remove the trailing space
+	kargs_orig="${kargs_orig%" "}"
+
+	# Append all added parameters saved in kargs-orig_sc.bak
+	rpm-ostree kargs -q "$kargs_orig"
+	conf_msg "Original boot parameters restored"
+
 
 	# === RESTORE BACKUPS ===
 	
@@ -229,8 +274,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 		"dnscrypt-proxy-update.timer"
 		"flatpak-update.service"
 		"flatpak-update.timer"
-		"solidcore-first-boot.service"
-		"solidcore-second-boot.service"
+		"solidcore-remount.service"
 	)
 	
 	# Loop through the array and stop and disable each service
@@ -249,9 +293,11 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	# === REMOVE SOLICORE CREATED SCRIPTS & CONFIGS ===
 
 	files_to_delete=(
-		"/etc/modprobe.d/solidcore-blacklist.conf"
+		"/etc/modprobe.d/solidcore-blocklist.conf"
 		"/etc/NetworkManager/conf.d/00-solidcore.conf"
 		"/etc/profile.d/solidcore_umask.sh"
+		"/etc/solidcore/kargs-orig_sc.bak"
+		"/etc/solidcore/kargs-added_sc.bak"
 		"/etc/solidcore/solidcore-firstboot.sh"
 		"/etc/solidcore/solidcore-secondboot.sh"
 		"/etc/solidcore/solidcore-welcome.sh"
@@ -270,7 +316,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	    # Delete file
 	    rm "$file"
 		systemctl daemon-reload
-	    conf_msg "Solidcore created file removed: $override_file"
+	    conf_msg "Solidcore created file removed: $file"
 		fi
 	done
 
@@ -320,7 +366,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	# Check if the file exists
 	if [ -f "/etc/solidcore/hostname_sc.bak" ]; then
     	# Read the hostname from backup
-    	saved_hostname=$(cat "$hostname_file")
+    	saved_hostname=$(cat "/etc/solidcore/hostname_sc.bak")
 	    # Revert hostname to original
     	hostnamectl hostname "$saved_hostname"
     	# Check if reverting hostname was successful
@@ -338,7 +384,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 
 	# === UNINSTALL APPS ===
 	flatpak remove flatseal > /dev/null 2>&1
-	rpm-ostree remove minisign usbguard > /dev/null 2>&1
+	rpm-ostree remove -q minisign usbguard > /dev/null 2>&1
 	rm -rf /usr/local/sbin/dnscrypt-proxy* > /dev/null 2>&1
 	conf_msg "DNSCrypt-Proxy, Flatseal, minisign & USBGuard (if installed) removed"
 	
@@ -353,7 +399,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 cat > /etc/solidcore/solidcore-farewell.sh << EOF
 #!/bin/bash
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -399,7 +445,7 @@ cat > /etc/solidcore/solidcore-uninstall2.sh << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -465,9 +511,6 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
 conf_msg() {
     short_msg "$1"
     echo -ne " ${bold}${green}✓${normal}"
@@ -514,7 +557,7 @@ done
 systemctl daemon-reload
 
 # Re-insert Firewire, USB & webcam modules
-insmod firewire_core ohcil394 sbp2 usbcore usb_storage uvcvideo
+insmod dv1394 firewire-core firewire_core firewire-ohci firewire_ohci firewire-sbp2 firewire_sbp2 ohci1394 sbp2 raw1394 video1394 usbcore usb_storage uvcvideo
 
 # Unblock Thunderbolt
 disabled_domains=$(boltctl list | awk '/authorized: no/ {print $1}')
@@ -547,7 +590,7 @@ sleep 2
 echo
 EOF
 
-    chmod +x "$script_path"
+    chmod +x /etc/solidcore/solidcore-uninstall2.sh
 
 	conf_msg "Set up next boot script to finish uninstall process"
 	
@@ -555,7 +598,7 @@ EOF
 	# === REBOOT ===
 	short_msg "${bold}Reboot required to implement all the changes.${normal}"
 	space_2
-	read -n 1 -s -r -p "Press any key to continue"
+	read -n 1 -s -r -p "Press any key to continue..."
 	# remove uninstall script
 	rm -rf /etc/solidcore/solidcore-uninstall.sh
     space_1

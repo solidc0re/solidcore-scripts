@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -19,6 +19,32 @@
 ## along with this program.  If not, see https://www.gnu.org/licenses/.
 
 # Install script
+
+# Running order
+# - Display functions
+# - Flags
+# - Initial checks (sudo, immutable variant)
+# - Welcome
+# - Define new sysctl settings
+# - Create backups and restore files
+# - Apply new sysctl settings
+# - Bootloader settings
+# - Block kernel modules
+# - Disable services
+# - Hidepid and add noexec to /tmp and /dev/shm
+# - Umask 0077
+# - Disable core dumps
+# - Improve password policies
+# - Lock root
+# - Firewalld zone to drop
+# - MAC randomization
+# - Update Chrony conf
+# - Install automatic update services (rpm-ostree, flatpak and replace Fedora flatpaks with Flathub)
+# - Mute microphone on boot
+# - Install minisign and flatseal
+# - Set up for first boot
+# - Install uninstall script
+# - Reboot
 
 
 # === DISPLAY FUNCTIONS ===
@@ -67,9 +93,6 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
 conf_msg() {
     short_msg "$1"
     echo -ne " ${bold}${green}✓${normal}"
@@ -210,7 +233,7 @@ fi
 if [[ "$solidcore_response" =~ ^[Yy]$ ]]; then
 long_msg ">
 >
->  Your system will reboot once the first round of hardening is completed.
+>  Your system need to reboot once the first round of hardening is completed.
 >  You will be presented with another script on first boot.
 >  Be sure to complete all the stages to finish the hardening process.
 >
@@ -218,6 +241,8 @@ long_msg ">
 >
 >"
 sleep 3
+clear
+space_2
 
 # === SYSCTL PARAMETERS ===
 
@@ -324,11 +349,10 @@ for key in "${!sysctl_settings[@]}"; do
     fi
 done
 conf_msg "Hardened sysctl settings applied"
+sleep 1
+short_msg "Changing the bootloader parameters. This may take several minutes..."
 
 # === BOOTLOADER SETTINGS ===
-
-# Check CPU vendor using lscpu
-cpu_vendor=$(lscpu | awk '/Vendor/ {print $3}')
 
 # Boot parameters to be added
 boot_parameters=(
@@ -340,56 +364,57 @@ boot_parameters=(
     "randomize_kstack_offset=on" # Randomises kernel stack offset on each syscall
     "vsyscall=none" # Disables obsolete vsyscalls
     "debugfs=off" # Disables debugfs to stop sensitive information being exposed
-    "lockdown=confidentiality" # Makes it harder to load malicious kernel modules; implies module.sig_enforce=1 so could break unsigned drivers (NVIDIA, etc.)
+    #"lockdown=confidentiality" # Makes it harder to load malicious kernel modules; implies module.sig_enforce=1 so could break unsigned drivers (NVIDIA, etc.)
     "quiet loglevel=0" # Prevents information leaks on boot; must be used in conjuction with kernel.printk sysctl
-    #"ipv6.disable=1"
+    #"ipv6.disable=1" # Not disabling IPv6 in solidcore
     "random.trust_cpu=off" # Do not trust proprietary code on CPU for random number generation
+    "random.trust_bootloader=off" # Recommended by privsec.dev
     "efi=disable_early_pci_dma" # Fixes hole in IOMMU
     "mitigations=auto" # Ensures mitigations against known CPU vulnerabilities
+    "iommu.passthrough=0" # Recommended by privsec.dev
+    "iommu.strict=1" # Recommended by privsec.dev
+    "extra_latent_entropy" # Recommended by privsec.dev
 )
+
+# Check CPU vendor using lscpu
+cpu_vendor=$(lscpu | awk '/Vendor/ {print $3}')
 
 # Add IOMMU parameter based on CPU vendor
 case "$cpu_vendor" in
     GenuineIntel*) boot_parameters+=("intel_iommu=on") ;;
     AuthenticAMD*) boot_parameters+=("amd_iommu=on") ;;
-    *) echo "Notice: CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor" ;;
+    *) short_msg "${bold}[Notice]${normal} CPU vendor doesn't match GenuineIntel or AuthenticAMD. CPU Vendor currently recorded as: $cpu_vendor" ;;
 esac
 
-# Construct the new GRUB_CMDLINE_LINUX_DEFAULT value
-new_cmdline="GRUB_CMDLINE_LINUX_DEFAULT=\"${boot_parameters[*]}\""
+# Backup existing kargs and keep new kargs for uninstall process
+rpm-ostree kargs > /etc/solidcore/kargs-orig_sc.bak
+printf "%s\n" "${boot_parameters[@]}" > /etc/solidcore/kargs-added_sc.bak
 
-# Update the /etc/default/grub file
-if grep -q "^GRUB_CMDLINE_LINUX_DEFAULT=" /etc/default/grub; then
-    # If the line already exists, replace it
-    sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|$new_cmdline|" /etc/default/grub
-else
-    # If the line doesn't exist, add it at the end of the file
-    echo "$new_cmdline" >> /etc/default/grub
-fi
+# Construct a single string with all the parameters
+param_string=""
+for param in "${boot_parameters[@]}"; do
+    param_string+="--append-if-missing=$param "
+done
 
-# Run update-grub to update GRUB configuration
-if [[ "$test_mode" == false ]]; then
-    if grub2-mkconfig -o /boot/grub2/grub.cfg > /dev/null 2>&1 ; then
-        conf_msg "GRUB configuration updated"
-    else
-        short_msg "Notice: Failed to update GRUB configuration."
-    fi
-else
-    conf_msg "Testing. Skipped updating of GRUB configuration."
-fi
+# Remove the trailing space
+param_string="${param_string%" "}"
+
+# Append all boot parameters to the system configuration in one command
+rpm-ostree kargs -q "$param_string" > /dev/null
 
 
-# === BLACKLIST KERNEL MODULES === 
+# === BLOCK KERNEL MODULES === 
 
-blacklist_file="/etc/modprobe.d/solidcore-blacklist.conf"
+block_file="/etc/modprobe.d/solidcore-blocklist.conf"
 
-# List of module names to be blacklisted
-modules_to_blacklist=(    
+# List of module names to be blocked
+modules_to_block=(    
     "af_802154"
     "appletalk" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "atm" # Already backlisted in Fedora, adding install <module> /bin/true to block re-loading
     "ax25" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "can"
+    "cdrom"
     "cifs"
     "cramfs"
     "decnet"
@@ -402,17 +427,21 @@ modules_to_blacklist=(
     "ipx"
     "jffs2"
     "ksmbd"
+    "mei" # Intel Management Engine
+    "mei-me" # Intel Management Engine
+    "msr"
     "n-hdlc"
     "netrom" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "nfs"
     "nfsv3"
     "nfsv4"
-    "nfs"
     "p8022"
     "p8023"
     "psnap"
     "rds" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "rose" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
     "sctp" # Already blacklisted in Fedora, adding install <module> /bin/true to block re-loading
+    "sr_mod"
     "squashfs"
     "tipc"
     "udf"
@@ -421,12 +450,65 @@ modules_to_blacklist=(
 )
 
 # Add module names to the blacklist configuration file
-echo "# Blacklisted kernel modules to prevent loading. Created by solidcore script." | tee "$blacklist_file" > /dev/null
-for module in "${modules_to_blacklist[@]}"; do
-    echo "install $module /bin/true" | tee -a "$blacklist_file" > /dev/null
+echo "# Blocked kernel modules to prevent loading. Created by solidcore script." | tee "$block_file" > /dev/null
+for module in "${modules_to_block[@]}"; do
+    echo "install $module /bin/true" | tee -a "$block_file" > /dev/null
 done
 
-conf_msg "Kernel modules blacklisted"
+# Additional modules to blacklist, thanks to Kicksecure & Ubuntu
+modules_to_blacklist=(
+    "amd76x_edac"
+    "asus_acpi"
+    "ath_pci"
+    "aty128fb"
+    "atyfb"
+    "bcm43xx"
+    "cirrusfb"
+    "cyber2000fb"
+    "cyblafb"
+    "de4x5"
+    "eepro100"
+    "eth1394"
+    "evbug"
+    "garmin_gps"
+    "gx1fb"
+    "hgafb"
+    "i810fb"
+    "intelfb"
+    "kyrofb"
+    "lxfb"
+    "matroxfb_bases"
+    "neofb"
+    "nvidiafb"
+    "pcspkr"
+    "pm2fb"
+    "prism54"
+    "radeonfb"
+    "rivafb"
+    "s1d13xxxfb"
+    "savagefb"
+    "sisfb"
+    "snd_aw2"
+    "snd_intel8x0m"
+    "snd_pcsp"
+    "sstfb"
+    "tdfxfb"
+    "tridentfb"
+    "udlfb"
+    "usbkbd"
+    "usbmouse"
+    "vesafb"
+    "vfb"
+    "viafb"
+    "vt8623fb"
+)
+
+# Add module names to the blacklist configuration file
+for module in "${modules_to_blacklist[@]}"; do
+    echo "blacklist $module" | tee -a "$block_file" > /dev/null
+done
+
+conf_msg "Unsafe and legacy kernel modules blocked"
 
 
 # === DISABLE SERVICES ===
@@ -466,12 +548,34 @@ conf_msg "High risk and unnecessary services disabled"
 
 # === HIDEPID ===
 
-# Add line to /etc/fstab - don't think this works on immutable Fedora
-#fstab_line="proc /proc proc nosuid,nodev,noexec,hidepid=2 0 0"
-#echo "$fstab_line" | tee -a /etc/fstab > /dev/null
-#systemctl daemon-reload
+# Create service to remount /proc, /dev/shm and /tmp
 
-#conf_msg "hidepid enabled for /proc"
+cat > /etc/systemd/system/solidcore-remount.service << EOF
+# Inspired by Kicksecure's proc-hidepid.service
+# https://raw.githubusercontent.com/Kicksecure/security-misc/master/lib/systemd/system/proc-hidepid.service
+
+[Unit]
+Description=Remounts existing /proc, /dev/shm and /tmp
+DefaultDependencies=no
+Before=sysinit.target
+Requires=local-fs.target
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/mount -o remount,hidepid=2 /proc
+ExecStart=/bin/mount -o remount,noexec /dev/shm
+ExecStart=/bin/mount -o remount,noexec /tmp
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target
+EOF
+
+systemctl daemon-reload
+systemctl enable solidcore-remount.service > /dev/null 2>&1
+
+conf_msg "hidepid enabled for /proc"
 
 
 # === FILE PERMISSIONS ===
@@ -548,7 +652,7 @@ uncomment_and_modify "$faillock_file" "even_deny_root" "" # in case someone unlo
 conf_msg "Applied stronger password requirements"
 
 # Tighten access to console
-echo "-:ALL EXCEPT (wheel):LOCAL" | sudo tee -a /etc/security/access.conf > /dev/null
+echo "-:ALL EXCEPT (wheel):LOCAL" | tee -a /etc/security/access.conf > /dev/null
 
 conf_msg "Only non-remote 'wheel' group members can access the console"
 
@@ -671,7 +775,7 @@ fi
 
 mkdir -p "$timer_dir"
 
-cat > "$override_file" <<EOL
+cat > "$override_file" << EOF
 [Unit]
 Description=Run rpm-ostree updates 10 minutes after boot and every 3 hours
 
@@ -682,7 +786,7 @@ OnCalendar=*-*-* *:0/3
 
 [Install]
 WantedBy=timers.target
-EOL
+EOF
 
 # Update AutomaticUpdatePolicy to automatically stage updates
 sed -i 's/^AutomaticUpdatePolicy=.*/AutomaticUpdatePolicy=stage/' /etc/rpm-ostreed.conf
@@ -729,7 +833,7 @@ conf_msg "Done"
 flatpak remote-modify --disable fedora
 
 # Create the service file for Flatpak update
-cat > /etc/systemd/system/flatpak-update.service <<EOL
+cat > /etc/systemd/system/flatpak-update.service << EOF
 [Unit]
 Description=Automatically update Flatpak applications
 
@@ -738,10 +842,10 @@ Type=oneshot
 ExecStart=/usr/bin/flatpak uninstall --unused -y --noninteractive && \
           /usr/bin/flatpak update -y --noninteractive && \
           /usr/bin/flatpak repair
-EOL
+EOF
 
 # Create the timer file for Flatpak update
-cat > /etc/systemd/system/flatpak-update.timer <<EOL
+cat > /etc/systemd/system/flatpak-update.timer << EOF
 [Unit]
 Description=Run Flatpak updates 20 minutes after boot and every 3 hours and 10 minute
 
@@ -753,7 +857,7 @@ OnCalendar=*-*-* *:10/3
 
 [Install]
 WantedBy=timers.target
-EOL
+EOF
 
 # Reload systemd configuration after creating the files
 systemctl daemon-reload
@@ -764,11 +868,11 @@ conf_msg "Automatic Flatpak update timer installed"
 # === MISC ===
 
 # Create a xdg autostart file to mute microphone on boot
-cat > /etc/xdg/autostart/solidcore-mute-mic.desktop <<EOF
+cat > /etc/xdg/autostart/solidcore-mute-mic.desktop << EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Mute Microphone on Boot
-Exec=amixer set Capture nocap
+Exec=/usr/bin/amixer set Capture nocap
 Icon=utilities-terminal
 EOF
 
@@ -782,9 +886,9 @@ space_1
 
 # Minisign
 if [ "$test_mode" == true ]; then
-    rpm-ostree install minisign
+    rpm-ostree install -q minisign
 else
-    rpm-ostree install minisign > /dev/null 2>&1
+    rpm-ostree install -q minisign > /dev/null 2>&1
 fi
 conf_msg "Done"
 
@@ -820,7 +924,7 @@ mv -f "solidcore-firstboot.sh" "/etc/solidcore/"
 cat > /etc/solidcore/solidcore-welcome.sh << EOF
 #!/bin/bash
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -856,7 +960,7 @@ cat > /etc/xdg/autostart/solidcore-welcome.desktop << EOF
 [Desktop Entry]
 Type=Application
 Name=Solidcore Script to Run on First Boot
-Exec=/etc/solidcore/solidcore-welcome.sh
+Exec=bash /etc/solidcore/solidcore-welcome.sh
 Terminal=true
 Icon=utilities-terminal
 EOF
@@ -901,7 +1005,7 @@ if [[ "$test_mode" == false && "$server_mode" == false ]]; then
     short_msg "${bold}Reboot required.${normal}"
     sleep 2
     space_2
-    read -n 1 -s -r -p "Press any key to continue"
+    read -n 1 -s -r -p "Press any key to continue..."
     space_1
         for i in {5..1}; do
             if [ "$i" -eq 1 ]; then
