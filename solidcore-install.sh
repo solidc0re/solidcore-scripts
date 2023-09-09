@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.2
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -93,9 +93,6 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
 conf_msg() {
     short_msg "$1"
     echo -ne " ${bold}${green}✓${normal}"
@@ -399,7 +396,7 @@ done
 param_string="${param_string%" "}"
 
 # Append all boot parameters to the system configuration in one command
-rpm-ostree kargs -q $param_string
+rpm-ostree kargs -q "$param_string"
 
 
 # === BLOCK KERNEL MODULES === 
@@ -923,7 +920,7 @@ mv -f "solidcore-firstboot.sh" "/etc/solidcore/"
 cat > /etc/solidcore/solidcore-welcome.sh << EOF
 #!/bin/bash
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.2
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##

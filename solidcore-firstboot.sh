@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.2
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -27,16 +27,17 @@
 # - Welcome
 # - Sudo check
 # - Set new password and expire all other users' passwords
-# - Change hostname
 # - Add GRUB password
+# - Change hostname
+# - User input for ports/devices/wireless
+# - Hardware token selection (if yes to hardware tokens)
 # - CUPS
-# - USB (if yes to USB, install USBGuard and second boot script)
-# - Hardware keys
 # - Webcam
-# - Wifi
 # - Bluetooth
+# - Wifi
 # - Firewire
 # - Thunderbolt
+# - USB (if yes to USB, install USBGuard and second boot script)
 # - Install DNSCrypt-Proxy, build blocklist and install update script & service
 # - Update Machine ID
 # - Start update timers
@@ -90,9 +91,6 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
 conf_msg() {
     short_msg "$1"
     echo -ne " ${bold}${green}✓${normal}"
@@ -200,9 +198,9 @@ conf_msg "Password updated"
 # Expire passwords of all other users
 short_msg "Expiring all user passwords except for user..."
 
-
 # Count the number of non-root users on the system
 num_users=$(getent passwd | grep -v '/bin/false' | grep -v '/sbin/nologin' | wc -l)
+current_user=$(whoami)
 
 # Check if there are other users besides the current user and root
 if [ "$num_users" -gt 2 ]; then
@@ -223,35 +221,6 @@ fi
 space_2
 space_1
 
-# === HOSTNAME ===
-
-# Ask the user if they want to set a new generic hostname
-while true; do
-read -rp "${bold}Question: Do you want to set a generic hostname [recommended]?${normal}`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
-case $hostname_response in 
-	[Yy] ) hostname_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-space_2
-
-if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
-    # Create backup
-    echo hostnamectl hostname > /etc/solidcore/hostname_sc.bak
-    # Prompt user for a new hostname
-    read -r -p "Enter new hostname: " new_hostname
-    # Update hostname
-    hostnamectl hostname "$new_hostname" 
-    conf_msg "Hostname is now $new_hostname"
-else
-    short_msg "Skipping..."
-fi
-space_2
-space_1
 
 # === GRUB ===
 
@@ -292,13 +261,13 @@ space_2
 space_1
 
 
-# === CUPS ===
+# === HOSTNAME ===
 
-# Enable or disable CUPS based on user response
+# Ask the user if they want to set a new generic hostname
 while true; do
-read -rp "${bold}Question: Do you use a printer?${normal} (y/n): " printer_response
-case $printer_response in 
-	[Yy] ) printer_response="Y";
+read -rp "${bold}Question: Do you want to set a generic hostname [recommended]?${normal}`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
+case $hostname_response in 
+	[Yy] ) hostname_response="Y";
 		break;;
 	[Nn] )
         break;;
@@ -306,6 +275,277 @@ case $printer_response in
         echo ">";
 esac
 done
+space_2
+
+if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
+    # Create backup
+    echo hostnamectl hostname > /etc/solidcore/hostname_sc.bak
+    # Prompt user for a new hostname
+    read -r -p "Enter new hostname: " new_hostname
+    # Update hostname
+    hostnamectl hostname "$new_hostname" 
+    conf_msg "Hostname is now $new_hostname"
+else
+    short_msg "Skipping..."
+fi
+space_2
+sleep 1
+
+
+# === USER INPUT FOR PORTS/DEVICES/WIRELESS ===
+
+# Thanks to stackoverflow for the multiselect function
+# https://stackoverflow.com/questions/45382472/bash-select-multiple-answers-at-once
+
+function prompt_for_multiselect {
+
+    # little helpers for terminal print control and key input
+    ESC=$( printf "\033")
+    cursor_blink_on()   { printf "$ESC[?25h"; }
+    cursor_blink_off()  { printf "$ESC[?25l"; }
+    cursor_to()         { printf "$ESC[$1;${2:-1}H"; }
+    print_inactive()    { printf "$2   $1 "; }
+    print_active()      { printf "$2  $ESC[7m $1 $ESC[27m"; }
+    get_cursor_row()    { IFS=';' read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[}; }
+    key_input()         {
+      local key
+      IFS= read -rsn1 key 2>/dev/null >&2
+      if [[ $key = ""      ]]; then echo enter; fi;
+      if [[ $key = $'\x20' ]]; then echo space; fi;
+      if [[ $key = $'\x1b' ]]; then
+        read -rsn2 key
+        if [[ $key = [A ]]; then echo up;    fi;
+        if [[ $key = [B ]]; then echo down;  fi;
+      fi 
+    }
+    toggle_option()    {
+      local arr_name=$1
+      eval "local arr=(\"\${${arr_name}[@]}\")"
+      local option=$2
+      if [[ ${arr[option]} == true ]]; then
+        arr[option]=
+      else
+        arr[option]=true
+      fi
+      eval $arr_name='("${arr[@]}")'
+    }
+
+    local retval=$1
+    local options
+    local defaults
+
+    IFS=';' read -r -a options <<< "$2"
+    if [[ -z $3 ]]; then
+      defaults=()
+    else
+      IFS=';' read -r -a defaults <<< "$3"
+    fi
+    local selected=()
+
+    for ((i=0; i<${#options[@]}; i++)); do
+      selected+=("${defaults[i]}")
+      printf "\n"
+    done
+
+    # determine current screen position for overwriting the options
+    local lastrow=`get_cursor_row`
+    local startrow=$(($lastrow - ${#options[@]}))
+
+    # ensure cursor and input echoing back on upon a ctrl+c during read -s
+    trap "cursor_blink_on; stty echo; printf '\n'; exit" 2
+    cursor_blink_off
+
+    local active=0
+    while true; do
+        # print options by overwriting the last lines
+        local idx=0
+        for option in "${options[@]}"; do
+            local prefix="[ ]"
+            if [[ ${selected[idx]} == true ]]; then
+              prefix="[x]"
+            fi
+
+            cursor_to $(($startrow + $idx))
+            if [ $idx -eq $active ]; then
+                print_active "$option" "$prefix"
+            else
+                print_inactive "$option" "$prefix"
+            fi
+            ((idx++))
+        done
+
+        # user key control
+        case `key_input` in
+            space)  toggle_option selected $active;;
+            enter)  break;;
+            up)     ((active--));
+                    if [ $active -lt 0 ]; then active=$((${#options[@]} - 1)); fi;;
+            down)   ((active++));
+                    if [ $active -ge ${#options[@]} ]; then active=0; fi;;
+        esac
+    done
+
+    # cursor position back to normal
+    cursor_to $lastrow
+    printf "\n"
+    cursor_blink_on
+
+    eval $retval='("${selected[@]}")'
+}
+
+# Initialize variables
+printer_response="N"
+webcam_response="N"
+bluetooth_response="N"
+wifi_response="N"
+firewire_response="N"
+thunderbolt_response="N"
+usb_response="N"
+
+# Define the options for the menu
+options_1=("Printer" "Webcam (non-USB)")
+options_2=("Bluetooth" "Wi-Fi")
+options_3=("FireWire" "Thunderbolt" "USB")
+
+# Define the defaults (which options are initially selected)
+defaults_1=("N" "N")
+defaults_2=("N" "N")
+defaults_3=("N" "N" "N")
+
+# User interaction
+clear
+space_2
+short_msg "You will now be given a series of questions to select what devices, wireless connections and ports you use on your device."
+sleep 1
+space_1
+short_msg "Use the up and down arrows to cycle through the options, and use the space bar to select and de-select your choices."
+space_1
+short_msg "Once you have selected your choices you can press enter to continue to the next question."
+space_1
+Short_msg "Let's begin..."
+sleep 2
+space_1
+short_msg "${bold}[1 of 3] Do you use any of the following devices?${normal}"
+
+echo
+prompt_for_multiselect user_input "$(IFS=';'; echo "${options_1[]}")" "$(IFS=';'; echo "${defaults_1[]}")"
+
+for i in "${!user_input[@]}"; do
+    case $i in
+        0) [ "${user_input[i]}" == "true" ] && printer_response="Y" || printer_response="N" ;;
+        1) [ "${user_input[i]}" == "true" ] && webcam_response="Y" || webcam_response="N" ;;
+    esac
+done
+echo
+
+short_msg "${bold}[2 of 3] Do you use any of the following wireless connections on this device?${normal}"
+
+echo
+prompt_for_multiselect user_input "$(IFS=';'; echo "${options_2[]}")" "$(IFS=';'; echo "${defaults_2[]}")"
+
+for i in "${!user_input[@]}"; do
+    case $i in
+        0) [ "${user_input[i]}" == "true" ] && bluetooth_response="Y" || bluetooth_response="N" ;;
+        1) [ "${user_input[i]}" == "true" ] && wifi_response="Y" || wifi_response="N" ;;
+    esac
+done
+echo
+
+short_msg "${bold}[3 of 3] Which of the following ports do you use on this device?${normal}"
+
+echo
+prompt_for_multiselect user_input "$(IFS=';'; echo "${options_3[]}")" "$(IFS=';'; echo "${defaults_3[]}")"
+
+for i in "${!user_input[@]}"; do
+    case $i in
+        0) [ "${user_input[i]}" == "true" ] && firewire_response="Y" || firewire_response="N" ;;
+        1) [ "${user_input[i]}" == "true" ] && thunderbolt_response="Y" || thunderbolt_response="N" ;;
+        2) [ "${user_input[i]}" == "true" ] && usb_response="Y" || usb_response="N" ;;
+    esac
+done
+echo
+
+while true; do
+    
+    read -rp "${bold}Question: Do you use any hardware security keys?${normal} (y/n): " token_response
+    
+    case $token_response in 
+	[Yy] ) token_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo ">";
+    esac
+done
+
+if [[ "$token_response" =~ ^[Yy]$ ]]; then
+    # User prompt for security key type
+    PS3="Select your security key type: "
+    options=("Google Titan Security Key" "Yubico's YubiKey" "Nitrokey" "OnlyKey" "Other")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Google Titan Security Key")
+                # Define the rule content
+                RULE_CONTENT='KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="18d1|096e", ATTRS{idProduct}=="5026|0858|085b", TAG+="uaccess"'
+
+                # Create the udev rules file and add the rule content
+                echo "$RULE_CONTENT" | tee /etc/udev/rules.d/70-titan-key.rules > /dev/null
+                udevadm control --reload-rules && udevadm trigger
+                space_1
+                conf_msg "Google Titan Security Key udev rules installed"
+                break
+                ;;
+            "Yubico's YubiKey")
+                # Download and move YubiKey udev rules
+                wget https://github.com/Yubico/libfido2/raw/main/udev/70-u2f.rules
+                mv 70-u2f.rules /etc/udev/rules.d/
+                udevadm control --reload-rules && udevadm trigger
+                space_1
+                conf_msg "Yubico's YubiKey udev rules installed"
+                break
+                ;;
+            "Nitrokey")
+                # Download and move Nitrokey udev rules
+                wget https://raw.githubusercontent.com/Nitrokey/libnitrokey/master/data/41-nitrokey.rules
+                mv 41-nitrokey.rules /etc/udev/rules.d/
+                udevadm control --reload-rules && udevadm trigger
+                space_1
+                conf_msg "Nitrokey udev rules installed"
+                break
+                ;;
+            "OnlyKey")
+                # Download and move OnlyKey udev rules
+                wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/pages/49-onlykey.rules
+                mv 49-onlykey.rules /etc/udev/rules.d/
+                udevadm control --reload-rules && udevadm trigger
+                space_1
+                conf_msg "OnlyKey udev rules installed"
+                break
+                ;;
+            "Other")
+                space_1
+                short_msg "Other hardware tokens are not currently supported by this script."
+                short_msg "Please check with your hardware security key supplier for instructions on how to implement the required udev rules."
+                sleep 3
+                break
+                ;;
+             *) echo "Invalid option";;
+        esac
+    done
+fi
+
+
+# === ACTION CHOICES ===
+
+clear
+space_2
+short_msg "Thank you for your responses."
+sleep 1
+space_1
+
+# === CUPS ===
 
 if [[ "$printer_response" =~ ^[Yy]$ ]]; then
     # User confirmed using a printer
@@ -319,23 +559,107 @@ else
     space_1
     conf_msg "Printer service (CUPS) has been stopped and disabled"
 fi
-space_2
-space_1
+
+
+# === WEBCAM ===
+
+# Enable or disable the webcam based on user response
+if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
+    space_1
+    conf_msg "Webcam remains enabled"
+else
+    rmmod uvcvideo > /dev/null 2>&1
+    echo "install uvcvideo /bin/true" | tee -a "$block_file" > /dev/null
+    space_1
+    conf_msg "Webcam has been disabled and added to the kernel module blacklist"
+fi
+
+
+# === BLUETOOTH ===
+
+# Enable or disable Bluetooth based on user response
+if [[ "$bluetooth_response" =~ ^[Yy]$ ]]; then
+    rfkill unblock bluetooth
+    space_1
+    conf_msg "Bluetooth has been re-enabled"
+else
+    systemctl stop bluetooth.service
+    systemctl disable bluetooth.service > /dev/null 2>&1
+    systemctl --now mask bluetooth.service > /dev/null 2>&1
+    systemctl daemon-reload
+    echo "install bluetooth /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install btusb /bin/true" | tee -a "$block_file" > /dev/null
+    space_1
+    conf_msg "Bluetooth has been disabled and added to the kernel module blacklist"
+fi
+
+
+# === WIFI ===
+
+# Enable or disable Wi-Fi based on user response
+
+if [[ "$wifi_response" =~ ^[Yy]$ ]]; then
+    rfkill block all
+    sleep 1
+    rfkill unblock wifi
+    space_1
+    conf_msg "All wireless devices, except Wi-Fi have been disabled"
+else
+    rfkill block all
+    space_1
+    conf_msg "All wireless devices have been disabled"
+fi
+
+
+# === FIREWIRE ===
+
+# Enable or disable Firewire based on user response
+if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
+    space_1
+    conf_msg "Firewire remains enabled"
+else
+    rmmod dv1394 firewire-core firewire_core firewire-ohci firewire_ohci firewire-sbp2 firewire_sbp2 ohci1394 sbp2 raw1394 video1394 > /dev/null 2>&1
+    echo "install dv1394 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire-core /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire_core /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire-ohci /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire_ohci /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire-sbp2 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire_sbp2 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire-core /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install ohci1394 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install sbp2 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install raw1394 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install video1394 /bin/true" | tee -a "$block_file" > /dev/null
+    space_1
+    conf_msg "Firewire has been disabled and added to the kernel module blacklist"
+fi
+
+
+# === THUNDERBOLT ===
+
+# Enable or disable thunderbolt based on user response
+
+if [[ "$thunderbolt_response" =~ ^[Yy]$ ]]; then
+    space_1
+    conf_msg "Thunderbolt remains enabled"
+    
+else
+    # Get a list of active Thunderbolt domains
+    active_domains=$(boltctl list | awk '/connected/ {print $1}')
+
+    # Disable each active domain
+    for domain in $active_domains; do
+        short_msg "Disabling Thunderbolt domain: $domain"
+        boltctl disable "$domain"
+    done
+    echo "install thunderbolt /bin/true" | tee -a "$block_file" > /dev/null
+    space_1
+    conf_msg "Thunderbolt has been disabled and added to the kernel module blacklist"
+fi
+
 
 # === USB ===
-
-# Install USBGuard or disable USB based on user response
-while true; do
-read -rp "${bold}Question: Do you use any USB devices?${normal} (y/n): " usb_response
-case $usb_response in 
-	[Yy] ) usb_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
 
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     if rpm -q usbguard > /dev/null 2>&1; then
@@ -354,7 +678,7 @@ cat > "$script_path" << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.2
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -420,9 +744,6 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
 conf_msg() {
     short_msg "$1"
     echo -ne " ${bold}${green}✓${normal}"
@@ -454,7 +775,7 @@ space_2
 # === USBGUARD ===
 
 # Ask user to plugin all used USB devices
-short_msg "${bold}USBGuard setup: plugin the USB devices you wish to whitelist.${normal}"
+short_msg "${bold}USBGuard setup: plug in the USB devices you wish to use on this device.${normal}"
 read -n 1 -s -r -p "  Once you've plugged them in, press any key to continue."
         
 # Get USB device IDs and create whitelist rules
@@ -504,77 +825,6 @@ EOF
         space_1
     fi
     
-    while true; do
-    
-    read -rp "${bold}Question: Do you use any hardware security keys?${normal} (y/n): " token_response
-    
-    case $token_response in 
-	[Yy] ) token_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-    esac
-    done
-
-    if [[ "$token_response" =~ ^[Yy]$ ]]; then
-        # User prompt for security key type
-        PS3="Select your security key type: "
-        options=("Google Titan Security Key" "Yubico's YubiKey" "Nitrokey" "OnlyKey" "Other")
-        select opt in "${options[@]}"
-        do
-            case $opt in
-                "Google Titan Security Key")
-                    # Define the rule content
-                    RULE_CONTENT='KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="18d1|096e", ATTRS{idProduct}=="5026|0858|085b", TAG+="uaccess"'
-
-                    # Create the udev rules file and add the rule content
-                    echo "$RULE_CONTENT" | tee /etc/udev/rules.d/70-titan-key.rules > /dev/null
-                    udevadm control --reload-rules && udevadm trigger
-                    space_1
-                    conf_msg "Google Titan Security Key udev rules installed"
-                    break
-                    ;;
-                "Yubico's YubiKey")
-                    # Download and move YubiKey udev rules
-                    wget https://github.com/Yubico/libfido2/raw/main/udev/70-u2f.rules
-                    mv 70-u2f.rules /etc/udev/rules.d/
-                    udevadm control --reload-rules && udevadm trigger
-                    space_1
-                    conf_msg "Yubico's YubiKey udev rules installed"
-                    break
-                    ;;
-                "Nitrokey")
-                    # Download and move Nitrokey udev rules
-                    wget https://raw.githubusercontent.com/Nitrokey/libnitrokey/master/data/41-nitrokey.rules
-                    mv 41-nitrokey.rules /etc/udev/rules.d/
-                    udevadm control --reload-rules && udevadm trigger
-                    space_1
-                    conf_msg "Nitrokey udev rules installed"
-                    break
-                    ;;
-                "OnlyKey")
-                    # Download and move OnlyKey udev rules
-                    wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/pages/49-onlykey.rules
-                    mv 49-onlykey.rules /etc/udev/rules.d/
-                    udevadm control --reload-rules && udevadm trigger
-                    space_1
-                    conf_msg "OnlyKey udev rules installed"
-                    break
-                    ;;
-                "Other")
-                    space_1
-                    short_msg "Other hardware tokens are not currently supported by this script."
-                    short_msg "Please check with your hardware security key supplier for instructions on how to implement the required udev rules."
-                    sleep 3
-                    break
-                    ;;
-                *) echo "Invalid option";;
-            esac
-        done
-    fi
-
 else
     rmmod usbcore usb_storage > /dev/null 2>&1
     echo "install usb_storage /bin/true" | tee -a "$block_file" > /dev/null
@@ -583,193 +833,6 @@ else
     conf_msg "USB has been disabled and added to the kernel module blacklist"
 fi
 
-space_2
-space_1
-
-# === WEBCAM ===
-
-# Enable or disable the webcam based on user response
-
-while true; do
-
-read -rp "${bold}Question: If you have a non-USB connect webcam, such as an in-built one in a laptop, do you use it?${normal} (y/n): " webcam_response
-
-case $webcam_response in 
-	[Yy] ) webcam_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-
-if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
-    space_1
-    conf_msg "Webcam remains enabled"
-else
-    rmmod uvcvideo > /dev/null 2>&1
-    echo "install uvcvideo /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
-    conf_msg "Webcam has been disabled and added to the kernel module blacklist"
-fi
-
-space_2
-space_1
-
-
-# === WIFI ===
-
-# Enable or disable Wi-Fi based on user response
-
-while true; do
-
-read -rp "${bold}Question: Do you use Wi-Fi?${normal} (y/n): " wifi_response
-
-case $wifi_response in 
-	[Yy] ) wifi_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-
-if [[ "$wifi_response" =~ ^[Yy]$ ]]; then
-    rfkill block all
-    sleep 1
-    rfkill unblock wifi
-    space_1
-    conf_msg "All wireless devices, except Wi-Fi have been disabled"
-else
-    rfkill block all
-    space_1
-    conf_msg "All wireless devices have been disabled"
-fi
-
-space_2
-space_1
-
-
-# === BLUETOOTH ===
-
-# Enable or disable Bluetooth based on user response
-
-while true; do
-
-read -rp "${bold}Question: Do you use any Bluetooth connected devices?${normal} (y/n): " bluetooth_response
-
-case $bluetooth_response in 
-	[Yy] ) bluetooth_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-
-if [[ "$bluetooth_response" =~ ^[Yy]$ ]]; then
-    rfkill unblock bluetooth
-    space_1
-    conf_msg "Bluetooth has been re-enabled"
-else
-    systemctl stop bluetooth.service
-    systemctl disable bluetooth.service > /dev/null 2>&1
-    systemctl --now mask bluetooth.service > /dev/null 2>&1
-    systemctl daemon-reload
-    echo "install bluetooth /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install btusb /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
-    conf_msg "Bluetooth has been disabled and added to the kernel module blacklist"
-fi
-
-space_2
-space_1
-
-
-# === FIREWIRE ===
-
-# Enable or disable Firewire based on user response
-
-while true; do
-
-read -rp "${bold}Question: Do you use any Firewire connected devices?${normal} (y/n): " firewire_response
-
-case $firewire_response in 
-	[Yy] ) firewire_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-
-if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
-    space_1
-    conf_msg "Firewire remains enabled"
-else
-    rmmod dv1394 firewire-core firewire_core firewire-ohci firewire_ohci firewire-sbp2 firewire_sbp2 ohci1394 sbp2 raw1394 video1394 > /dev/null 2>&1
-    echo "install dv1394 /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install firewire-core /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install firewire_core /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install firewire-ohci /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install firewire_ohci /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install firewire-sbp2 /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install firewire_sbp2 /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install firewire-core /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install ohci1394 /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install sbp2 /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install raw1394 /bin/true" | tee -a "$block_file" > /dev/null
-    echo "install video1394 /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
-    conf_msg "Firewire has been disabled and added to the kernel module blacklist"
-fi
-
-space_2
-space_1
-
-
-# === THUNDERBOLT ===
-
-# Enable or disable thunderbolt based on user response
-
-while true; do
-
-read -rp "${bold}Question: Do you use any Thunderbolt connected devices?${normal} (y/n): " thunderbolt_response
-
-case $thunderbolt_response in 
-	[Yy] ) thunderbolt_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-
-if [[ "$thunderbolt_response" =~ ^[Yy]$ ]]; then
-    space_1
-    conf_msg "Thunderbolt remains enabled"
-    
-else
-    # Get a list of active Thunderbolt domains
-    active_domains=$(boltctl list | awk '/connected/ {print $1}')
-
-    # Disable each active domain
-    for domain in $active_domains; do
-        short_msg "Disabling Thunderbolt domain: $domain"
-        boltctl disable "$domain"
-    done
-    echo "install thunderbolt /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
-    conf_msg "Thunderbolt has been disabled and added to the kernel module blacklist"
-fi
-
-space_2
-space_1
 
 # === DNSCRYPT-PROXY ===
 
@@ -921,8 +984,8 @@ https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt
 EOF
 
 # Create dnscrypt-proxy update script taken from https://github.com/DNSCrypt/dnscrypt-proxy/wiki/Updates
-cat > "$INSTALL_DIR"/dnscrypt-proxy-update.sh << EOF
-#! /bin/sh
+cat > $INSTALL_DIR/dnscrypt-proxy-update.sh << EOF
+#!/bin/bash
 
 INSTALL_DIR="/usr/local/sbin/dnscrypt-proxy"
 LATEST_URL="https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest"
@@ -1012,7 +1075,7 @@ Description=Automatically update dnscrypt-proxy blocklist and application
 
 [Service]
 Type=oneshot
-ExecStart=python3 ${INSTALL_DIR}/${download_file2} -c ${INSTALL_DIR}/domains-blocklist.conf -a ${INSTALL_DIR}/domains-allowlist.txt -r ${INSTALL_DIR}/${download_file3} -o ${INSTALL_DIR}/blocklist.txt.tmp && mv -f ${INSTALL_DIR}/blocklist.txt.tmp ${INSTALL_DIR}/blocklist.txt
+ExecStart=python3 ${INSTALL_DIR}/${download_file2} -c ${INSTALL_DIR}/domains-blocklist.conf -a ${INSTALL_DIR}/domains-allowlist.txt -r ${INSTALL_DIR}/domains-time-restricted.txt -o ${INSTALL_DIR}/blocklist.txt.tmp && mv -f ${INSTALL_DIR}/blocklist.txt.tmp ${INSTALL_DIR}/blocklist.txt
 ExecStart=${INSTALL_DIR}/dnscrypt-proxy-update.sh
 EOF
 
@@ -1043,7 +1106,7 @@ chgrp -R root "${INSTALL_DIR}/"
 chmod -R 775 "${INSTALL_DIR}/"
 
 # Create blocklist file for dnscrypt-proxy
-python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "${INSTALL_DIR}/${download_file3}" -i -o "${INSTALL_DIR}/blocklist.txt"  > /dev/null
+python3 "${INSTALL_DIR}/${download_file2}" -c "${INSTALL_DIR}/domains-blocklist.conf" -a "${INSTALL_DIR}/domains-allowlist.txt" -r "${INSTALL_DIR}/domains-time-restricted.txt" -i -o "${INSTALL_DIR}/blocklist.txt"  > /dev/null
 
 # Disable resolved
 systemctl stop systemd-resolved
@@ -1063,7 +1126,6 @@ sleep 1
 ${INSTALL_DIR}/dnscrypt-proxy -service start > /dev/null
 rm -Rf "$workdir"
 
-space_1
 conf_msg "dnscrypt-proxy installed"
 
 
@@ -1077,7 +1139,6 @@ echo "$new_machine_id" | sudo tee /etc/machine-id > /dev/null
 # Change machine ID in /var/lib/dbus/machine-id
 echo "$new_machine_id" | sudo tee /var/lib/dbus/machine-id > /dev/null
 
-space_1
 conf_msg "Generic Machine ID applied"
 
 
@@ -1093,10 +1154,9 @@ for sc_timer in "${systemd_timers[@]}"; do
     systemctl enable --now "${sc_timer}" > /dev/null 2>&1
 done
 
-space_1
 conf_msg "Automatic update timers initiated"
 space_2
-
+sleep 1
 
 # === FINAL CHECKS ===
 

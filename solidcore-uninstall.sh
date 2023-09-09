@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.2
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -86,9 +86,6 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
 conf_msg() {
     short_msg "$1"
     echo -ne " ${bold}${green}✓${normal}"
@@ -135,7 +132,7 @@ space_1
 while true; do
 read -rp "${bold}Question: Do you want to continue?${normal} (y/n): " uninstall_response
 case $uninstall_response in
-	[Yy] ) hostname_response="Y";
+	[Yy] ) uninstall_response="Y";
 		break;;
 	[Nn] )
         break;;
@@ -319,7 +316,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	    # Delete file
 	    rm "$file"
 		systemctl daemon-reload
-	    conf_msg "Solidcore created file removed: $override_file"
+	    conf_msg "Solidcore created file removed: $file"
 		fi
 	done
 
@@ -369,7 +366,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	# Check if the file exists
 	if [ -f "/etc/solidcore/hostname_sc.bak" ]; then
     	# Read the hostname from backup
-    	saved_hostname=$(cat "$hostname_file")
+    	saved_hostname=$(cat "/etc/solidcore/hostname_sc.bak")
 	    # Revert hostname to original
     	hostnamectl hostname "$saved_hostname"
     	# Check if reverting hostname was successful
@@ -402,7 +399,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 cat > /etc/solidcore/solidcore-farewell.sh << EOF
 #!/bin/bash
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.2
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -448,7 +445,7 @@ cat > /etc/solidcore/solidcore-uninstall2.sh << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.2
+## Version 0.2.5
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -514,9 +511,6 @@ short_msg() {
 }
 
 # Non-interruptable version for confirmation messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
 conf_msg() {
     short_msg "$1"
     echo -ne " ${bold}${green}✓${normal}"
@@ -596,7 +590,7 @@ sleep 2
 echo
 EOF
 
-    chmod +x "$script_path"
+    chmod +x /etc/solidcore/solidcore-uninstall2.sh
 
 	conf_msg "Set up next boot script to finish uninstall process"
 	
