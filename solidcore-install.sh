@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.2
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -19,6 +19,32 @@
 ## along with this program.  If not, see https://www.gnu.org/licenses/.
 
 # Install script
+
+# Running order
+# - Display functions
+# - Flags
+# - Initial checks (sudo, immutable variant)
+# - Welcome
+# - Define new sysctl settings
+# - Create backups and restore files
+# - Apply new sysctl settings
+# - Bootloader settings
+# - Block kernel modules
+# - Disable services
+# - Hidepid and add noexec to /tmp and /dev/shm
+# - Umask 0077
+# - Disable core dumps
+# - Improve password policies
+# - Lock root
+# - Firewalld zone to drop
+# - MAC randomization
+# - Update Chrony conf
+# - Install automatic update services (rpm-ostree, flatpak and replace Fedora flatpaks with Flathub)
+# - Mute microphone on boot
+# - Install minisign and flatseal
+# - Set up for first boot
+# - Install uninstall script
+# - Reboot
 
 
 # === DISPLAY FUNCTIONS ===
@@ -327,9 +353,6 @@ conf_msg "Hardened sysctl settings applied"
 
 # === BOOTLOADER SETTINGS ===
 
-# Check CPU vendor using lscpu
-cpu_vendor=$(lscpu | awk '/Vendor/ {print $3}')
-
 # Boot parameters to be added
 boot_parameters=(
     "slab_nomerge" # Disables slab merging
@@ -351,6 +374,9 @@ boot_parameters=(
     "iommu.strict=1" # Recommended by privsec.dev
     "extra_latent_entropy" # Recommended by privsec.dev
 )
+
+# Check CPU vendor using lscpu
+cpu_vendor=$(lscpu | awk '/Vendor/ {print $3}')
 
 # Add IOMMU parameter based on CPU vendor
 case "$cpu_vendor" in
@@ -376,7 +402,7 @@ param_string="${param_string%" "}"
 rpm-ostree kargs -q $param_string
 
 
-# === BLACKLIST KERNEL MODULES === 
+# === BLOCK KERNEL MODULES === 
 
 block_file="/etc/modprobe.d/solidcore-blocklist.conf"
 
@@ -897,7 +923,7 @@ mv -f "solidcore-firstboot.sh" "/etc/solidcore/"
 cat > /etc/solidcore/solidcore-welcome.sh << EOF
 #!/bin/bash
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.2
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##

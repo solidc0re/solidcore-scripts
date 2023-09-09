@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.2
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -19,6 +19,25 @@
 ## along with this program.  If not, see https://www.gnu.org/licenses/.
 
 # Uninstall script
+
+# Running order
+# - Display functions
+# - Flags
+# - Sudo check
+# - Inform user they are about to uninstall (y/n), if yes...
+# - Undo rpm-ostree kargs
+# - Restore backup files
+# - Unmask masked serviecs
+# - Delete install services
+# - Delete installed files and configurations
+# - Restore sysctl defaults
+# - Restore Fedora flatpaks
+# - Revert password policies
+# - Revert hostname
+# - Uninstall flatseal, minisign, USBGuard and dnscrypt-proxy
+# - Return Firewalld to previous default
+# - Create farewell and uninstall2 scripts to run on reboot (re-enables bluetooth, re-inserts removed modules [is this needed?], unblocks Thunderbolt domains and wireless devices, unmutes microphone)
+# - Reboot
 
 
 # === DISPLAY FUNCTIONS ===
@@ -383,7 +402,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 cat > /etc/solidcore/solidcore-farewell.sh << EOF
 #!/bin/bash
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.2
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -429,7 +448,7 @@ cat > /etc/solidcore/solidcore-uninstall2.sh << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.2
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##

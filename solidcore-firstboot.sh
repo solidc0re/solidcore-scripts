@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.2
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -19,6 +19,29 @@
 ## along with this program.  If not, see https://www.gnu.org/licenses/.
 
 # First boot script
+
+# Running order
+# - Display functions
+# - Flags
+# - Declare block_file variable
+# - Welcome
+# - Sudo check
+# - Set new password and expire all other users' passwords
+# - Change hostname
+# - Add GRUB password
+# - CUPS
+# - USB (if yes to USB, install USBGuard and second boot script)
+# - Hardware keys
+# - Webcam
+# - Wifi
+# - Bluetooth
+# - Firewire
+# - Thunderbolt
+# - Install DNSCrypt-Proxy, build blocklist and install update script & service
+# - Update Machine ID
+# - Start update timers
+# - Final checks (SELinux set to enforcing, HTTP in repos and CPU mitigations)
+# - End/Reboot
 
 
 # === DISPLAY FUNCTIONS ===
@@ -103,7 +126,7 @@ fi
 
 
 # === VARIABLES ===
-blacklist_file="/etc/modprobe.d/solidcore-blacklist.conf"
+block_file="/etc/modprobe.d/solidcore-blocklist.conf"
 
 
 # === WELCOME ===
@@ -331,7 +354,7 @@ cat > "$script_path" << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.1.1
+## Version 0.2.2
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -554,8 +577,8 @@ EOF
 
 else
     rmmod usbcore usb_storage > /dev/null 2>&1
-    echo "install usb_storage /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install usbcore /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install usb_storage /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install usbcore /bin/true" | tee -a "$block_file" > /dev/null
     space_1
     conf_msg "USB has been disabled and added to the kernel module blacklist"
 fi
@@ -586,7 +609,7 @@ if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
     conf_msg "Webcam remains enabled"
 else
     rmmod uvcvideo > /dev/null 2>&1
-    echo "install uvcvideo /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install uvcvideo /bin/true" | tee -a "$block_file" > /dev/null
     space_1
     conf_msg "Webcam has been disabled and added to the kernel module blacklist"
 fi
@@ -656,8 +679,8 @@ else
     systemctl disable bluetooth.service > /dev/null 2>&1
     systemctl --now mask bluetooth.service > /dev/null 2>&1
     systemctl daemon-reload
-    echo "install bluetooth /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install btusb /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install bluetooth /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install btusb /bin/true" | tee -a "$block_file" > /dev/null
     space_1
     conf_msg "Bluetooth has been disabled and added to the kernel module blacklist"
 fi
@@ -689,18 +712,18 @@ if [[ "$firewire_response" =~ ^[Yy]$ ]]; then
     conf_msg "Firewire remains enabled"
 else
     rmmod dv1394 firewire-core firewire_core firewire-ohci firewire_ohci firewire-sbp2 firewire_sbp2 ohci1394 sbp2 raw1394 video1394 > /dev/null 2>&1
-    echo "install dv1394 /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install firewire-core /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install firewire_core /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install firewire-ohci /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install firewire_ohci /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install firewire-sbp2 /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install firewire_sbp2 /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install firewire-core /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install ohci1394 /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install sbp2 /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install raw1394 /bin/true" | tee -a "$blacklist_file" > /dev/null
-    echo "install video1394 /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install dv1394 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire-core /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire_core /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire-ohci /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire_ohci /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire-sbp2 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire_sbp2 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install firewire-core /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install ohci1394 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install sbp2 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install raw1394 /bin/true" | tee -a "$block_file" > /dev/null
+    echo "install video1394 /bin/true" | tee -a "$block_file" > /dev/null
     space_1
     conf_msg "Firewire has been disabled and added to the kernel module blacklist"
 fi
@@ -740,7 +763,7 @@ else
         short_msg "Disabling Thunderbolt domain: $domain"
         boltctl disable "$domain"
     done
-    echo "install thunderbolt /bin/true" | tee -a "$blacklist_file" > /dev/null
+    echo "install thunderbolt /bin/true" | tee -a "$block_file" > /dev/null
     space_1
     conf_msg "Thunderbolt has been disabled and added to the kernel module blacklist"
 fi
