@@ -1205,7 +1205,6 @@ space_1
 short_msg "... And raise this vulnerability as an issue on the solidcore-script Github page:"
 short_msg "https://github.com/solidc0re/solidcore-scripts"
 sleep 3
-space_1
 
 # === TiDY UP & FINISH ===
 
