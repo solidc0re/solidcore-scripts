@@ -1199,10 +1199,10 @@ grep . /sys/devices/system/cpu/vulnerabilities/*
 
 sleep 1
 space_1
-short_msg "${bold}Please take a note of the vulnerability if there is no mitigation (Migitation: None).{$normal}"
-sleep 1
+short_msg "${bold}Please take a note of any vulnerability that affects your CPU with no mitigation (Migitation: None).{$normal}"
+sleep 2
 space_1
-short_msg "Raise this vulnerability as an issue on the solidcore-script Github repo:"
+short_msg "... And raise this vulnerability as an issue on the solidcore-script Github page:"
 short_msg "https://github.com/solidc0re/solidcore-scripts"
 sleep 3
 space_1
