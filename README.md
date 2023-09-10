@@ -41,7 +41,6 @@ These are just some of the issues that solidcore hardening aims to protect again
 - Core dumps disabled (stops sensitive information about the system being available) :heavy_check_mark:
 - Improved password policies :heavy_check_mark:
 - Root account locked :heavy_check_mark:
-- All user passwords have to be updated to new password standards :heavy_check_mark:
 - Firewalld zone set to drop (drops all incoming connections) :heavy_check_mark:
 - Automatic updates for rpm-ostree and flatpaks :heavy_check_mark:
 - Fedora flatpaks replaced with Flathub flatpaks :heavy_check_mark:
@@ -81,6 +80,7 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - set up full installation of hardware keys, i.e. creation of U2F pam module key and required modification to solidcore pam profile
 - develop the `-server` flag further to eliminate all user interaction
 - establish blocklist review process
+- fix bug that expires password for current user
 
 For the next release:
 - implement conditional conf_msg and error reporting
@@ -211,8 +211,9 @@ sudo sed -i 's/^install bluetooth /bin/true/#&/' /etc/modprobe.d/solidcore-black
 ```
 sudo sed -i 's/^install btusb /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
-
-Then reboot. After reboot:
+```
+sudo modprobe bluetooth btusb
+```
 ```
 rkfill unblock bluetooth
 ```
@@ -242,7 +243,7 @@ sudo sed -i 's/^install sbp2 /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.
 
 Then reboot. After reboot:
 ```
-sudo insmod firewire_core ohcil394 sbp2
+sudo modprobe firewire_core ohcil394 sbp2
 ```
 </details>
 
@@ -280,10 +281,8 @@ sudo sed -i 's/^install usbcore /bin/true/#&/' /etc/modprobe.d/solidcore-blackli
 ```
 sudo sed -i 's/^install usb_storage /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
-
-Then reboot. After reboot:
 ```
-sudo insmod usbcore usb_storage
+sudo modprobe usbcore usb_storage
 ```
 </details>
 
@@ -324,10 +323,8 @@ First:
 ```
 sudo sed -i 's/^install uvcvideo /bin/true/#&/' /etc/modprobe.d/solidcore-blacklist.conf
 ```
-
-Then reboot. After reboot:
 ```
-sudo insmod uvcvideo
+sudo modprobe uvcvideo
 ```
 </details>
 
@@ -361,14 +358,14 @@ That said, some opinionated choices had to be made. These include the installati
 This project is made possible by the diligent and forward-thinking work of the Fedora and RedHat developers and community. A special shout out to the CoreOS and rpm-ostree developers for their excellent work.
 
 Many of the hardening improvements implemented by the solidcore-scripts are recommendations from these sources:
-- https://madaidans-insecurities.github.io/guides/linux-hardening.html
-- https://wiki.archlinux.org/title/Security
-- https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/security_hardening/index
-- https://www.cisecurity.org/benchmark/red_hat_linux
-- https://github.com/ComplianceAsCode/content
-- https://static.open-scap.org/ssg-guides/ssg-fedora-guide-index.html
-- https://github.com/a13xp0p0v/kconfig-hardened-check/
-- https://privsec.dev/posts/linux/desktop-linux-hardening/
+- [madaidan's Linux Hardening Guide](https://madaidans-insecurities.github.io/guides/linux-hardening.html) - the initial inspiration for this project
+- [Arch Wiki](https://wiki.archlinux.org/title/Security)
+- [Red Hat Enterprise Linux 9 Security Hardening Documentations](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/security_hardening/index)
+- [Center for Internet Security's Red Hat Benchmark](https://www.cisecurity.org/benchmark/red_hat_linux)
+- [OpenSCAP](https://github.com/ComplianceAsCode/content)
+- [OpenSCAP Fedora Guide](https://static.open-scap.org/ssg-guides/ssg-fedora-guide-index.html)
+- [k-config-hardened-check](https://github.com/a13xp0p0v/kconfig-hardened-check/)
+- [Tommy's Desktop Linux Hardening Guide](https://privsec.dev/posts/linux/desktop-linux-hardening/)
 
 # Introductory resources
 If you're relatively new to the infosec (information security) world, then the following resources come recommended:
