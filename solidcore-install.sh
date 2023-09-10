@@ -337,7 +337,7 @@ for source_file in "${files_to_backup[@]}"; do
     fi
 done
 
-# Remove Gnome Software update service
+# Remove Gnome Software update service after backup created
 rm -f /etc/xdg/autostart/org.gnome.Software.desktop
 
 conf_msg "All backups created"
