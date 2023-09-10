@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.6
+## Version 0.2.7
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -238,8 +238,6 @@ long_msg ">
 >
 >  Welcome back!
 >
->  You have part-completed the solidcore hardening process.
->
 >  This script carries out the finishing touches which require your input."
 sleep 2
 space_2
@@ -275,52 +273,73 @@ space_1
 short_msg "For example, ${bold}${italics}Two-Clowns-Walked-into-a-Bar${normal} is better than ${bold}${italics}dVc78#!_sjdRa${normal}."
 sleep 3
 
+
+current_user=$(logname)
 while true; do
     space_1
     echo
-    passwd > /dev/null
-    if [ $? -eq 0 ]; then
-        space_1
-        conf_msg "New password set"
-        break
+    echo "Enter a new password:"
+    read new_password
+
+    # Check password complexity (at least 12 characters, one lowercase, one uppercase)
+    if [[ ${#new_password} -ge 12 && "$new_password" =~ [a-z] && "$new_password" =~ [A-Z] ]]; then
+        echo
+        echo "Confirm the new password:"
+        read confirm_password
+        # Check if the passwords match
+        if [ "$new_password" = "$confirm_password" ]; then
+            echo "$new_password" | passwd --stdin "$current_user"
+            if [ $? -eq 0 ]; then
+                conf_msg "New password set"
+                sleep 1
+                break
+            else
+                space_1
+                short_msg "Password change failed. Please try again."
+                space_1
+            fi
+        else
+            space_1
+            short_msg "Passwords do not match. Please try again."
+            space_1
+        fi
     else
         space_1
-        short_msg "Password change failed. Please try again."
+        short_msg "Password must contain at least 12 characters, one lowercase, and one uppercase character. Please try again."
         space_1
     fi
 done
 
-# OLD CODE - EXPIRED CURRENT USER, NOT WORKING (expires current user pwd locking them out)
-## Expire passwords of all other users
-#short_msg "Expiring all user passwords except for user..."
-#
-#current_user=$(whoami)
-#excluded_user="nfsnobody"
-#
-## Count the number of non-root human users on the system
-#num_users=$(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | wc -l)
-#
-## Check if there are other human users besides the current user and excluded user
-#if [ "$num_users" -gt 0 ]; then
-#    # Loop through all user accounts and exclude the current user and excluded user
-#    getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | while read -r username; do
-#        short_msg "Expiring password for user: $username"
-#        chage -E 0 "$username"
-#    done
-#    space_1
-#    short_msg "${bold}Passwords for other users have now expired.${normal}"
-#    short_msg "They will be prompted to update their password on next login."
-#    sleep 1
-#fi
-#sleep 2
-space_2
+# Expire passwords of all other users
+short_msg "Expiring all user passwords except for user..."
+sleep 1
+excluded_user="nfsnobody"
+
+# Count the number of non-root human users on the system
+num_users=$(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | wc -l)
+
+# Check if there are other human users besides the current user and excluded user
+if [ "$num_users" -gt 0 ]; then
+    # Loop through all user accounts and exclude the current user and excluded user
+    getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | while read -r username; do
+        short_msg "Expiring password for user: $username"
+        chage -E 0 "$username"
+    done
+    space_1
+    short_msg "${bold}Passwords for other users have now expired.${normal}"
+    short_msg "They will be prompted to update their password on next login."
+    sleep 1
+fi
 
 
 # === GRUB ===
 
+clear
+space_2
+
 # Ask the user if they want to set a GRUB password
 short_msg "Setting a GRUB password prevents an attacker from accessing the bootloader configuration menus and terminal."
-space_1
+space_2
 while true; do
 read -rp "${bold}[Question]${normal} Do you want to set a GRUB password [recommended]? (y/n): " grub_response
 case $grub_response in 
@@ -339,7 +358,6 @@ if [[ "$grub_response" =~ ^[Yy]$ ]]; then
         echo
         grub2-setpassword
         if [ $? -eq 0 ]; then
-            space_1
             conf_msg "New password set"
             break
         else
@@ -381,7 +399,6 @@ if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
 else
     short_msg "Skipping..."
 fi
-space_2
 sleep 1
 
 
@@ -417,7 +434,6 @@ sleep 2
 space_1
 short_msg "${bold}[1 of 3]${normal} Do you use any of the following devices?"
 short_msg "${bold}▲ up${normal} / ${bold}▼ down${normal} to navigate, ${bold}<space>${normal} to select, ${bold}<enter>${normal} to submit."
-echo ""
 prompt_for_multiselect user_input "$(IFS=';'; echo "${options_1[*]}")" "$(IFS=';'; echo "${defaults_1[*]}")"
 
 for i in "${!user_input[@]}"; do
@@ -430,7 +446,6 @@ echo ""
 
 short_msg "${bold}[2 of 3]${normal} Do you use any of the following wireless connections on this device?"
 
-echo ""
 prompt_for_multiselect user_input "$(IFS=';'; echo "${options_2[*]}")" "$(IFS=';'; echo "${defaults_2[*]}")"
 
 for i in "${!user_input[@]}"; do
@@ -443,7 +458,6 @@ echo ""
 
 short_msg "${bold}[3 of 3]${normal} Which of the following ports do you use on this device?"
 
-echo ""
 prompt_for_multiselect user_input "$(IFS=';'; echo "${options_3[*]}")" "$(IFS=';'; echo "${defaults_3[*]}")"
 
 for i in "${!user_input[@]}"; do
@@ -453,7 +467,6 @@ for i in "${!user_input[@]}"; do
         2) [ "${user_input[i]}" == "true" ] && usb_response="Y" || usb_response="N" ;;
     esac
 done
-echo ""
 
 space_1
 
@@ -530,8 +543,7 @@ if [[ "$token_response" =~ ^[Yy]$ ]]; then
 fi
 
 short_msg "Thank you for your input."
-sleep 1
-space_1
+sleep 2
 
 
 # === ACTION CHOICES ===
@@ -540,6 +552,7 @@ clear
 space_2
 short_msg "Applying settings..."
 sleep 1
+space_1
 
 
 # === CUPS ===
@@ -651,10 +664,18 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     if rpm -q usbguard > /dev/null 2>&1; then
         # Cancel USB-enabled reboot sequence by setting usb_response to N
         usb_response="N"
-        short_msg "USBGuard already installed. Skipping..."
+        # Increase hardening and privacy of USBGuard
+        usbguard_conf="/etc/usbguard/usbguard-daemon.conf"
+        replace1="PresentControllerPolicy=apply-policy"
+        replace2="HidePII=true"
+        sed -i "s/^PresentControllerPolicy=.*/$replace1/" "$usbguard_conf"
+        sed -i "s/^HidePII=.*/$replace2/" "$usbguard_conf"
+        systemctl restart usbguard.service
+        conf_msg "USBGuard already installed. Applied hardened configuation"
     else
-        short_msg "Installing USBGaurd. This may take a while."
+        short_msg "Installing USBGaurd. This may take a while..."
         echo
+        rpm-ostree cancel -q
         rpm-ostree install -q usbguard
         mkdir -p /etc/solidcore/
         script_path="/etc/solidcore/solidcore-secondboot.sh"
@@ -664,7 +685,7 @@ cat > "$script_path" << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.6
+## Version 0.2.7
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -768,8 +789,12 @@ read -n 1 -s -r -p "  Once you've plugged them in, press any key to continue..."
 sh -c 'usbguard generate-policy > /etc/usbguard/rules.conf'
 
 # Increase hardening and privacy of USBGuard
-# usbguard set-parameter PresentControllerPolicy=apply-policy
-# usbguard set-parameter HidePII=true
+usbguard_conf="/etc/usbguard/usbguard-daemon.conf"
+replace1="PresentControllerPolicy=apply-policy"
+replace2="HidePII=true"
+
+sed -i "s/^PresentControllerPolicy=.*/$replace1/" "$usbguard_conf"
+sed -i "s/^HidePII=.*/$replace2/" "$usbguard_conf"
 
 # Reload usbguard service to apply the new rules
 systemctl enable --now usbguard.service > /dev/null
@@ -848,7 +873,7 @@ fi
 
 if [ -x "$(command -v minisign)" ]; then
     curl --request GET -sL --url "${download_url}.minisig" --output "$workdir/${download_file}.minisig"
-    minisign -Vm "$workdir/$download_file" -P "$DNSCRYPT_PUBLIC_KEY"
+    minisign -Vm "$workdir/$download_file" -P "$DNSCRYPT_PUBLIC_KEY" > /dev/null
     valid_file=$?
 
     if [ $valid_file -ne 0 ]; then
@@ -1116,12 +1141,8 @@ conf_msg "dnscrypt-proxy installed"
 # === MACHINE ID ===
 
 new_machine_id="b08dfa6083e7567a1921a715000001fb"
-
-# Change machine ID in /etc/machine-id
-echo "$new_machine_id" | sudo tee /etc/machine-id > /dev/null
-
-# Change machine ID in /var/lib/dbus/machine-id
-echo "$new_machine_id" | sudo tee /var/lib/dbus/machine-id > /dev/null
+echo "$new_machine_id" | tee /etc/machine-id > /dev/null
+echo "$new_machine_id" | tee /var/lib/dbus/machine-id > /dev/null
 
 conf_msg "Generic Machine ID applied"
 
@@ -1135,7 +1156,7 @@ systemd_timers=(
 )
 
 for sc_timer in "${systemd_timers[@]}"; do
-    systemctl enable --now "${sc_timer}" > /dev/null 2>&1
+    sudo systemctl enable --now "${sc_timer}" > /dev/null 2>&1
 done
 
 conf_msg "Automatic update timers initiated"
@@ -1171,6 +1192,8 @@ short_msg "${bold}[2 of 3]${normal} Checking insecure URLs in the repo directory
 space_1
 sleep 1
 patterns=("^baseurl=http:" "^metalink=http:")
+insecure_repo_found=false  # Initialize a flag to track if an insecure repo is found
+
 for pattern in "${patterns[@]}"; do
     output=$(grep -r "$pattern" /etc/yum.repos.d/)
     if [ -n "$output" ]; then
@@ -1178,11 +1201,14 @@ for pattern in "${patterns[@]}"; do
         short_msg "Output:"
         short_msg "$output"
         short_msg "Please investigate. You may be able to manually edit the repo to use HTTPS. Failing that, contact the repo maintainer to report the security issue."
-        sleep 2
-    else
-        conf_msg "No insecure repos found in the repository directory"
+        space_1
+        insecure_repo_found=true
     fi
 done
+
+if [ "$insecure_repo_found" = false ]; then
+    conf_msg "No insecure repos found in the repository directory"
+fi
 space_2
 
 # CPU vulnerability check
@@ -1202,10 +1228,11 @@ space_1
 
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
-    short_msg "${bold}Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard.{$normal}"
+    short_msg "${bold}Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard.${normal}"
     space_1
     short_msg "Another script will guide you through whitelisting your USB devices."
 	sleep 2
+    space_1
     read -n 1 -s -r -p "Press any key to continue..."
     space_1
         for i in {5..1}; do
