@@ -191,6 +191,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 		"/etc/sysconfig/chronyd"
     	"/etc/systemd/coredump.conf"
     	"/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
+		"/etc/xdg/autostart/org.gnome.Software.desktop"
 	    "/var/lib/dbus/machine-id"
 	)
 
@@ -208,7 +209,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
     	    	conf_msg "Machine ID restored"
 			else	
 				# Restore the backup file
-    	    	cp "$backup_file" "$source_file"
+    	    	cp -f "$backup_file" "$source_file"
     	    	conf_msg "Backup restored for: $source_file"
     	    	# Remove the backup file
     	    	rm "$backup_file"
@@ -556,8 +557,8 @@ for service in "${services[@]}"; do
 done
 systemctl daemon-reload
 
-# Re-insert Firewire, USB & webcam modules
-insmod dv1394 firewire-core firewire_core firewire-ohci firewire_ohci firewire-sbp2 firewire_sbp2 ohci1394 sbp2 raw1394 video1394 usbcore usb_storage uvcvideo
+# Re-insert bluetooth, Firewire, USB & webcam modules
+modprobe bluetooth btusb dv1394 firewire-core firewire_core firewire-ohci firewire_ohci firewire-sbp2 firewire_sbp2 ohci1394 sbp2 raw1394 video1394 usbcore usb_storage uvcvideo
 
 # Unblock Thunderbolt
 disabled_domains=$(boltctl list | awk '/authorized: no/ {print $1}')
