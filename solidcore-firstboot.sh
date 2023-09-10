@@ -651,7 +651,14 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     if rpm -q usbguard > /dev/null 2>&1; then
         # Cancel USB-enabled reboot sequence by setting usb_response to N
         usb_response="N"
-        short_msg "USBGuard already installed. Skipping..."
+        # Increase hardening and privacy of USBGuard
+        usbguard_conf="/etc/usbguard/usbguard-daemon.conf"
+        replace1="PresentControllerPolicy=apply-policy"
+        replace2="HidePII=true"
+        sed -i "s/^PresentControllerPolicy=.*/$replace1/" "$usbguard_conf"
+        sed -i "s/^HidePII=.*/$replace2/" "$usbguard_conf"
+        systemctl restart usbguard.service
+        conf_msg "USBGuard already installed. Applied hardened configuation"
     else
         short_msg "Installing USBGaurd. This may take a while."
         echo
@@ -768,8 +775,12 @@ read -n 1 -s -r -p "  Once you've plugged them in, press any key to continue..."
 sh -c 'usbguard generate-policy > /etc/usbguard/rules.conf'
 
 # Increase hardening and privacy of USBGuard
-# usbguard set-parameter PresentControllerPolicy=apply-policy
-# usbguard set-parameter HidePII=true
+usbguard_conf="/etc/usbguard/usbguard-daemon.conf"
+replace1="PresentControllerPolicy=apply-policy"
+replace2="HidePII=true"
+
+sed -i "s/^PresentControllerPolicy=.*/$replace1/" "$usbguard_conf"
+sed -i "s/^HidePII=.*/$replace2/" "$usbguard_conf"
 
 # Reload usbguard service to apply the new rules
 systemctl enable --now usbguard.service > /dev/null
