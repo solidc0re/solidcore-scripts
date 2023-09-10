@@ -89,7 +89,7 @@ For the next release:
 - test uninstall process thoroughly
 - continue work on developing `-test` flag
 
-The plan is to open up to public testing in version 0.3 when the whole process has been thoroughly tested and reviewed.
+The plan is to open up to public testing in version 0.3 when the whole process has undergone more testing.
 
 # Instructions
 > [!NOTE]
