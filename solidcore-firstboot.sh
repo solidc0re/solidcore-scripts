@@ -281,7 +281,7 @@ while true; do
 
     # Use passwd --stdin to set the new password
     current_user=$(whoami)
-    echo "$new_password" | passwd --stdin "$current_user" > /dev/null
+    echo "$new_password" | passwd --stdin "$current_user"
 
     if [ $? -eq 0 ]; then
         conf_msg "New password set"
