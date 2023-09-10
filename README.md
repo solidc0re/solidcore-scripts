@@ -26,9 +26,9 @@ These are just some of the issues that solidcore hardening aims to protect again
 - :fire: ***... plus more!!*** :fire:
 
 # Current features
-**v0.2.6 alpha released September 10th 2023.**
+**v0.2.7 alpha released September 10th 2023.**
 
-**Despite the low version number of v0.2.6, this script implements some serious hardening:**
+**Despite the low version number of v0.2.7, this script implements some serious hardening:**
 
 - Guided user interface :heavy_check_mark:
 - Auto-generate backups of important config files :heavy_check_mark:
@@ -41,6 +41,7 @@ These are just some of the issues that solidcore hardening aims to protect again
 - Core dumps disabled (stops sensitive information about the system being available) :heavy_check_mark:
 - Improved password policies :heavy_check_mark:
 - Root account locked :heavy_check_mark:
+- Update user password to align with new policies :heavy_check_mark:
 - Firewalld zone set to drop (drops all incoming connections) :heavy_check_mark:
 - Automatic updates for rpm-ostree and flatpaks :heavy_check_mark:
 - Fedora flatpaks replaced with Flathub flatpaks :heavy_check_mark:
@@ -59,6 +60,7 @@ These are just some of the issues that solidcore hardening aims to protect again
 - MAC randomization :heavy_check_mark:
 - Checks in place for SELinux mode, known CPU vulnerabilities and insecure HTTP URLs in the repos :heavy_check_mark:
 - Chrony (NTP) config updated to match GrapheneOS configuration :heavy_check_mark:
+- Hardened USBGuard config :heavy_check_mark:
 - Uninstall file (untested in current version - may throw out unexpected errors, but should be operational)
 
 **Tested on Fedora Silverblue 38.**
@@ -80,14 +82,14 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - set up full installation of hardware keys, i.e. creation of U2F pam module key and required modification to solidcore pam profile
 - develop the `-server` flag further to eliminate all user interaction
 - establish blocklist review process
-- fix bug that expires password for current user
 
 For the next release:
 - implement conditional conf_msg and error reporting
 - user-testing and implement feedback
 - test uninstall process thoroughly
-- [x]~~implement improvements to the USBGuard config~~
 - continue work on developing `-test` flag
+
+The plan is to open up to public testing in version 0.3 when the whole process has been thoroughly tested and reviewed.
 
 # Instructions
 > [!NOTE]
