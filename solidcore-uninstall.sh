@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.5
+## Version 0.2.6
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -399,7 +399,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 cat > /etc/solidcore/solidcore-farewell.sh << EOF
 #!/bin/bash
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.5
+## Version 0.2.6
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -445,7 +445,7 @@ cat > /etc/solidcore/solidcore-uninstall2.sh << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.5
+## Version 0.2.6
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
