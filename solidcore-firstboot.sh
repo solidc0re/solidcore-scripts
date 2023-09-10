@@ -295,29 +295,26 @@ while true; do
 done
 
 
-# OLD CODE - EXPIRED CURRENT USER, NOT WORKING (expires current user pwd locking them out)
-## Expire passwords of all other users
-#short_msg "Expiring all user passwords except for user..."
-#
-#current_user=$(whoami)
-#excluded_user="nfsnobody"
-#
-## Count the number of non-root human users on the system
-#num_users=$(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | wc -l)
-#
-## Check if there are other human users besides the current user and excluded user
-#if [ "$num_users" -gt 0 ]; then
-#    # Loop through all user accounts and exclude the current user and excluded user
-#    getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | while read -r username; do
-#        short_msg "Expiring password for user: $username"
-#        chage -E 0 "$username"
-#    done
-#    space_1
-#    short_msg "${bold}Passwords for other users have now expired.${normal}"
-#    short_msg "They will be prompted to update their password on next login."
-#    sleep 1
-#fi
-#sleep 2
+# Expire passwords of all other users
+short_msg "Expiring all user passwords except for user..."
+sleep 1
+excluded_user="nfsnobody"
+
+# Count the number of non-root human users on the system
+num_users=$(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | wc -l)
+
+# Check if there are other human users besides the current user and excluded user
+if [ "$num_users" -gt 0 ]; then
+    # Loop through all user accounts and exclude the current user and excluded user
+    getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | while read -r username; do
+        short_msg "Expiring password for user: $username"
+        chage -E 0 "$username"
+    done
+    space_1
+    short_msg "${bold}Passwords for other users have now expired.${normal}"
+    short_msg "They will be prompted to update their password on next login."
+    sleep 1
+fi
 
 
 # === GRUB ===
