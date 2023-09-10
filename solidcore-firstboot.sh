@@ -173,8 +173,6 @@ sleep 3
 
 while true; do
     space_1
-    short_msg "Enter your new password below."
-    space_1
     echo
     passwd > /dev/null
     if [ $? -eq 0 ]; then
@@ -191,16 +189,16 @@ done
 # Expire passwords of all other users
 short_msg "Expiring all user passwords except for user..."
 
-# Get the UID of the current user
-current_user_uid=$(id -u)
+current_user=$(whoami)
+excluded_user="nfsnobody"
 
 # Count the number of non-root human users on the system
-num_users=$(getent passwd | awk -F: '$3 >= 1000 && $3 != '$current_user_uid' {print $1}' | wc -l)
+num_users=$(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | wc -l)
 
-# Check if there are other human users besides the current user
+# Check if there are other human users besides the current user and excluded user
 if [ "$num_users" -gt 0 ]; then
-    # Loop through all user accounts and exclude the current user
-    getent passwd | awk -F: '$3 >= 1000 && $3 != '$current_user_uid' {print $1}' | while read -r username; do
+    # Loop through all user accounts and exclude the current user and excluded user
+    getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | while read -r username; do
         short_msg "Expiring password for user: $username"
         chage -E 0 "$username"
     done
@@ -266,7 +264,6 @@ case $hostname_response in
         echo ">";
 esac
 done
-space_2
 
 if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
     # Create backup
@@ -381,6 +378,12 @@ function prompt_for_multiselect {
     printf "\n"
     cursor_blink_on
 
+    # Remove highlighting
+    for ((idx=0; idx<${#options[@]}; idx++)); do
+        cursor_to $(($startrow + $idx))
+        print_inactive "${options[idx]}" "[ ]"
+    done
+
     eval $retval='("${selected[@]}")'
 }
 
@@ -454,19 +457,21 @@ echo ""
 
 space_1
 
-while true; do
+if [[ "$usb_response" =~ ^[Yy]$ ]]; then
+    while true; do
 
-    read -rp "${bold}[USB]${normal} Do you use any hardware security keys? (y/n): " token_response
+       read -rp "${bold}[USB]${normal} Do you use any hardware security keys? (y/n): " token_response
     
-    case $token_response in 
-	[Yy] ) token_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-    esac
-done
+       case $token_response in 
+    	[Yy] ) token_response="Y";
+            break;;
+    	[Nn] )
+            break;;
+    	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+            echo ">";
+       esac
+    done
+fi
 
 if [[ "$token_response" =~ ^[Yy]$ ]]; then
     # User prompt for security key type
@@ -810,7 +815,6 @@ else
     rmmod usbcore usb_storage > /dev/null 2>&1
     echo "install usb_storage /bin/true" | tee -a "$block_file" > /dev/null
     echo "install usbcore /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
     conf_msg "USB has been disabled and added to the kernel module blacklist"
 fi
 
@@ -1190,9 +1194,9 @@ grep . /sys/devices/system/cpu/vulnerabilities/*
 sleep 1
 echo
 
-short_msg "${bold}Please check that all known CPU vulnerabilities either don't affect this device, or have some mitigation applied.{$normal}"
-sleep 3
-
+short_msg "${bold}Please check that all known CPU vulnerabilities either don't affect this device, or have some mitigation applied.${normal}"
+sleep 5
+space_1
 
 # === TiDY UP & FINISH ===
 
