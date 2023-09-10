@@ -280,11 +280,12 @@ while true; do
     read -s new_password
 
     # Use passwd --stdin to set the new password
-    echo "$new_password" | passwd --stdin "$USER"
+    current_user=$(whoami)
+    echo "$new_password" | passwd --stdin "$current_user" > /dev/null
 
     if [ $? -eq 0 ]; then
         conf_msg "New password set"
-        sleep 1
+        sleep 2
         break
     else
         space_1
@@ -421,7 +422,6 @@ sleep 2
 space_1
 short_msg "${bold}[1 of 3]${normal} Do you use any of the following devices?"
 short_msg "${bold}▲ up${normal} / ${bold}▼ down${normal} to navigate, ${bold}<space>${normal} to select, ${bold}<enter>${normal} to submit."
-echo ""
 prompt_for_multiselect user_input "$(IFS=';'; echo "${options_1[*]}")" "$(IFS=';'; echo "${defaults_1[*]}")"
 
 for i in "${!user_input[@]}"; do
@@ -434,7 +434,6 @@ echo ""
 
 short_msg "${bold}[2 of 3]${normal} Do you use any of the following wireless connections on this device?"
 
-echo ""
 prompt_for_multiselect user_input "$(IFS=';'; echo "${options_2[*]}")" "$(IFS=';'; echo "${defaults_2[*]}")"
 
 for i in "${!user_input[@]}"; do
@@ -447,7 +446,6 @@ echo ""
 
 short_msg "${bold}[3 of 3]${normal} Which of the following ports do you use on this device?"
 
-echo ""
 prompt_for_multiselect user_input "$(IFS=';'; echo "${options_3[*]}")" "$(IFS=';'; echo "${defaults_3[*]}")"
 
 for i in "${!user_input[@]}"; do
@@ -457,7 +455,6 @@ for i in "${!user_input[@]}"; do
         2) [ "${user_input[i]}" == "true" ] && usb_response="Y" || usb_response="N" ;;
     esac
 done
-echo ""
 
 space_1
 
@@ -1183,6 +1180,8 @@ short_msg "${bold}[2 of 3]${normal} Checking insecure URLs in the repo directory
 space_1
 sleep 1
 patterns=("^baseurl=http:" "^metalink=http:")
+insecure_repo_found=false  # Initialize a flag to track if an insecure repo is found
+
 for pattern in "${patterns[@]}"; do
     output=$(grep -r "$pattern" /etc/yum.repos.d/)
     if [ -n "$output" ]; then
@@ -1190,11 +1189,14 @@ for pattern in "${patterns[@]}"; do
         short_msg "Output:"
         short_msg "$output"
         short_msg "Please investigate. You may be able to manually edit the repo to use HTTPS. Failing that, contact the repo maintainer to report the security issue."
-        sleep 2
-    else
-        conf_msg "No insecure repos found in the repository directory"
+        space_1
+        insecure_repo_found=true
     fi
 done
+
+if [ "$insecure_repo_found" = false ]; then
+    conf_msg "No insecure repos found in the repository directory"
+fi
 space_2
 
 # CPU vulnerability check
