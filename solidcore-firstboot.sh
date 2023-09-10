@@ -167,9 +167,9 @@ while true; do
     space_1
     short_msg "Numbers and special characters are permitted, but not required."
     space_1
-    short_msg "${bold}Password length is more important than complexity.${normal}"
+    short_msg "${bold}Password length is more important than character complexity.${normal}"
     space_1
-    short_msg "For example, ${italics}TwoClownsWalkedintoaBar${normal} is better than ${italics}dVc78#!_sjdRa${normal}."
+    short_msg "For example, ${bold}${italics}Two-Clowns-Walked-into-a-Bar${normal} is better than ${bold}${italics}dVc78#!_sjdRa${normal}."
     sleep 1
     space_1
     short_msg "Enter your new password below."
@@ -205,13 +205,12 @@ if [ "$num_users" -gt 0 ]; then
         chage -E 0 "$username"
     done
     space_1
-    short_msg "${bold}Passwords for other human users have now expired.${normal}"
-    short_msg "They will be prompted to update their password on the next login."
+    short_msg "${bold}Passwords for other users have now expired.${normal}"
+    short_msg "They will be prompted to update their password on next login."
     sleep 1
 fi
 
 space_2
-space_1
 
 
 # === GRUB ===
@@ -297,7 +296,7 @@ function prompt_for_multiselect {
     cursor_blink_off()  { printf "$ESC[?25l"; }
     cursor_to()         { printf "$ESC[$1;${2:-1}H"; }
     print_inactive()    { printf "$2   $1 "; }
-    print_active()      { printf "$2  $ESC[7m $1 $ESC[27m"; }
+    print_active()      { printf "$2  $ESC[7m $1 $normal"; }
     get_cursor_row()    { IFS=';' read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[}; }
     key_input()         {
       local key
@@ -354,7 +353,7 @@ function prompt_for_multiselect {
         for option in "${options[@]}"; do
             local prefix="[ ]"
             if [[ ${selected[idx]} == true ]]; then
-              prefix="[x]"
+              prefix="[${green}${bold}✓${normal}]"
             fi
 
             cursor_to $(($startrow + $idx))
@@ -395,14 +394,14 @@ thunderbolt_response="N"
 usb_response="N"
 
 # Define the options for the menu
-options_1=("Printer" "Webcam (non-USB)")
-options_2=("Bluetooth" "Wi-Fi")
-options_3=("FireWire" "Thunderbolt" "USB")
+options_1=("Printer" "Webcam (non-USB)" "None of the above")
+options_2=("Bluetooth" "Wi-Fi" "None of the above")
+options_3=("FireWire" "Thunderbolt" "USB" "None of the above")
 
 # Define the defaults (which options are initially selected)
-defaults_1=("N" "N")
-defaults_2=("N" "N")
-defaults_3=("N" "N" "N")
+defaults_1=("N" "N" "N")
+defaults_2=("N" "N" "N")
+defaults_3=("N" "N" "N" "N")
 
 # User interaction
 clear
@@ -410,17 +409,14 @@ space_2
 short_msg "You will now be given a series of questions to select what devices, wireless connections and ports you use on your device."
 sleep 1
 space_1
-short_msg "Use the up and down arrows to cycle through the options, and use the space bar to select and de-select your choices."
-space_1
-short_msg "Once you have selected your choices you can press enter to continue to the next question."
-space_1
 short_msg "Let's begin..."
 sleep 2
 space_1
-short_msg "${bold}[1 of 3] Do you use any of the following devices?${normal}"
+short_msg "${bold}[1 of 3]${normal} Do you use any of the following devices?"
+short_msg "Use ${bold}▲ up${normal}and ${bold}▼ down${normal} to navigate, ${bold}<space>${normal} to select, ${bold}<enter>${normal} to submit."
 
 echo
-prompt_for_multiselect user_input "$(IFS=';'; echo "${options_1[*]}")" "$(IFS=';'; echo "${defaults_1[*]}")"
+prompt_for_multiselect user_input "$(IFS=';'; echo ">  ${options_1[*]}")" "$(IFS=';'; echo "${defaults_1[*]}")"
 
 for i in "${!user_input[@]}"; do
     case $i in
@@ -430,10 +426,10 @@ for i in "${!user_input[@]}"; do
 done
 echo
 
-short_msg "${bold}[2 of 3] Do you use any of the following wireless connections on this device?${normal}"
+short_msg "${bold}[2 of 3]${normal} Do you use any of the following wireless connections on this device?"
 
 echo
-prompt_for_multiselect user_input "$(IFS=';'; echo "${options_2[*]}")" "$(IFS=';'; echo "${defaults_2[*]}")"
+prompt_for_multiselect user_input "$(IFS=';'; echo ">  ${options_2[*]}")" "$(IFS=';'; echo "${defaults_2[*]}")"
 
 for i in "${!user_input[@]}"; do
     case $i in
@@ -443,10 +439,10 @@ for i in "${!user_input[@]}"; do
 done
 echo
 
-short_msg "${bold}[3 of 3] Which of the following ports do you use on this device?${normal}"
+short_msg "${bold}[3 of 3]${normal} Which of the following ports do you use on this device?"
 
 echo
-prompt_for_multiselect user_input "$(IFS=';'; echo "${options_3[*]}")" "$(IFS=';'; echo "${defaults_3[*]}")"
+prompt_for_multiselect user_input "$(IFS=';'; echo ">  ${options_3[*]}")" "$(IFS=';'; echo "${defaults_3[*]}")"
 
 for i in "${!user_input[@]}"; do
     case $i in
@@ -457,9 +453,11 @@ for i in "${!user_input[@]}"; do
 done
 echo
 
+space_2
+
 while true; do
-    
-    read -rp ">  ${bold}Question: Do you use any hardware security keys?${normal} (y/n): " token_response
+
+    read -rp "${bold}[USB]${normal} Do you use any hardware security keys? (y/n): " token_response
     
     case $token_response in 
 	[Yy] ) token_response="Y";
@@ -528,7 +526,7 @@ if [[ "$token_response" =~ ^[Yy]$ ]]; then
     done
 fi
 
-short_msg "Thank you for your responses."
+short_msg "Thank you for your input."
 sleep 1
 space_1
 
@@ -662,7 +660,7 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
         script_path="/etc/solidcore/solidcore-secondboot.sh"
 
         # Write secondboot.sh script
-cat > "$script_path" << EOF
+cat > "$script_path" << OF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
@@ -861,7 +859,7 @@ if [ -x "$(command -v minisign)" ]; then
     fi
 
 else
-    short_msg "${bold}[WARN]${normal} minisign is not installed, downloaded file signature could not be verified."
+    short_msg "${bold}[NOTE]${normal} minisign is not installed, downloaded file signature could not be verified."
     space_1
 fi
 
@@ -1156,7 +1154,7 @@ sleep 2
 space_2
 
 # Check the current SELinux status and enable enforcing if required
-short_msg "[1 of 3] Checking SELinux..."
+short_msg "${bold}[1 of 3]${normal} Checking SELinux..."
 space_1
 sleep 1
 current_status=$(sestatus | awk '/Current mode:/ {print $3}')
@@ -1171,7 +1169,7 @@ fi
 space_2
 
 # HTTP check for the repos
-short_msg "[2 of 3] Checking insecure URLs in the repo directory..."
+short_msg "${bold}[2 of 3]${normal} Checking insecure URLs in the repo directory..."
 space_1
 sleep 1
 patterns=("^baseurl=http:" "^metalink=http:")
@@ -1190,7 +1188,7 @@ done
 space_2
 
 # CPU vulnerability check
-short_msg "[3 of 3] Checking CPU Vulnerabilities..."
+short_msg "${bold}[3 of 3]${normal} Checking CPU Vulnerabilities..."
 space_1
 sleep 1
 
