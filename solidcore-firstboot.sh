@@ -276,9 +276,15 @@ sleep 3
 while true; do
     space_1
     echo
-    passwd > /dev/null
+    echo "Enter the new password:"
+    read -s new_password
+
+    # Use passwd --stdin to set the new password
+    echo "$new_password" | passwd --stdin "$USER"
+
     if [ $? -eq 0 ]; then
         conf_msg "New password set"
+        sleep 1
         break
     else
         space_1
@@ -286,6 +292,7 @@ while true; do
         space_1
     fi
 done
+
 
 # OLD CODE - EXPIRED CURRENT USER, NOT WORKING (expires current user pwd locking them out)
 ## Expire passwords of all other users
@@ -310,14 +317,16 @@ done
 #    sleep 1
 #fi
 #sleep 2
-space_2
 
 
 # === GRUB ===
 
+clear
+space_2
+
 # Ask the user if they want to set a GRUB password
 short_msg "Setting a GRUB password prevents an attacker from accessing the bootloader configuration menus and terminal."
-space_1
+space_2
 while true; do
 read -rp "${bold}[Question]${normal} Do you want to set a GRUB password [recommended]? (y/n): " grub_response
 case $grub_response in 
@@ -377,7 +386,6 @@ if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
 else
     short_msg "Skipping..."
 fi
-space_2
 sleep 1
 
 
@@ -526,8 +534,7 @@ if [[ "$token_response" =~ ^[Yy]$ ]]; then
 fi
 
 short_msg "Thank you for your input."
-sleep 1
-space_1
+sleep 2
 
 
 # === ACTION CHOICES ===
