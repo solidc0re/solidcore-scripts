@@ -86,7 +86,7 @@ For the next release:
 - implement conditional conf_msg and error reporting
 - user-testing and implement feedback
 - test uninstall process thoroughly
-- implement improvements to the USBGuard config
+- [x]~~implement improvements to the USBGuard config~~
 - continue work on developing `-test` flag
 
 # Instructions
