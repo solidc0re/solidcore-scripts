@@ -36,6 +36,7 @@ These are just some of the issues that solidcore hardening aims to protect again
 - Hardened GRUB boot parameters :heavy_check_mark:
 - Kernel module blacklist :heavy_check_mark:
 - High risk and unused services disabled and masked :heavy_check_mark:
+- Processes hidden from other users (hidepid) :heavy_check_mark:
 - New files only viewable to owner/creator :heavy_check_mark:
 - Core dumps disabled (stops sensitive information about the system being available) :heavy_check_mark:
 - Improved password policies :heavy_check_mark:
