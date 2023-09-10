@@ -273,27 +273,42 @@ space_1
 short_msg "For example, ${bold}${italics}Two-Clowns-Walked-into-a-Bar${normal} is better than ${bold}${italics}dVc78#!_sjdRa${normal}."
 sleep 3
 
+
+current_user=$(logname)
 while true; do
     space_1
     echo
-    echo "Enter the new password:"
-    read -s new_password
+    echo "Enter a new password:"
+    read new_password
 
-    # Use passwd --stdin to set the new password
-    current_user=$(logname)
-    echo "$new_password" | passwd --stdin "$current_user"
-
-    if [ $? -eq 0 ]; then
-        conf_msg "New password set"
-        sleep 2
-        break
+    # Check password complexity (at least 12 characters, one lowercase, one uppercase)
+    if [[ ${#new_password} -ge 12 && "$new_password" =~ [a-z] && "$new_password" =~ [A-Z] ]]; then
+        echo
+        echo "Confirm the new password:"
+        read confirm_password
+        # Check if the passwords match
+        if [ "$new_password" = "$confirm_password" ]; then
+            echo "$new_password" | passwd --stdin "$current_user"
+            if [ $? -eq 0 ]; then
+                conf_msg "New password set"
+                sleep 1
+                break
+            else
+                space_1
+                short_msg "Password change failed. Please try again."
+                space_1
+            fi
+        else
+            space_1
+            short_msg "Passwords do not match. Please try again."
+            space_1
+        fi
     else
         space_1
-        short_msg "Password change failed. Please try again."
+        short_msg "Password must contain at least 12 characters, one lowercase, and one uppercase character. Please try again."
         space_1
     fi
 done
-
 
 # Expire passwords of all other users
 short_msg "Expiring all user passwords except for user..."
