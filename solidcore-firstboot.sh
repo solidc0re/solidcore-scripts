@@ -238,8 +238,6 @@ long_msg ">
 >
 >  Welcome back!
 >
->  You have part-completed the solidcore hardening process.
->
 >  This script carries out the finishing touches which require your input."
 sleep 2
 space_2
@@ -280,7 +278,6 @@ while true; do
     echo
     passwd > /dev/null
     if [ $? -eq 0 ]; then
-        space_1
         conf_msg "New password set"
         break
     else
@@ -339,7 +336,6 @@ if [[ "$grub_response" =~ ^[Yy]$ ]]; then
         echo
         grub2-setpassword
         if [ $? -eq 0 ]; then
-            space_1
             conf_msg "New password set"
             break
         else
@@ -540,6 +536,7 @@ clear
 space_2
 short_msg "Applying settings..."
 sleep 1
+space_1
 
 
 # === CUPS ===
@@ -660,7 +657,7 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
         systemctl restart usbguard.service
         conf_msg "USBGuard already installed. Applied hardened configuation"
     else
-        short_msg "Installing USBGaurd. This may take a while."
+        short_msg "Installing USBGaurd. This may take a while..."
         echo
         rpm-ostree cancel -q
         rpm-ostree install -q usbguard
@@ -860,7 +857,7 @@ fi
 
 if [ -x "$(command -v minisign)" ]; then
     curl --request GET -sL --url "${download_url}.minisig" --output "$workdir/${download_file}.minisig"
-    minisign -Vm "$workdir/$download_file" -P "$DNSCRYPT_PUBLIC_KEY"
+    minisign -Vm "$workdir/$download_file" -P "$DNSCRYPT_PUBLIC_KEY" > /dev/null
     valid_file=$?
 
     if [ $valid_file -ne 0 ]; then
@@ -1128,12 +1125,8 @@ conf_msg "dnscrypt-proxy installed"
 # === MACHINE ID ===
 
 new_machine_id="b08dfa6083e7567a1921a715000001fb"
-
-# Change machine ID in /etc/machine-id
-echo "$new_machine_id" | sudo tee /etc/machine-id > /dev/null
-
-# Change machine ID in /var/lib/dbus/machine-id
-echo "$new_machine_id" | sudo tee /var/lib/dbus/machine-id > /dev/null
+echo "$new_machine_id" | tee /etc/machine-id > /dev/null
+echo "$new_machine_id" | tee /var/lib/dbus/machine-id > /dev/null
 
 conf_msg "Generic Machine ID applied"
 
@@ -1147,7 +1140,7 @@ systemd_timers=(
 )
 
 for sc_timer in "${systemd_timers[@]}"; do
-    systemctl enable --now "${sc_timer}" > /dev/null 2>&1
+    sudo systemctl enable --now "${sc_timer}" > /dev/null 2>&1
 done
 
 conf_msg "Automatic update timers initiated"
@@ -1214,10 +1207,11 @@ space_1
 
 # Reboot if USB Guard installed, otherwise farewell
 if [[ "$usb_response" =~ ^[Yy]$ ]]; then
-    short_msg "${bold}Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard.{$normal}"
+    short_msg "${bold}Because you confirmed you use USB devices, a final reboot is required to deploy USBGuard.${normal}"
     space_1
     short_msg "Another script will guide you through whitelisting your USB devices."
 	sleep 2
+    space_1
     read -n 1 -s -r -p "Press any key to continue..."
     space_1
         for i in {5..1}; do
