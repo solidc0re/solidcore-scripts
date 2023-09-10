@@ -78,13 +78,12 @@ In the meantime, there's plenty of work to do. Including the following, in no pa
 - create scripts to audit all relevant settings on new versions of Fedora to make keeping it up-to-date easier
 - research and possibly implement clam-tk and AIDE
 - research anti-forensic tools
-- improve user interactions
 - set up full installation of hardware keys, i.e. creation of U2F pam module key and required modification to solidcore pam profile
 - develop the `-server` flag further to eliminate all user interaction
-- implement conditional conf_msg and error reporting
 - establish blocklist review process
 
 For the next release:
+- implement conditional conf_msg and error reporting
 - user-testing and implement feedback
 - test uninstall process thoroughly
 - implement improvements to the USBGuard config
