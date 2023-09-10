@@ -280,7 +280,7 @@ while true; do
     read -s new_password
 
     # Use passwd --stdin to set the new password
-    current_user=$(whoami)
+    current_user=$(logname)
     echo "$new_password" | passwd --stdin "$current_user"
 
     if [ $? -eq 0 ]; then
