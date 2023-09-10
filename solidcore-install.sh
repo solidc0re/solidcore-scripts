@@ -193,7 +193,6 @@ long_msg ">
 sleep 1
 long_msg "
 >
->
 >  This script will carry out various hardening measures, including:
 >
 >  1. Kernel and physical hardening to reduce attack surface
@@ -214,7 +213,7 @@ sleep 2
 space_2
 
 while true; do
-read -p "Do you want to continue? (y/n): " solidcore_response
+read -p "${bold}Do you want to continue?${normal} (y/n): " solidcore_response
 case $solidcore_response in 
 	[Yy] ) solidcore_response="Y";
 		break;;
@@ -404,7 +403,8 @@ done
 # Remove the trailing space
 param_string="${param_string%" "}"
 
-# Append all boot parameters to the system configuration in one command
+# Cancel any current rpm-ostree operations and append boot parameters
+rpm-ostree cancel -q
 rpm-ostree kargs -q "$param_string" > /dev/null
 
 
@@ -887,12 +887,13 @@ chmod 644 /etc/xdg/autostart/solidcore-mute-mic.desktop
 # === INSTALLS ===
 
 short_msg "Installing minisign (for dnscrypt-proxy installation & updates). This will also take a while..."
-space_1
 
 # Minisign
 if [ "$test_mode" == true ]; then
+    rpm-ostree cancel -q
     rpm-ostree install -q minisign
 else
+    rpm-ostree cancel -q
     rpm-ostree install -q minisign > /dev/null 2>&1
 fi
 conf_msg "Done"

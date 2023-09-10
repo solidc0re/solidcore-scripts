@@ -156,6 +156,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	kargs_added="${kargs_added%" "}"
 
 	# Remove all added parameters saved in kargs-added_sc.bak
+	rpm-ostree cancel -q
 	rpm-ostree kargs -q "$kargs_added"
 	conf_msg "solidcore added boot parameters removed"
 
@@ -169,6 +170,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 	kargs_orig="${kargs_orig%" "}"
 
 	# Append all added parameters saved in kargs-orig_sc.bak
+	rpm-ostree cancel -q
 	rpm-ostree kargs -q "$kargs_orig"
 	conf_msg "Original boot parameters restored"
 
@@ -385,6 +387,7 @@ if [[ "$uninstall_response" =~ ^[Yy]$ ]]; then
 
 	# === UNINSTALL APPS ===
 	flatpak remove flatseal > /dev/null 2>&1
+	rpm-ostree cancel -q
 	rpm-ostree remove -q minisign usbguard > /dev/null 2>&1
 	rm -rf /usr/local/sbin/dnscrypt-proxy* > /dev/null 2>&1
 	conf_msg "DNSCrypt-Proxy, Flatseal, minisign & USBGuard (if installed) removed"

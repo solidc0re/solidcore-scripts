@@ -662,6 +662,7 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     else
         short_msg "Installing USBGaurd. This may take a while."
         echo
+        rpm-ostree cancel -q
         rpm-ostree install -q usbguard
         mkdir -p /etc/solidcore/
         script_path="/etc/solidcore/solidcore-secondboot.sh"
