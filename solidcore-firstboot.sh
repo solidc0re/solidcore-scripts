@@ -290,7 +290,7 @@ while true; do
     fi
 done
 
-# OLD CODE - EXPIRED CURRENT USER, NOT WORKING
+# OLD CODE - EXPIRED CURRENT USER, NOT WORKING (expires current user pwd locking them out)
 ## Expire passwords of all other users
 #short_msg "Expiring all user passwords except for user..."
 #
@@ -312,44 +312,7 @@ done
 #    short_msg "They will be prompted to update their password on next login."
 #    sleep 1
 #fi
-
-# Expire passwords based on user interaction
-current_user=$(whoami)
-excluded_user="nfsnobody"
-
-# Get a list of eligible users (UID >= 1000) excluding the current user and excluded user
-eligible_users=($(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}'))
-
-if [ ${#eligible_users[@]} -eq 0 ]; then
-    short_msg "No user passwords to expire..."
-else
-    # Define the options for the menu, including "None of the above"
-    options_user=("${eligible_users[@]}" "None of the above")
-    selected_users=()
-
-    # User interaction
-    short_msg "Select the users whose passwords you want to expire."
-    short_msg "Use ${bold}▲ up${normal} and ${bold}▼ down${normal} to navigate, ${bold}<space>${normal} to select, ${bold}<enter>${normal} to submit."
-
-    prompt_for_multiselect selected_users "$(IFS=';'; echo "${options_user[*]}")"
-
-    # Check if "None of the above" was selected or if no users were selected
-    if [ "${#selected_users[@]}" -eq 0 ] || [ "${selected_users[0]}" == "None of the above" ]; then
-        space_1
-        short_msg "No users selected. Passwords remain unchanged."
-    else
-        # Loop through selected users and expire their passwords
-        for username in "${selected_users[@]}"; do
-            short_msg "Expiring password for user: $username"
-            chage -E 0 "$username"
-        done
-        space_1
-        short_msg "${bold}Passwords for selected users have now expired.${normal}"
-        short_msg "They will be prompted to update their password on next login."
-    fi
-fi
-
-sleep 2
+#sleep 2
 space_2
 
 
