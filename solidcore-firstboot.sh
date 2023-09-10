@@ -154,23 +154,24 @@ fi
 short_msg "As part of solidcore's hardening, new password policies were implemented."
 sleep 1
 space_1
+short_msg "${bold}You are now required to set a new password.${normal}"
+sleep 1
+space_1
+short_msg "The new password requirements are:"
+short_msg "  • 12 character minimum"
+short_msg "  • at least 1 UPPER case character"
+short_msg "  • at least 1 lower case character"
+short_msg "  • the same character can not be repeated 3+ times in a row"
+short_msg "  • the password must pass a dictionary test"
+space_1
+short_msg "Numbers and special characters are permitted, but not required."
+space_1
+short_msg "${bold}Password length is more important than character complexity.${normal}"
+space_1
+short_msg "For example, ${bold}${italics}Two-Clowns-Walked-into-a-Bar${normal} is better than ${bold}${italics}dVc78#!_sjdRa${normal}."
+sleep 3
+
 while true; do
-    short_msg "${bold}You are now required to set a new password.${normal}"
-    sleep 1
-    space_1
-    short_msg "The new password requirements are:"
-    short_msg "  • 12 character minimum"
-    short_msg "  • at least 1 UPPER case character"
-    short_msg "  • at least 1 lower case character"
-    short_msg "  • the same character can not be repeated 3+ times in a row"
-    short_msg "  • the password must pass a dictionary test"
-    space_1
-    short_msg "Numbers and special characters are permitted, but not required."
-    space_1
-    short_msg "${bold}Password length is more important than character complexity.${normal}"
-    space_1
-    short_msg "For example, ${bold}${italics}Two-Clowns-Walked-into-a-Bar${normal} is better than ${bold}${italics}dVc78#!_sjdRa${normal}."
-    sleep 1
     space_1
     short_msg "Enter your new password below."
     space_1
@@ -186,7 +187,6 @@ while true; do
         space_1
     fi
 done
-conf_msg "Password updated"
 
 # Expire passwords of all other users
 short_msg "Expiring all user passwords except for user..."
@@ -219,7 +219,7 @@ space_2
 short_msg "Setting a GRUB password prevents an attacker from accessing the bootloader configuration menus and terminal."
 space_1
 while true; do
-read -rp "${bold}Question: Do you want to set a GRUB password [recommended]?${normal} (y/n): " grub_response
+read -rp "${bold}[Question]${normal} Do you want to set a GRUB password [recommended]? (y/n): " grub_response
 case $grub_response in 
 	[Yy] ) grub_response="Y";
 		break;;
@@ -256,7 +256,7 @@ space_1
 
 # Ask the user if they want to set a new generic hostname
 while true; do
-read -rp "${bold}Question: Do you want to set a generic hostname [recommended]?${normal}`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
+read -rp "${bold}[Question]${normal} Do you want to set a generic hostname [recommended]?`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
 case $hostname_response in 
 	[Yy] ) hostname_response="Y";
 		break;;
@@ -413,10 +413,9 @@ short_msg "Let's begin..."
 sleep 2
 space_1
 short_msg "${bold}[1 of 3]${normal} Do you use any of the following devices?"
-short_msg "Use ${bold}▲ up${normal}and ${bold}▼ down${normal} to navigate, ${bold}<space>${normal} to select, ${bold}<enter>${normal} to submit."
-
-echo
-prompt_for_multiselect user_input "$(IFS=';'; echo ">  ${options_1[*]}")" "$(IFS=';'; echo "${defaults_1[*]}")"
+short_msg "${bold}▲ up${normal} / ${bold}▼ down${normal} to navigate, ${bold}<space>${normal} to select, ${bold}<enter>${normal} to submit."
+echo ""
+prompt_for_multiselect user_input "$(IFS=';'; echo "${options_1[*]}")" "$(IFS=';'; echo "${defaults_1[*]}")"
 
 for i in "${!user_input[@]}"; do
     case $i in
@@ -424,12 +423,12 @@ for i in "${!user_input[@]}"; do
         1) [ "${user_input[i]}" == "true" ] && webcam_response="Y" || webcam_response="N" ;;
     esac
 done
-echo
+echo ""
 
 short_msg "${bold}[2 of 3]${normal} Do you use any of the following wireless connections on this device?"
 
-echo
-prompt_for_multiselect user_input "$(IFS=';'; echo ">  ${options_2[*]}")" "$(IFS=';'; echo "${defaults_2[*]}")"
+echo ""
+prompt_for_multiselect user_input "$(IFS=';'; echo "${options_2[*]}")" "$(IFS=';'; echo "${defaults_2[*]}")"
 
 for i in "${!user_input[@]}"; do
     case $i in
@@ -437,12 +436,12 @@ for i in "${!user_input[@]}"; do
         1) [ "${user_input[i]}" == "true" ] && wifi_response="Y" || wifi_response="N" ;;
     esac
 done
-echo
+echo ""
 
 short_msg "${bold}[3 of 3]${normal} Which of the following ports do you use on this device?"
 
-echo
-prompt_for_multiselect user_input "$(IFS=';'; echo ">  ${options_3[*]}")" "$(IFS=';'; echo "${defaults_3[*]}")"
+echo ""
+prompt_for_multiselect user_input "$(IFS=';'; echo "${options_3[*]}")" "$(IFS=';'; echo "${defaults_3[*]}")"
 
 for i in "${!user_input[@]}"; do
     case $i in
@@ -451,9 +450,9 @@ for i in "${!user_input[@]}"; do
         2) [ "${user_input[i]}" == "true" ] && usb_response="Y" || usb_response="N" ;;
     esac
 done
-echo
+echo ""
 
-space_2
+space_1
 
 while true; do
 
@@ -471,7 +470,7 @@ done
 
 if [[ "$token_response" =~ ^[Yy]$ ]]; then
     # User prompt for security key type
-    PS3="Select your security key type: "
+    PS3="Select your security key type (1 - 5): "
     options=("Google Titan Security Key" "Yubico's YubiKey" "Nitrokey" "OnlyKey" "Other")
     select opt in "${options[@]}"
     do
@@ -515,7 +514,6 @@ if [[ "$token_response" =~ ^[Yy]$ ]]; then
                 break
                 ;;
             "Other")
-                space_1
                 short_msg "Other hardware tokens are not currently supported by this script."
                 short_msg "Please check with your hardware security key supplier for instructions on how to implement the required udev rules."
                 sleep 3
@@ -550,7 +548,6 @@ else
     systemctl disable cups > /dev/null 2>&1
     systemctl --now mask cups > /dev/null 2>&1
     systemctl daemon-reload
-    space_1
     conf_msg "Printer service (CUPS) has been stopped and disabled"
 fi
 
@@ -559,12 +556,10 @@ fi
 
 # Enable or disable the webcam based on user response
 if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
-    space_1
     conf_msg "Webcam remains enabled"
 else
     rmmod uvcvideo > /dev/null 2>&1
     echo "install uvcvideo /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
     conf_msg "Webcam has been disabled and added to the kernel module blacklist"
 fi
 
@@ -660,7 +655,7 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
         script_path="/etc/solidcore/solidcore-secondboot.sh"
 
         # Write secondboot.sh script
-cat > "$script_path" << OF
+cat > "$script_path" << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
@@ -860,7 +855,6 @@ if [ -x "$(command -v minisign)" ]; then
 
 else
     short_msg "${bold}[NOTE]${normal} minisign is not installed, downloaded file signature could not be verified."
-    space_1
 fi
 
 tar xz -C "$workdir" -f "$workdir/$download_file" "${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy" "${PLATFORM}-${CPU_ARCH}/example-dnscrypt-proxy.toml"
@@ -1189,19 +1183,16 @@ space_2
 
 # CPU vulnerability check
 short_msg "${bold}[3 of 3]${normal} Checking CPU Vulnerabilities..."
-space_1
-sleep 1
 
+echo
+sleep 1
 grep . /sys/devices/system/cpu/vulnerabilities/*
-
 sleep 1
-space_1
-short_msg "${bold}Please take a note of any vulnerability that affects your CPU with no mitigation (Migitation: None).{$normal}"
-sleep 2
-space_1
-short_msg "... And raise this vulnerability as an issue on the solidcore-script Github page:"
-short_msg "https://github.com/solidc0re/solidcore-scripts"
+echo
+
+short_msg "${bold}Please check that all known CPU vulnerabilities either don't affect this device, or have some mitigation applied.{$normal}"
 sleep 3
+
 
 # === TiDY UP & FINISH ===
 
@@ -1211,7 +1202,6 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     space_1
     short_msg "Another script will guide you through whitelisting your USB devices."
 	sleep 2
-    space_2
     read -n 1 -s -r -p "Press any key to continue..."
     space_1
         for i in {5..1}; do
@@ -1227,7 +1217,6 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
 else
     # Remove first boot autostart
     rm /etc/xdg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
-    sleep 1
     # End
     short_msg "${bold}Thank you for running the solidcore script.${normal}"
 	space_1
