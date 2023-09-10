@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.5
+## Version 0.2.6
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -110,182 +110,6 @@ space_1() {
 >  "
 }
 
-
-# === FLAGS ===
-
-# Test mode
-# Check if the -test flag is provided
-if [[ "$1" == "-test" ]]; then
-    test_mode=true
-    short_msg "Test mode."
-else
-    test_mode=false
-fi
-
-
-# === VARIABLES ===
-block_file="/etc/modprobe.d/solidcore-blocklist.conf"
-
-
-# === WELCOME ===
-
-clear
-long_msg ">
->
->  Welcome back!
->
->  You have part-completed the solidcore hardening process.
->
->  This script carries out the finishing touches which require your input."
-sleep 2
-space_2
-
-
-# === SUDO CHECK ===
-
-if [ "$EUID" -ne 0 ]; then
-    short_msg "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-firstboot.sh'"
-    exit 1
-fi
-
-
-# === NEW PASSWORD ===
-
-short_msg "As part of solidcore's hardening, new password policies were implemented."
-sleep 1
-space_1
-while true; do
-    short_msg "${bold}You are now required to set a new password.${normal}"
-    sleep 1
-    space_1
-    short_msg "The new password requirements are:"
-    short_msg "  • 12 character minimum"
-    short_msg "  • at least 1 UPPER case character"
-    short_msg "  • at least 1 lower case character"
-    short_msg "  • the same character can not be repeated 3+ times in a row"
-    short_msg "  • the password must pass a dictionary test"
-    space_1
-    short_msg "Numbers and special characters are permitted, but not required."
-    space_1
-    short_msg "${bold}Password length is more important than complexity.${normal}"
-    space_1
-    short_msg "For example, ${italics}TwoClownsWalkedintoaBar${normal} is better than ${italics}dVc78#!_sjdRa${normal}."
-    sleep 1
-    space_1
-    short_msg "Enter your new password below."
-    space_1
-    echo
-    passwd > /dev/null
-    if [ $? -eq 0 ]; then
-        space_1
-        conf_msg "New password set"
-        break
-    else
-        space_1
-        short_msg "Password change failed. Please try again."
-        space_1
-    fi
-done
-conf_msg "Password updated"
-
-# Expire passwords of all other users
-short_msg "Expiring all user passwords except for user..."
-
-# Get the UID of the current user
-current_user_uid=$(id -u)
-
-# Count the number of non-root human users on the system
-num_users=$(getent passwd | awk -F: '$3 >= 1000 && $3 != '$current_user_uid' {print $1}' | wc -l)
-
-# Check if there are other human users besides the current user
-if [ "$num_users" -gt 0 ]; then
-    # Loop through all user accounts and exclude the current user
-    getent passwd | awk -F: '$3 >= 1000 && $3 != '$current_user_uid' {print $1}' | while read -r username; do
-        short_msg "Expiring password for user: $username"
-        chage -E 0 "$username"
-    done
-    space_1
-    short_msg "${bold}Passwords for other human users have now expired.${normal}"
-    short_msg "They will be prompted to update their password on the next login."
-    sleep 1
-fi
-
-space_2
-space_1
-
-
-# === GRUB ===
-
-# Ask the user if they want to set a GRUB password
-short_msg "Setting a GRUB password prevents an attacker from accessing the bootloader configuration menus and terminal."
-space_1
-while true; do
-read -rp "${bold}Question: Do you want to set a GRUB password [recommended]?${normal} (y/n): " grub_response
-case $grub_response in 
-	[Yy] ) grub_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-
-if [[ "$grub_response" =~ ^[Yy]$ ]]; then
-    # Set new GRUB password
-    while true; do
-        echo
-        grub2-setpassword
-        if [ $? -eq 0 ]; then
-            space_1
-            conf_msg "New password set"
-            break
-        else
-            space_1
-            short_msg "Password change failed. Please try again."
-        fi
-    done
-else
-    short_msg "Skipping..."
-fi
-
-space_2
-space_1
-
-
-# === HOSTNAME ===
-
-# Ask the user if they want to set a new generic hostname
-while true; do
-read -rp "${bold}Question: Do you want to set a generic hostname [recommended]?${normal}`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
-case $hostname_response in 
-	[Yy] ) hostname_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-space_2
-
-if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
-    # Create backup
-    echo hostnamectl hostname > /etc/solidcore/hostname_sc.bak
-    # Prompt user for a new hostname
-    read -r -p "Enter new hostname: " new_hostname
-    # Update hostname
-    hostnamectl hostname "$new_hostname" 
-    conf_msg "Hostname is now $new_hostname"
-else
-    short_msg "Skipping..."
-fi
-space_2
-sleep 1
-
-
-# === USER INPUT FOR PORTS/DEVICES/WIRELESS ===
-
 # Thanks to stackoverflow for the multiselect function
 # https://stackoverflow.com/questions/45382472/bash-select-multiple-answers-at-once
 
@@ -297,7 +121,7 @@ function prompt_for_multiselect {
     cursor_blink_off()  { printf "$ESC[?25l"; }
     cursor_to()         { printf "$ESC[$1;${2:-1}H"; }
     print_inactive()    { printf "$2   $1 "; }
-    print_active()      { printf "$2  $ESC[7m $1 $ESC[27m"; }
+    print_active()      { printf "$2  $ESC[7m $1 $normal"; }
     get_cursor_row()    { IFS=';' read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[}; }
     key_input()         {
       local key
@@ -354,7 +178,7 @@ function prompt_for_multiselect {
         for option in "${options[@]}"; do
             local prefix="[ ]"
             if [[ ${selected[idx]} == true ]]; then
-              prefix="[x]"
+              prefix="[${green}${bold}✓${normal}]"
             fi
 
             cursor_to $(($startrow + $idx))
@@ -382,8 +206,186 @@ function prompt_for_multiselect {
     printf "\n"
     cursor_blink_on
 
+    # Remove highlighting
+    for ((idx=0; idx<${#options[@]}; idx++)); do
+        cursor_to $(($startrow + $idx))
+        print_inactive "${options[idx]}" "[ ]"
+    done
+
     eval $retval='("${selected[@]}")'
 }
+
+# === FLAGS ===
+
+# Test mode
+# Check if the -test flag is provided
+if [[ "$1" == "-test" ]]; then
+    test_mode=true
+    short_msg "Test mode."
+else
+    test_mode=false
+fi
+
+
+# === VARIABLES ===
+block_file="/etc/modprobe.d/solidcore-blocklist.conf"
+
+
+# === WELCOME ===
+
+clear
+long_msg ">
+>
+>  Welcome back!
+>
+>  You have part-completed the solidcore hardening process.
+>
+>  This script carries out the finishing touches which require your input."
+sleep 2
+space_2
+
+
+# === SUDO CHECK ===
+
+if [ "$EUID" -ne 0 ]; then
+    short_msg "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-firstboot.sh'"
+    exit 1
+fi
+
+
+# === NEW PASSWORD ===
+
+short_msg "As part of solidcore's hardening, new password policies were implemented."
+sleep 1
+space_1
+short_msg "${bold}You are now required to set a new password.${normal}"
+sleep 1
+space_1
+short_msg "The new password requirements are:"
+short_msg "  • 12 character minimum"
+short_msg "  • at least 1 UPPER case character"
+short_msg "  • at least 1 lower case character"
+short_msg "  • the same character can not be repeated 3+ times in a row"
+short_msg "  • the password must pass a dictionary test"
+space_1
+short_msg "Numbers and special characters are permitted, but not required."
+space_1
+short_msg "${bold}Password length is more important than character complexity.${normal}"
+space_1
+short_msg "For example, ${bold}${italics}Two-Clowns-Walked-into-a-Bar${normal} is better than ${bold}${italics}dVc78#!_sjdRa${normal}."
+sleep 3
+
+while true; do
+    space_1
+    echo
+    passwd > /dev/null
+    if [ $? -eq 0 ]; then
+        space_1
+        conf_msg "New password set"
+        break
+    else
+        space_1
+        short_msg "Password change failed. Please try again."
+        space_1
+    fi
+done
+
+# OLD CODE - EXPIRED CURRENT USER, NOT WORKING (expires current user pwd locking them out)
+## Expire passwords of all other users
+#short_msg "Expiring all user passwords except for user..."
+#
+#current_user=$(whoami)
+#excluded_user="nfsnobody"
+#
+## Count the number of non-root human users on the system
+#num_users=$(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | wc -l)
+#
+## Check if there are other human users besides the current user and excluded user
+#if [ "$num_users" -gt 0 ]; then
+#    # Loop through all user accounts and exclude the current user and excluded user
+#    getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | while read -r username; do
+#        short_msg "Expiring password for user: $username"
+#        chage -E 0 "$username"
+#    done
+#    space_1
+#    short_msg "${bold}Passwords for other users have now expired.${normal}"
+#    short_msg "They will be prompted to update their password on next login."
+#    sleep 1
+#fi
+#sleep 2
+space_2
+
+
+# === GRUB ===
+
+# Ask the user if they want to set a GRUB password
+short_msg "Setting a GRUB password prevents an attacker from accessing the bootloader configuration menus and terminal."
+space_1
+while true; do
+read -rp "${bold}[Question]${normal} Do you want to set a GRUB password [recommended]? (y/n): " grub_response
+case $grub_response in 
+	[Yy] ) grub_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo ">";
+esac
+done
+
+if [[ "$grub_response" =~ ^[Yy]$ ]]; then
+    # Set new GRUB password
+    while true; do
+        echo
+        grub2-setpassword
+        if [ $? -eq 0 ]; then
+            space_1
+            conf_msg "New password set"
+            break
+        else
+            space_1
+            short_msg "Password change failed. Please try again."
+        fi
+    done
+else
+    short_msg "Skipping..."
+fi
+
+space_2
+space_1
+
+
+# === HOSTNAME ===
+
+# Ask the user if they want to set a new generic hostname
+while true; do
+read -rp "${bold}[Question]${normal} Do you want to set a generic hostname [recommended]?`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
+case $hostname_response in 
+	[Yy] ) hostname_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo ">";
+esac
+done
+
+if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
+    # Create backup
+    echo hostnamectl hostname > /etc/solidcore/hostname_sc.bak
+    # Prompt user for a new hostname
+    read -r -p "Enter new hostname: " new_hostname
+    # Update hostname
+    hostnamectl hostname "$new_hostname" 
+    conf_msg "Hostname is now $new_hostname"
+else
+    short_msg "Skipping..."
+fi
+space_2
+sleep 1
+
+
+# === USER INPUT FOR PORTS/DEVICES/WIRELESS ===
 
 # Initialize variables
 printer_response="N"
@@ -395,14 +397,14 @@ thunderbolt_response="N"
 usb_response="N"
 
 # Define the options for the menu
-options_1=("Printer" "Webcam (non-USB)")
-options_2=("Bluetooth" "Wi-Fi")
-options_3=("FireWire" "Thunderbolt" "USB")
+options_1=("Printer" "Webcam (non-USB)" "None of the above")
+options_2=("Bluetooth" "Wi-Fi" "None of the above")
+options_3=("FireWire" "Thunderbolt" "USB" "None of the above")
 
 # Define the defaults (which options are initially selected)
-defaults_1=("N" "N")
-defaults_2=("N" "N")
-defaults_3=("N" "N" "N")
+defaults_1=("N" "N" "N")
+defaults_2=("N" "N" "N")
+defaults_3=("N" "N" "N" "N")
 
 # User interaction
 clear
@@ -410,16 +412,12 @@ space_2
 short_msg "You will now be given a series of questions to select what devices, wireless connections and ports you use on your device."
 sleep 1
 space_1
-short_msg "Use the up and down arrows to cycle through the options, and use the space bar to select and de-select your choices."
-space_1
-short_msg "Once you have selected your choices you can press enter to continue to the next question."
-space_1
 short_msg "Let's begin..."
 sleep 2
 space_1
-short_msg "${bold}[1 of 3] Do you use any of the following devices?${normal}"
-
-echo
+short_msg "${bold}[1 of 3]${normal} Do you use any of the following devices?"
+short_msg "${bold}▲ up${normal} / ${bold}▼ down${normal} to navigate, ${bold}<space>${normal} to select, ${bold}<enter>${normal} to submit."
+echo ""
 prompt_for_multiselect user_input "$(IFS=';'; echo "${options_1[*]}")" "$(IFS=';'; echo "${defaults_1[*]}")"
 
 for i in "${!user_input[@]}"; do
@@ -428,11 +426,11 @@ for i in "${!user_input[@]}"; do
         1) [ "${user_input[i]}" == "true" ] && webcam_response="Y" || webcam_response="N" ;;
     esac
 done
-echo
+echo ""
 
-short_msg "${bold}[2 of 3] Do you use any of the following wireless connections on this device?${normal}"
+short_msg "${bold}[2 of 3]${normal} Do you use any of the following wireless connections on this device?"
 
-echo
+echo ""
 prompt_for_multiselect user_input "$(IFS=';'; echo "${options_2[*]}")" "$(IFS=';'; echo "${defaults_2[*]}")"
 
 for i in "${!user_input[@]}"; do
@@ -441,11 +439,11 @@ for i in "${!user_input[@]}"; do
         1) [ "${user_input[i]}" == "true" ] && wifi_response="Y" || wifi_response="N" ;;
     esac
 done
-echo
+echo ""
 
-short_msg "${bold}[3 of 3] Which of the following ports do you use on this device?${normal}"
+short_msg "${bold}[3 of 3]${normal} Which of the following ports do you use on this device?"
 
-echo
+echo ""
 prompt_for_multiselect user_input "$(IFS=';'; echo "${options_3[*]}")" "$(IFS=';'; echo "${defaults_3[*]}")"
 
 for i in "${!user_input[@]}"; do
@@ -455,25 +453,29 @@ for i in "${!user_input[@]}"; do
         2) [ "${user_input[i]}" == "true" ] && usb_response="Y" || usb_response="N" ;;
     esac
 done
-echo
+echo ""
 
-while true; do
+space_1
+
+if [[ "$usb_response" =~ ^[Yy]$ ]]; then
+    while true; do
+
+       read -rp "${bold}[USB]${normal} Do you use any hardware security keys? (y/n): " token_response
     
-    read -rp ">  ${bold}Question: Do you use any hardware security keys?${normal} (y/n): " token_response
-    
-    case $token_response in 
-	[Yy] ) token_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-    esac
-done
+       case $token_response in 
+    	[Yy] ) token_response="Y";
+            break;;
+    	[Nn] )
+            break;;
+    	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+            echo ">";
+       esac
+    done
+fi
 
 if [[ "$token_response" =~ ^[Yy]$ ]]; then
     # User prompt for security key type
-    PS3="Select your security key type: "
+    PS3="Select your security key type (1 - 5): "
     options=("Google Titan Security Key" "Yubico's YubiKey" "Nitrokey" "OnlyKey" "Other")
     select opt in "${options[@]}"
     do
@@ -517,7 +519,6 @@ if [[ "$token_response" =~ ^[Yy]$ ]]; then
                 break
                 ;;
             "Other")
-                space_1
                 short_msg "Other hardware tokens are not currently supported by this script."
                 short_msg "Please check with your hardware security key supplier for instructions on how to implement the required udev rules."
                 sleep 3
@@ -528,7 +529,7 @@ if [[ "$token_response" =~ ^[Yy]$ ]]; then
     done
 fi
 
-short_msg "Thank you for your responses."
+short_msg "Thank you for your input."
 sleep 1
 space_1
 
@@ -552,7 +553,6 @@ else
     systemctl disable cups > /dev/null 2>&1
     systemctl --now mask cups > /dev/null 2>&1
     systemctl daemon-reload
-    space_1
     conf_msg "Printer service (CUPS) has been stopped and disabled"
 fi
 
@@ -561,12 +561,10 @@ fi
 
 # Enable or disable the webcam based on user response
 if [[ "$webcam_response" =~ ^[Yy]$ ]]; then
-    space_1
     conf_msg "Webcam remains enabled"
 else
     rmmod uvcvideo > /dev/null 2>&1
     echo "install uvcvideo /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
     conf_msg "Webcam has been disabled and added to the kernel module blacklist"
 fi
 
@@ -666,7 +664,7 @@ cat > "$script_path" << EOF
 #!/bin/bash
         
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.5
+## Version 0.2.6
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -817,7 +815,6 @@ else
     rmmod usbcore usb_storage > /dev/null 2>&1
     echo "install usb_storage /bin/true" | tee -a "$block_file" > /dev/null
     echo "install usbcore /bin/true" | tee -a "$block_file" > /dev/null
-    space_1
     conf_msg "USB has been disabled and added to the kernel module blacklist"
 fi
 
@@ -861,8 +858,7 @@ if [ -x "$(command -v minisign)" ]; then
     fi
 
 else
-    short_msg "${bold}[WARN]${normal} minisign is not installed, downloaded file signature could not be verified."
-    space_1
+    short_msg "${bold}[NOTE]${normal} minisign is not installed, downloaded file signature could not be verified."
 fi
 
 tar xz -C "$workdir" -f "$workdir/$download_file" "${PLATFORM}-${CPU_ARCH}/dnscrypt-proxy" "${PLATFORM}-${CPU_ARCH}/example-dnscrypt-proxy.toml"
@@ -1156,7 +1152,7 @@ sleep 2
 space_2
 
 # Check the current SELinux status and enable enforcing if required
-short_msg "[1 of 3] Checking SELinux..."
+short_msg "${bold}[1 of 3]${normal} Checking SELinux..."
 space_1
 sleep 1
 current_status=$(sestatus | awk '/Current mode:/ {print $3}')
@@ -1171,7 +1167,7 @@ fi
 space_2
 
 # HTTP check for the repos
-short_msg "[2 of 3] Checking insecure URLs in the repo directory..."
+short_msg "${bold}[2 of 3]${normal} Checking insecure URLs in the repo directory..."
 space_1
 sleep 1
 patterns=("^baseurl=http:" "^metalink=http:")
@@ -1190,20 +1186,17 @@ done
 space_2
 
 # CPU vulnerability check
-short_msg "[3 of 3] Checking CPU Vulnerabilities..."
-space_1
-sleep 1
+short_msg "${bold}[3 of 3]${normal} Checking CPU Vulnerabilities..."
 
+echo
+sleep 1
 grep . /sys/devices/system/cpu/vulnerabilities/*
-
 sleep 1
+echo
+
+short_msg "${bold}Please check that all known CPU vulnerabilities either don't affect this device, or have some mitigation applied.${normal}"
+sleep 5
 space_1
-short_msg "${bold}Please take a note of any vulnerability that affects your CPU with no mitigation (Migitation: None).{$normal}"
-sleep 2
-space_1
-short_msg "... And raise this vulnerability as an issue on the solidcore-script Github page:"
-short_msg "https://github.com/solidc0re/solidcore-scripts"
-sleep 3
 
 # === TiDY UP & FINISH ===
 
@@ -1213,7 +1206,6 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
     space_1
     short_msg "Another script will guide you through whitelisting your USB devices."
 	sleep 2
-    space_2
     read -n 1 -s -r -p "Press any key to continue..."
     space_1
         for i in {5..1}; do
@@ -1229,7 +1221,6 @@ if [[ "$usb_response" =~ ^[Yy]$ ]]; then
 else
     # Remove first boot autostart
     rm /etc/xdg/autostart/solidcore-welcome.desktop > /dev/null 2>&1
-    sleep 1
     # End
     short_msg "${bold}Thank you for running the solidcore script.${normal}"
 	space_1

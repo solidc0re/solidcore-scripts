@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.5
+## Version 0.2.6
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
@@ -198,7 +198,7 @@ long_msg "
 >
 >  1. Kernel and physical hardening to reduce attack surface
 >  2. Drop all incoming connections, prevent IP spoofing and protect against various forms of attack
->  3. Hide sensitive kernel and file information from potential attackers
+>  3. More secure DNS lookups and added blocklists
 >  4. Stengthen password policies
 >  5. Enable automatic updates for rpm-ostree and flatpaks"
 
@@ -208,7 +208,7 @@ long_msg "
 >
 >  This script is open source (GPLv3) and has been tested on Silverblue 38 by the author.
 >
->  Hardening MAY reduce your experience of your device and is not suited for everyone."
+>  Hardening MAY reduce your experience of your device and is not suitable for everyone."
 
 sleep 2
 space_2
@@ -322,6 +322,7 @@ files_to_backup=(
     "/etc/sysconfig/chronyd"
     "/etc/systemd/coredump.conf"
     "/etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf"
+    "/etc/xdg/autostart/org.gnome.Software.desktop"
     "/var/lib/dbus/machine-id"
 )
 
@@ -335,6 +336,10 @@ for source_file in "${files_to_backup[@]}"; do
         cp "$source_file" "$backup_file"
     fi
 done
+
+# Remove Gnome Software update service
+rm -f /etc/xdg/autostart/org.gnome.Software.desktop
+
 conf_msg "All backups created"
 fi # End of -server flag if statement
 
@@ -924,7 +929,7 @@ mv -f "solidcore-firstboot.sh" "/etc/solidcore/"
 cat > /etc/solidcore/solidcore-welcome.sh << EOF
 #!/bin/bash
 ## Solidcore Hardening Scripts for Fedora's rpm-ostree Operating Systems
-## Version 0.2.5
+## Version 0.2.6
 ##
 ## Copyright (C) 2023 solidc0re (https://github.com/solidc0re)
 ##
