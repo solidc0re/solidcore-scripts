@@ -110,178 +110,6 @@ space_1() {
 >  "
 }
 
-
-# === FLAGS ===
-
-# Test mode
-# Check if the -test flag is provided
-if [[ "$1" == "-test" ]]; then
-    test_mode=true
-    short_msg "Test mode."
-else
-    test_mode=false
-fi
-
-
-# === VARIABLES ===
-block_file="/etc/modprobe.d/solidcore-blocklist.conf"
-
-
-# === WELCOME ===
-
-clear
-long_msg ">
->
->  Welcome back!
->
->  You have part-completed the solidcore hardening process.
->
->  This script carries out the finishing touches which require your input."
-sleep 2
-space_2
-
-
-# === SUDO CHECK ===
-
-if [ "$EUID" -ne 0 ]; then
-    short_msg "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-firstboot.sh'"
-    exit 1
-fi
-
-
-# === NEW PASSWORD ===
-
-short_msg "As part of solidcore's hardening, new password policies were implemented."
-sleep 1
-space_1
-short_msg "${bold}You are now required to set a new password.${normal}"
-sleep 1
-space_1
-short_msg "The new password requirements are:"
-short_msg "  • 12 character minimum"
-short_msg "  • at least 1 UPPER case character"
-short_msg "  • at least 1 lower case character"
-short_msg "  • the same character can not be repeated 3+ times in a row"
-short_msg "  • the password must pass a dictionary test"
-space_1
-short_msg "Numbers and special characters are permitted, but not required."
-space_1
-short_msg "${bold}Password length is more important than character complexity.${normal}"
-space_1
-short_msg "For example, ${bold}${italics}Two-Clowns-Walked-into-a-Bar${normal} is better than ${bold}${italics}dVc78#!_sjdRa${normal}."
-sleep 3
-
-while true; do
-    space_1
-    echo
-    passwd > /dev/null
-    if [ $? -eq 0 ]; then
-        space_1
-        conf_msg "New password set"
-        break
-    else
-        space_1
-        short_msg "Password change failed. Please try again."
-        space_1
-    fi
-done
-
-# Expire passwords of all other users
-short_msg "Expiring all user passwords except for user..."
-
-current_user=$(whoami)
-excluded_user="nfsnobody"
-
-# Count the number of non-root human users on the system
-num_users=$(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | wc -l)
-
-# Check if there are other human users besides the current user and excluded user
-if [ "$num_users" -gt 0 ]; then
-    # Loop through all user accounts and exclude the current user and excluded user
-    getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | while read -r username; do
-        short_msg "Expiring password for user: $username"
-        chage -E 0 "$username"
-    done
-    space_1
-    short_msg "${bold}Passwords for other users have now expired.${normal}"
-    short_msg "They will be prompted to update their password on next login."
-    sleep 1
-fi
-
-space_2
-
-
-# === GRUB ===
-
-# Ask the user if they want to set a GRUB password
-short_msg "Setting a GRUB password prevents an attacker from accessing the bootloader configuration menus and terminal."
-space_1
-while true; do
-read -rp "${bold}[Question]${normal} Do you want to set a GRUB password [recommended]? (y/n): " grub_response
-case $grub_response in 
-	[Yy] ) grub_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-
-if [[ "$grub_response" =~ ^[Yy]$ ]]; then
-    # Set new GRUB password
-    while true; do
-        echo
-        grub2-setpassword
-        if [ $? -eq 0 ]; then
-            space_1
-            conf_msg "New password set"
-            break
-        else
-            space_1
-            short_msg "Password change failed. Please try again."
-        fi
-    done
-else
-    short_msg "Skipping..."
-fi
-
-space_2
-space_1
-
-
-# === HOSTNAME ===
-
-# Ask the user if they want to set a new generic hostname
-while true; do
-read -rp "${bold}[Question]${normal} Do you want to set a generic hostname [recommended]?`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
-case $hostname_response in 
-	[Yy] ) hostname_response="Y";
-		break;;
-	[Nn] )
-        break;;
-	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
-        echo ">";
-esac
-done
-
-if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
-    # Create backup
-    echo hostnamectl hostname > /etc/solidcore/hostname_sc.bak
-    # Prompt user for a new hostname
-    read -r -p "Enter new hostname: " new_hostname
-    # Update hostname
-    hostnamectl hostname "$new_hostname" 
-    conf_msg "Hostname is now $new_hostname"
-else
-    short_msg "Skipping..."
-fi
-space_2
-sleep 1
-
-
-# === USER INPUT FOR PORTS/DEVICES/WIRELESS ===
-
 # Thanks to stackoverflow for the multiselect function
 # https://stackoverflow.com/questions/45382472/bash-select-multiple-answers-at-once
 
@@ -386,6 +214,215 @@ function prompt_for_multiselect {
 
     eval $retval='("${selected[@]}")'
 }
+
+# === FLAGS ===
+
+# Test mode
+# Check if the -test flag is provided
+if [[ "$1" == "-test" ]]; then
+    test_mode=true
+    short_msg "Test mode."
+else
+    test_mode=false
+fi
+
+
+# === VARIABLES ===
+block_file="/etc/modprobe.d/solidcore-blocklist.conf"
+
+
+# === WELCOME ===
+
+clear
+long_msg ">
+>
+>  Welcome back!
+>
+>  You have part-completed the solidcore hardening process.
+>
+>  This script carries out the finishing touches which require your input."
+sleep 2
+space_2
+
+
+# === SUDO CHECK ===
+
+if [ "$EUID" -ne 0 ]; then
+    short_msg "This script requires sudo privileges. Please run it with 'sudo' using 'sudo <path-to-script>./solidcore-firstboot.sh'"
+    exit 1
+fi
+
+
+# === NEW PASSWORD ===
+
+short_msg "As part of solidcore's hardening, new password policies were implemented."
+sleep 1
+space_1
+short_msg "${bold}You are now required to set a new password.${normal}"
+sleep 1
+space_1
+short_msg "The new password requirements are:"
+short_msg "  • 12 character minimum"
+short_msg "  • at least 1 UPPER case character"
+short_msg "  • at least 1 lower case character"
+short_msg "  • the same character can not be repeated 3+ times in a row"
+short_msg "  • the password must pass a dictionary test"
+space_1
+short_msg "Numbers and special characters are permitted, but not required."
+space_1
+short_msg "${bold}Password length is more important than character complexity.${normal}"
+space_1
+short_msg "For example, ${bold}${italics}Two-Clowns-Walked-into-a-Bar${normal} is better than ${bold}${italics}dVc78#!_sjdRa${normal}."
+sleep 3
+
+while true; do
+    space_1
+    echo
+    passwd > /dev/null
+    if [ $? -eq 0 ]; then
+        space_1
+        conf_msg "New password set"
+        break
+    else
+        space_1
+        short_msg "Password change failed. Please try again."
+        space_1
+    fi
+done
+
+# OLD CODE - EXPIRED CURRENT USER, NOT WORKING
+## Expire passwords of all other users
+#short_msg "Expiring all user passwords except for user..."
+#
+#current_user=$(whoami)
+#excluded_user="nfsnobody"
+#
+## Count the number of non-root human users on the system
+#num_users=$(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | wc -l)
+#
+## Check if there are other human users besides the current user and excluded user
+#if [ "$num_users" -gt 0 ]; then
+#    # Loop through all user accounts and exclude the current user and excluded user
+#    getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}' | while read -r username; do
+#        short_msg "Expiring password for user: $username"
+#        chage -E 0 "$username"
+#    done
+#    space_1
+#    short_msg "${bold}Passwords for other users have now expired.${normal}"
+#    short_msg "They will be prompted to update their password on next login."
+#    sleep 1
+#fi
+
+# Expire passwords based on user interaction
+current_user=$(whoami)
+excluded_user="nfsnobody"
+
+# Get a list of eligible users (UID >= 1000) excluding the current user and excluded user
+eligible_users=($(getent passwd | awk -F: '$3 >= 1000 && $1 != "'$current_user'" && $1 != "'$excluded_user'" {print $1}'))
+
+if [ ${#eligible_users[@]} -eq 0 ]; then
+    short_msg "No user passwords to expire..."
+else
+    # Define the options for the menu, including "None of the above"
+    options_user=("${eligible_users[@]}" "None of the above")
+    selected_users=()
+
+    # User interaction
+    short_msg "Select the users whose passwords you want to expire."
+    short_msg "Use ${bold}▲ up${normal} and ${bold}▼ down${normal} to navigate, ${bold}<space>${normal} to select, ${bold}<enter>${normal} to submit."
+
+    prompt_for_multiselect selected_users "$(IFS=';'; echo "${options_user[*]}")"
+
+    # Check if "None of the above" was selected or if no users were selected
+    if [ "${#selected_users[@]}" -eq 0 ] || [ "${selected_users[0]}" == "None of the above" ]; then
+        space_1
+        short_msg "No users selected. Passwords remain unchanged."
+    else
+        # Loop through selected users and expire their passwords
+        for username in "${selected_users[@]}"; do
+            short_msg "Expiring password for user: $username"
+            chage -E 0 "$username"
+        done
+        space_1
+        short_msg "${bold}Passwords for selected users have now expired.${normal}"
+        short_msg "They will be prompted to update their password on next login."
+    fi
+fi
+
+sleep 2
+space_2
+
+
+# === GRUB ===
+
+# Ask the user if they want to set a GRUB password
+short_msg "Setting a GRUB password prevents an attacker from accessing the bootloader configuration menus and terminal."
+space_1
+while true; do
+read -rp "${bold}[Question]${normal} Do you want to set a GRUB password [recommended]? (y/n): " grub_response
+case $grub_response in 
+	[Yy] ) grub_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo ">";
+esac
+done
+
+if [[ "$grub_response" =~ ^[Yy]$ ]]; then
+    # Set new GRUB password
+    while true; do
+        echo
+        grub2-setpassword
+        if [ $? -eq 0 ]; then
+            space_1
+            conf_msg "New password set"
+            break
+        else
+            space_1
+            short_msg "Password change failed. Please try again."
+        fi
+    done
+else
+    short_msg "Skipping..."
+fi
+
+space_2
+space_1
+
+
+# === HOSTNAME ===
+
+# Ask the user if they want to set a new generic hostname
+while true; do
+read -rp "${bold}[Question]${normal} Do you want to set a generic hostname [recommended]?`echo $'\n>  Examples include 'hostname', 'host', 'computer', etc. (y/n) :  '`" hostname_response
+case $hostname_response in 
+	[Yy] ) hostname_response="Y";
+		break;;
+	[Nn] )
+        break;;
+	* ) short_msg "Invalid response. Please retry with 'y' or 'n'."
+        echo ">";
+esac
+done
+
+if [[ "$hostname_response" =~ ^[Yy]$ ]]; then
+    # Create backup
+    echo hostnamectl hostname > /etc/solidcore/hostname_sc.bak
+    # Prompt user for a new hostname
+    read -r -p "Enter new hostname: " new_hostname
+    # Update hostname
+    hostnamectl hostname "$new_hostname" 
+    conf_msg "Hostname is now $new_hostname"
+else
+    short_msg "Skipping..."
+fi
+space_2
+sleep 1
+
+
+# === USER INPUT FOR PORTS/DEVICES/WIRELESS ===
 
 # Initialize variables
 printer_response="N"
