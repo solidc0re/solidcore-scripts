@@ -1216,11 +1216,11 @@ short_msg "${bold}[3 of 3]${normal} Checking CPU Vulnerabilities..."
 
 echo
 sleep 1
-grep . /sys/devices/system/cpu/vulnerabilities/*
-sleep 1
+grep . /sys/devices/system/cpu/vulnerabilities/* | sed 's/\/sys\/devices\/system\/cpu\/vulnerabilities\///;s/\([^:]*\):\(.*\)/ [\1] \2./'
+sleep 2
 echo
 
-short_msg "${bold}Please check that all known CPU vulnerabilities either don't affect this device, or have some mitigation applied.${normal}"
+short_msg "${bold}Please check the above known CPU vulnerabilities. For those that affect this device, ensure that there is a mitigation in place.${normal}"
 sleep 5
 space_1
 
