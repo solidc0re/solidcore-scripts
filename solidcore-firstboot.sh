@@ -1216,7 +1216,7 @@ short_msg "${bold}[3 of 3]${normal} Checking CPU Vulnerabilities..."
 
 echo
 sleep 1
-grep . /sys/devices/system/cpu/vulnerabilities/* | sed 's/\/sys\/devices\/system\/cpu\/vulnerabilities\///;s/\([^:]*\):\(.*\)/ [\1] \2./'
+grep . /sys/devices/system/cpu/vulnerabilities/* | sed "s/\/sys\/devices\/system\/cpu\/vulnerabilities\///;s/\([^:]*\):\(.*\)/ ${bold}[\1]${normal} \2./"
 sleep 2
 echo
 
